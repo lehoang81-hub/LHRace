@@ -1477,9 +1477,41 @@ function exportHonorPDF(){
     </div>
 
     <button onclick="runReconcile()" id="rcRunBtn"
-      style="width:100%;padding:13px;border-radius:8px;background:var(--red);color:#fff;font-family:'Be Vietnam Pro',sans-serif;font-size:14px;font-weight:700;border:none;cursor:pointer;margin-bottom:20px;transition:all .2s">
+      style="width:100%;padding:13px;border-radius:8px;background:var(--red);color:#fff;font-family:'Be Vietnam Pro',sans-serif;font-size:14px;font-weight:700;border:none;cursor:pointer;margin-bottom:12px;transition:all .2s">
       🔍 Phân tích & Đối soát tự động
     </button>
+
+    <!-- AI OPTIONS -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:20px">
+      <label style="display:flex;align-items:center;gap:8px;padding:10px 12px;background:rgba(39,174,96,.06);border:1px solid rgba(39,174,96,.2);border-radius:8px;cursor:pointer">
+        <input type="checkbox" id="aiExplain" checked style="accent-color:#27AE60;width:14px;height:14px">
+        <div>
+          <div style="font-size:11px;font-weight:700;color:#27AE60">🔍 Giải thích độ khớp</div>
+          <div style="font-size:10px;color:var(--muted)">Lý do AI khớp/không khớp</div>
+        </div>
+      </label>
+      <label style="display:flex;align-items:center;gap:8px;padding:10px 12px;background:rgba(215,43,43,.06);border:1px solid rgba(215,43,43,.2);border-radius:8px;cursor:pointer">
+        <input type="checkbox" id="aiAnomaly" checked style="accent-color:#D72B2B;width:14px;height:14px">
+        <div>
+          <div style="font-size:11px;font-weight:700;color:#D72B2B">🚨 Phát hiện gian lận</div>
+          <div style="font-size:10px;color:var(--muted)">Pattern bất thường</div>
+        </div>
+      </label>
+      <label style="display:flex;align-items:center;gap:8px;padding:10px 12px;background:rgba(41,128,185,.06);border:1px solid rgba(41,128,185,.2);border-radius:8px;cursor:pointer">
+        <input type="checkbox" id="aiReport" checked style="accent-color:#2980B9;width:14px;height:14px">
+        <div>
+          <div style="font-size:11px;font-weight:700;color:#2980B9">📊 Báo cáo cuối ngày</div>
+          <div style="font-size:10px;color:var(--muted)">Sales · Marketing · Đối tác</div>
+        </div>
+      </label>
+      <label style="display:flex;align-items:center;gap:8px;padding:10px 12px;background:rgba(155,89,182,.06);border:1px solid rgba(155,89,182,.2);border-radius:8px;cursor:pointer">
+        <input type="checkbox" id="aiZalo" checked style="accent-color:#9B59B6;width:14px;height:14px">
+        <div>
+          <div style="font-size:11px;font-weight:700;color:#9B59B6">💬 Soạn tin Zalo</div>
+          <div style="font-size:10px;color:var(--muted)">Mẫu hỏi VĐV chưa khớp</div>
+        </div>
+      </label>
+    </div>
 
     <!-- PROGRESS -->
     <div id="rcProgress" style="display:none;background:var(--dark2);border:1px solid var(--border);border-radius:10px;padding:16px;margin-bottom:16px">
@@ -1491,29 +1523,64 @@ function exportHonorPDF(){
     </div>
 
     <!-- STATS -->
-    <div id="rcStats" style="display:none;display:none;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:16px">
+    <div id="rcStats" style="display:none;grid-template-columns:repeat(5,1fr);gap:8px;margin-bottom:16px">
       <div class="sc" style="text-align:center"><div class="sn" id="rcSMatch" style="color:#27AE60">0</div><div class="sl">Tự duyệt</div></div>
       <div class="sc" style="text-align:center"><div class="sn" id="rcSPartial" style="color:var(--gold)">0</div><div class="sl">Cần xem</div></div>
+      <div class="sc" style="text-align:center"><div class="sn" id="rcSFraud" style="color:#D72B2B">0</div><div class="sl">Cờ đỏ</div></div>
       <div class="sc" style="text-align:center"><div class="sn" id="rcSMiss" style="color:var(--muted)">0</div><div class="sl">Không khớp</div></div>
       <div class="sc" style="text-align:center"><div class="sn" id="rcSTotal">0</div><div class="sl">Giao dịch</div></div>
     </div>
 
-    <!-- RESULTS -->
-    <div id="rcResults" style="display:none;background:var(--dark2);border:1px solid var(--border);border-radius:10px;overflow:hidden">
-      <div style="padding:12px 16px;border-bottom:1px solid var(--border);font-size:13px;font-weight:700">Kết quả đối soát</div>
-      <table style="width:100%;border-collapse:collapse">
-        <thead>
-          <tr style="background:var(--dark3)">
-            <th style="padding:9px 12px;font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--muted);text-align:left">Giao dịch</th>
-            <th style="padding:9px 12px;font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--muted);text-align:left">Số tiền</th>
-            <th style="padding:9px 12px;font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--muted);text-align:left">VĐV khớp</th>
-            <th style="padding:9px 12px;font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--muted);text-align:left">Trạng thái</th>
-          </tr>
-        </thead>
-        <tbody id="rcResultsTbl"></tbody>
-      </table>
+    <!-- RESULTS CARDS -->
+    <div id="rcResults" style="display:none">
+      <div style="padding:0 0 10px;font-size:13px;font-weight:700;display:flex;align-items:center;justify-content:space-between">
+        <span>Kết quả đối soát</span>
+        <span style="font-size:10px;color:var(--muted);font-weight:400">🚨 Cờ đỏ hiện trước · 🔍 Cần xem · ✅ Đã duyệt</span>
+      </div>
+      <div id="rcResultsCards"></div>
     </div>
 
+    <!-- BÁO CÁO -->
+    <div id="rcReport" style="display:none" class="rc-report">
+      <div class="rc-report-title">📊 Báo cáo tổng hợp — Sale / Marketing / Đối tác</div>
+      <pre id="rcReportText" class="rc-report-text" style="font-family:'JetBrains Mono',monospace;font-size:11px"></pre>
+      <button onclick="copyReport()" style="margin-top:8px;padding:7px 14px;border-radius:6px;background:rgba(245,166,35,.1);color:var(--gold);border:1px solid rgba(245,166,35,.2);font-size:11px;font-weight:700;cursor:pointer">📋 Copy báo cáo</button>
+    </div>
+
+    <!-- CẢNH BÁO GIAN LẬN -->
+    <div id="rcAnomalyBox" style="display:none;background:rgba(215,43,43,.06);border:1px solid rgba(215,43,43,.25);border-radius:10px;padding:16px;margin-bottom:16px">
+      <div style="font-size:12px;font-weight:700;color:#D72B2B;margin-bottom:10px">🚨 Cảnh báo bất thường</div>
+      <div id="rcAnomalyContent" style="font-size:12px;line-height:1.8;color:var(--light)"></div>
+    </div>
+    <!-- TIN NHẮN ZALO -->
+    <div id="rcZaloBox" style="display:none;background:rgba(155,89,182,.06);border:1px solid rgba(155,89,182,.25);border-radius:10px;padding:16px;margin-bottom:16px">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+        <div style="font-size:12px;font-weight:700;color:#9B59B6">💬 Tin nhắn Zalo mẫu</div>
+        <button onclick="copyZalo()" style="padding:4px 10px;border-radius:4px;background:rgba(155,89,182,.2);color:#9B59B6;border:1px solid rgba(155,89,182,.3);font-size:10px;font-weight:700;cursor:pointer">📋 Copy</button>
+      </div>
+      <div id="rcZaloContent" style="font-size:11px;line-height:1.8;color:var(--light);white-space:pre-wrap;font-family:monospace;background:var(--dark3);padding:10px;border-radius:6px;max-height:200px;overflow-y:auto"></div>
+    </div>
+    <!-- BÁO CÁO CUỐI NGÀY -->
+    <div id="rcReportBox" style="display:none;background:rgba(41,128,185,.06);border:1px solid rgba(41,128,185,.25);border-radius:10px;overflow:hidden;margin-bottom:16px">
+      <div style="padding:12px 16px;border-bottom:1px solid rgba(41,128,185,.2);font-size:13px;font-weight:700;color:#2980B9">📊 Báo cáo cuối ngày</div>
+      <div id="rcReportContent" style="padding:16px;font-size:12px;line-height:1.9;color:var(--light)"></div>
+    </div>
+  </div>
+</div>
+
+
+<div class="zalo-modal" id="zaloModal" onclick="if(event.target===this)closeZalo()">
+  <div class="zalo-box">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
+      <div style="font-size:14px;font-weight:700">💬 Tin nhắn Zalo</div>
+      <button onclick="closeZalo()" style="background:none;border:none;color:var(--muted);font-size:18px;cursor:pointer">✕</button>
+    </div>
+    <div style="font-size:11px;color:var(--muted);margin-bottom:8px">Gửi cho: <span id="zaloTarget" style="color:var(--light);font-weight:600"></span></div>
+    <textarea id="zaloMsg" style="width:100%;min-height:160px;background:var(--dark3);border:1px solid var(--border2);border-radius:7px;color:var(--light);font-family:'Be Vietnam Pro',sans-serif;font-size:12px;padding:10px;resize:vertical;outline:none;line-height:1.7"></textarea>
+    <div style="display:flex;gap:8px;margin-top:10px">
+      <button onclick="copyZalo()" style="flex:1;padding:9px;border-radius:6px;background:rgba(0,149,255,.15);color:#0095FF;border:1px solid rgba(0,149,255,.25);font-size:12px;font-weight:700;cursor:pointer">📋 Copy tin nhắn</button>
+      <button onclick="closeZalo()" style="padding:9px 16px;border-radius:6px;background:none;color:var(--muted);border:1px solid var(--border);font-size:12px;cursor:pointer">Đóng</button>
+    </div>
   </div>
 </div>
 
@@ -2104,9 +2171,41 @@ function printReport() {
     </div>
 
     <button onclick="runReconcile()" id="rcRunBtn"
-      style="width:100%;padding:13px;border-radius:8px;background:var(--red);color:#fff;font-family:'Be Vietnam Pro',sans-serif;font-size:14px;font-weight:700;border:none;cursor:pointer;margin-bottom:20px;transition:all .2s">
+      style="width:100%;padding:13px;border-radius:8px;background:var(--red);color:#fff;font-family:'Be Vietnam Pro',sans-serif;font-size:14px;font-weight:700;border:none;cursor:pointer;margin-bottom:12px;transition:all .2s">
       🔍 Phân tích & Đối soát tự động
     </button>
+
+    <!-- AI OPTIONS -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:20px">
+      <label style="display:flex;align-items:center;gap:8px;padding:10px 12px;background:rgba(39,174,96,.06);border:1px solid rgba(39,174,96,.2);border-radius:8px;cursor:pointer">
+        <input type="checkbox" id="aiExplain" checked style="accent-color:#27AE60;width:14px;height:14px">
+        <div>
+          <div style="font-size:11px;font-weight:700;color:#27AE60">🔍 Giải thích độ khớp</div>
+          <div style="font-size:10px;color:var(--muted)">Lý do AI khớp/không khớp</div>
+        </div>
+      </label>
+      <label style="display:flex;align-items:center;gap:8px;padding:10px 12px;background:rgba(215,43,43,.06);border:1px solid rgba(215,43,43,.2);border-radius:8px;cursor:pointer">
+        <input type="checkbox" id="aiAnomaly" checked style="accent-color:#D72B2B;width:14px;height:14px">
+        <div>
+          <div style="font-size:11px;font-weight:700;color:#D72B2B">🚨 Phát hiện gian lận</div>
+          <div style="font-size:10px;color:var(--muted)">Pattern bất thường</div>
+        </div>
+      </label>
+      <label style="display:flex;align-items:center;gap:8px;padding:10px 12px;background:rgba(41,128,185,.06);border:1px solid rgba(41,128,185,.2);border-radius:8px;cursor:pointer">
+        <input type="checkbox" id="aiReport" checked style="accent-color:#2980B9;width:14px;height:14px">
+        <div>
+          <div style="font-size:11px;font-weight:700;color:#2980B9">📊 Báo cáo cuối ngày</div>
+          <div style="font-size:10px;color:var(--muted)">Sales · Marketing · Đối tác</div>
+        </div>
+      </label>
+      <label style="display:flex;align-items:center;gap:8px;padding:10px 12px;background:rgba(155,89,182,.06);border:1px solid rgba(155,89,182,.2);border-radius:8px;cursor:pointer">
+        <input type="checkbox" id="aiZalo" checked style="accent-color:#9B59B6;width:14px;height:14px">
+        <div>
+          <div style="font-size:11px;font-weight:700;color:#9B59B6">💬 Soạn tin Zalo</div>
+          <div style="font-size:10px;color:var(--muted)">Mẫu hỏi VĐV chưa khớp</div>
+        </div>
+      </label>
+    </div>
 
     <!-- PROGRESS -->
     <div id="rcProgress" style="display:none;background:var(--dark2);border:1px solid var(--border);border-radius:10px;padding:16px;margin-bottom:16px">
@@ -2118,29 +2217,46 @@ function printReport() {
     </div>
 
     <!-- STATS -->
-    <div id="rcStats" style="display:none;display:none;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:16px">
+    <div id="rcStats" style="display:none;grid-template-columns:repeat(5,1fr);gap:8px;margin-bottom:16px">
       <div class="sc" style="text-align:center"><div class="sn" id="rcSMatch" style="color:#27AE60">0</div><div class="sl">Tự duyệt</div></div>
       <div class="sc" style="text-align:center"><div class="sn" id="rcSPartial" style="color:var(--gold)">0</div><div class="sl">Cần xem</div></div>
+      <div class="sc" style="text-align:center"><div class="sn" id="rcSFraud" style="color:#D72B2B">0</div><div class="sl">Cờ đỏ</div></div>
       <div class="sc" style="text-align:center"><div class="sn" id="rcSMiss" style="color:var(--muted)">0</div><div class="sl">Không khớp</div></div>
       <div class="sc" style="text-align:center"><div class="sn" id="rcSTotal">0</div><div class="sl">Giao dịch</div></div>
     </div>
 
-    <!-- RESULTS -->
-    <div id="rcResults" style="display:none;background:var(--dark2);border:1px solid var(--border);border-radius:10px;overflow:hidden">
-      <div style="padding:12px 16px;border-bottom:1px solid var(--border);font-size:13px;font-weight:700">Kết quả đối soát</div>
-      <table style="width:100%;border-collapse:collapse">
-        <thead>
-          <tr style="background:var(--dark3)">
-            <th style="padding:9px 12px;font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--muted);text-align:left">Giao dịch</th>
-            <th style="padding:9px 12px;font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--muted);text-align:left">Số tiền</th>
-            <th style="padding:9px 12px;font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--muted);text-align:left">VĐV khớp</th>
-            <th style="padding:9px 12px;font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--muted);text-align:left">Trạng thái</th>
-          </tr>
-        </thead>
-        <tbody id="rcResultsTbl"></tbody>
-      </table>
+    <!-- RESULTS CARDS -->
+    <div id="rcResults" style="display:none">
+      <div style="padding:0 0 10px;font-size:13px;font-weight:700;display:flex;align-items:center;justify-content:space-between">
+        <span>Kết quả đối soát</span>
+        <span style="font-size:10px;color:var(--muted);font-weight:400">🚨 Cờ đỏ hiện trước · 🔍 Cần xem · ✅ Đã duyệt</span>
+      </div>
+      <div id="rcResultsCards"></div>
     </div>
 
+    <!-- BÁO CÁO -->
+    <div id="rcReport" style="display:none" class="rc-report">
+      <div class="rc-report-title">📊 Báo cáo tổng hợp — Sale / Marketing / Đối tác</div>
+      <pre id="rcReportText" class="rc-report-text" style="font-family:'JetBrains Mono',monospace;font-size:11px"></pre>
+      <button onclick="copyReport()" style="margin-top:8px;padding:7px 14px;border-radius:6px;background:rgba(245,166,35,.1);color:var(--gold);border:1px solid rgba(245,166,35,.2);font-size:11px;font-weight:700;cursor:pointer">📋 Copy báo cáo</button>
+    </div>
+
+  </div>
+</div>
+
+
+<div class="zalo-modal" id="zaloModal" onclick="if(event.target===this)closeZalo()">
+  <div class="zalo-box">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
+      <div style="font-size:14px;font-weight:700">💬 Tin nhắn Zalo</div>
+      <button onclick="closeZalo()" style="background:none;border:none;color:var(--muted);font-size:18px;cursor:pointer">✕</button>
+    </div>
+    <div style="font-size:11px;color:var(--muted);margin-bottom:8px">Gửi cho: <span id="zaloTarget" style="color:var(--light);font-weight:600"></span></div>
+    <textarea id="zaloMsg" style="width:100%;min-height:160px;background:var(--dark3);border:1px solid var(--border2);border-radius:7px;color:var(--light);font-family:'Be Vietnam Pro',sans-serif;font-size:12px;padding:10px;resize:vertical;outline:none;line-height:1.7"></textarea>
+    <div style="display:flex;gap:8px;margin-top:10px">
+      <button onclick="copyZalo()" style="flex:1;padding:9px;border-radius:6px;background:rgba(0,149,255,.15);color:#0095FF;border:1px solid rgba(0,149,255,.25);font-size:12px;font-weight:700;cursor:pointer">📋 Copy tin nhắn</button>
+      <button onclick="closeZalo()" style="padding:9px 16px;border-radius:6px;background:none;color:var(--muted);border:1px solid var(--border);font-size:12px;cursor:pointer">Đóng</button>
+    </div>
   </div>
 </div>
 
@@ -2623,15 +2739,413 @@ function hideProfileMsg() {
 
 
 
-// ── ĐỐI SOÁT CHUYỂN KHOẢN ────────────────────────────────────
+// ── ĐỐI SOÁT CHUYỂN KHOẢN v2 — 4 AI Features ─────────────────
 let _rcResults = [];
 
 function rcLog(msg){
-  const el = document.getElementById('rcProgressLog');
-  if(el){ el.innerHTML += new Date().toLocaleTimeString('vi') + ' — ' + msg + '\n'; el.scrollTop = el.scrollHeight; }
+  const el=document.getElementById('rcProgressLog');
+  if(el){ el.innerHTML += new Date().toLocaleTimeString('vi')+'—'+msg+'\n'; el.scrollTop=el.scrollHeight; }
 }
 function rcBar(pct){ const el=document.getElementById('rcProgressBar'); if(el) el.style.width=pct+'%'; }
 function rcTitle(t){ const el=document.getElementById('rcProgressTitle'); if(el) el.textContent=t; }
+
+async function runReconcile(){
+  const stmt=document.getElementById('rcStmt').value.trim();
+  const url=localStorage.getItem('race_sheet_url')||'';
+  if(!stmt){ showToast('Vui lòng dán nội dung sao kê','err'); return; }
+  if(!url){ showToast('Chưa cấu hình Apps Script URL','err'); return; }
+
+  const btn=document.getElementById('rcRunBtn');
+  btn.disabled=true; btn.textContent='⏳ Đang xử lý...';
+  document.getElementById('rcProgress').style.display='block';
+  document.getElementById('rcStats').style.display='none';
+  document.getElementById('rcResults').style.display='none';
+  document.getElementById('rcReport').style.display='none';
+  document.getElementById('rcProgressLog').textContent='';
+  rcBar(0); rcTitle('Bước 1/4: Lấy danh sách VĐV chờ duyệt...');
+
+  // Bước 1: VĐV pending
+  let pendingRegs=[];
+  await new Promise(resolve=>{
+    fetchSheet(url+'?action=getRegistrations&t='+Date.now(), function(data){
+      if(data&&data.data){
+        pendingRegs=data.data.filter(r=>String(r.status||'')==='pending');
+        rcLog('Tải được '+pendingRegs.length+' VĐV chờ duyệt');
+      } else { rcLog('Không tải được danh sách VĐV'); }
+      resolve();
+    });
+  });
+  rcBar(15);
+
+  // Bước 2: Claude đọc sao kê
+  rcTitle('Bước 2/4: Claude đang đọc và phân tích sao kê...');
+  rcLog('Gửi sao kê lên Apps Script → Claude...');
+  let transactions=[];
+  await new Promise(resolve=>{
+    const cbName='rc_'+Date.now();
+    const s=document.createElement('script');
+    const timer=setTimeout(()=>{ delete window[cbName]; try{document.body.removeChild(s);}catch(e){} rcLog('Timeout'); resolve(); },45000);
+    window[cbName]=function(res){
+      clearTimeout(timer); delete window[cbName]; try{document.body.removeChild(s);}catch(e){}
+      if(res&&res.ok){ transactions=res.transactions||[]; rcLog('Claude trích xuất '+transactions.length+' giao dịch'); }
+      else { rcLog('Lỗi: '+(res?res.error:'Không phản hồi')); }
+      resolve();
+    };
+    s.src=url+'?action=analyzeStatement&text='+encodeURIComponent(stmt.slice(0,5000))+'&callback='+cbName+'&t='+Date.now();
+    document.body.appendChild(s);
+  });
+  rcBar(40);
+
+  if(!transactions.length){
+    rcTitle('Không tìm thấy giao dịch nào');
+    btn.disabled=false; btn.textContent='🔍 Phân tích & Đối soát tự động';
+    return;
+  }
+
+  // Bước 3: Đối soát + giải thích AI + phát hiện gian lận
+  rcTitle('Bước 3/4: Đối soát thông minh và phát hiện bất thường...');
+  _rcResults=rcMatch(transactions, pendingRegs);
+  rcLog('Đối soát xong: '+_rcResults.filter(r=>r.match==='full').length+' khớp, '+_rcResults.filter(r=>r.match==='partial').length+' cần xem');
+  
+  // Phát hiện gian lận
+  rcDetectFraud(_rcResults, transactions);
+  rcBar(60);
+
+  // Bước 4: Tự động duyệt + tạo báo cáo
+  rcTitle('Bước 4/4: Tự động duyệt và tạo báo cáo...');
+  const toApprove=_rcResults.filter(r=>r.match==='full'&&r.reg&&!r.fraud);
+  rcLog('Tự động duyệt '+toApprove.length+' VĐV khớp chắc chắn...');
+
+  let approved=0;
+  for(const item of toApprove){
+    await new Promise(resolve=>{
+      const cbName='rcok_'+Date.now()+'_'+Math.random().toString(36).substr(2,4);
+      const s=document.createElement('script');
+      const t=setTimeout(()=>{ delete window[cbName]; resolve(); },8000);
+      window[cbName]=function(res){
+        clearTimeout(t); delete window[cbName]; try{document.body.removeChild(s);}catch(e){}
+        if(res&&res.ok){ item.autoApproved=true; approved++; }
+        resolve();
+      };
+      s.src=url+'?action=approve&regId='+encodeURIComponent(item.reg.regId)+'&status=approved&callback='+cbName+'&t='+Date.now();
+      document.body.appendChild(s);
+    });
+    rcBar(60+Math.round(approved/toApprove.length*30));
+    await new Promise(r=>setTimeout(r,300));
+  }
+
+  rcBar(100);
+  rcTitle('✅ Hoàn tất — Tự duyệt: '+approved+' | Cần xem: '+_rcResults.filter(r=>r.match==='partial').length+' | Cờ đỏ: '+_rcResults.filter(r=>r.fraud).length);
+  rcLog('--- XONG ---');
+
+  // Stats
+  const sm=approved;
+  const sp=_rcResults.filter(r=>r.match==='partial'&&!r.autoApproved).length;
+  const sf=_rcResults.filter(r=>r.fraud).length;
+  const sn=_rcResults.filter(r=>r.match==='none').length;
+  document.getElementById('rcSMatch').textContent=sm;
+  document.getElementById('rcSPartial').textContent=sp;
+  document.getElementById('rcSFraud').textContent=sf;
+  document.getElementById('rcSMiss').textContent=sn;
+  document.getElementById('rcSTotal').textContent=transactions.length;
+  document.getElementById('rcStats').style.display='grid';
+
+  rcRenderResults();
+  rcGenerateReport(approved, sp, sf, transactions, pendingRegs);
+
+  btn.disabled=false; btn.textContent='🔍 Phân tích & Đối soát tự động';
+  showToast('Đối soát xong! Tự duyệt '+approved+' VĐV','ok');
+}
+
+// ── MATCHING với giải thích ───────────────────────────────────
+function rcMatch(transactions, regs){
+  const feeMap={'1.5km':50000,'3km':80000,'5km':120000,'10km':150000,'21km':200000,'42km':300000};
+  return transactions.map(tx=>{
+    const txAmt=parseInt(tx.amount)||0;
+    const txContent=String(tx.content||'').toLowerCase();
+    let best=null, bestScore=0;
+    let reasons=[];
+
+    regs.forEach(reg=>{
+      const fee=feeMap[String(reg.distance||'').toLowerCase()]||0;
+      const hasCode=reg.regId&&txContent.includes(String(reg.regId).toLowerCase());
+      const hasName=reg.fullName&&txContent.includes(String(reg.fullName||'').toLowerCase().split(' ').pop());
+      const amtOk=fee>0&&Math.abs(txAmt-fee)<=15000;
+      const amtExact=fee>0&&Math.abs(txAmt-fee)<=2000;
+
+      let score=0;
+      if(hasCode) score+=60;
+      if(amtExact) score+=35;
+      else if(amtOk) score+=20;
+      if(hasName) score+=10;
+      if(score>bestScore){ bestScore=score; best=reg; }
+    });
+
+    // Giải thích lý do khớp
+    if(best){
+      const fee=feeMap[String(best.distance||'').toLowerCase()]||0;
+      const hasCode=best.regId&&txContent.includes(String(best.regId).toLowerCase());
+      const hasName=best.fullName&&txContent.includes(String(best.fullName||'').toLowerCase().split(' ').pop());
+      const amtOk=fee>0&&Math.abs(txAmt-fee)<=15000;
+      if(hasCode) reasons.push('✓ Mã đăng ký khớp');
+      if(amtOk) reasons.push('✓ Số tiền khớp lệ phí '+String(best.distance||''));
+      if(hasName) reasons.push('✓ Tên người gửi khớp');
+      if(!hasCode&&!amtOk) reasons.push('⚠ Chỉ khớp một phần — cần xác nhận');
+    } else {
+      reasons.push('✗ Không tìm thấy VĐV phù hợp trong danh sách chờ duyệt');
+    }
+
+    const matchType=bestScore>=60?'full':bestScore>=25?'partial':'none';
+    return { tx, reg:best, match:matchType, score:bestScore, explain:reasons.join(' · ') };
+  });
+}
+
+// ── PHÁT HIỆN GIAN LẬN ────────────────────────────────────────
+function rcDetectFraud(results, allTxs){
+  // 1. Cùng số tiền gửi nhiều lần
+  const amtMap={};
+  allTxs.forEach(tx=>{
+    const k=String(tx.amount);
+    amtMap[k]=(amtMap[k]||0)+1;
+  });
+  // 2. Cùng nội dung CK trùng nhau
+  const contentMap={};
+  allTxs.forEach(tx=>{
+    const k=String(tx.content||'').toLowerCase().trim();
+    if(k) contentMap[k]=(contentMap[k]||0)+1;
+  });
+
+  results.forEach(r=>{
+    const flags=[];
+    const amt=String(r.tx.amount);
+    const content=String(r.tx.content||'').toLowerCase().trim();
+    if(amtMap[amt]>2) flags.push('Số tiền '+Number(r.tx.amount).toLocaleString('vi')+'đ xuất hiện '+amtMap[amt]+' lần');
+    if(content&&contentMap[content]>1) flags.push('Nội dung CK trùng lặp '+contentMap[content]+' lần');
+    if(parseInt(r.tx.amount)>500000) flags.push('Số tiền lớn bất thường — kiểm tra lại');
+    if(flags.length>0){ r.fraud=true; r.fraudReasons=flags; }
+  });
+}
+
+// ── RENDER KẾT QUẢ DẠNG CARD ──────────────────────────────────
+function rcRenderResults(){
+  document.getElementById('rcResults').style.display='block';
+  const sorted=[..._rcResults].sort((a,b)=>{
+    if(a.fraud&&!b.fraud) return -1;
+    if(!a.fraud&&b.fraud) return 1;
+    const o={partial:0,full:1,none:2};
+    return (o[a.match]||2)-(o[b.match]||2);
+  });
+
+  const container=document.getElementById('rcResultsCards');
+  container.innerHTML=sorted.map((r,i)=>{
+    const txAmt=Number(r.tx.amount||0).toLocaleString('vi')+'đ';
+    const txDate=r.tx.date||'';
+    const txNote=String(r.tx.content||'').slice(0,50);
+    const regName=r.reg?String(r.reg.fullName||''):'—';
+    const regId=r.reg?String(r.reg.regId||''):'';
+    const regDist=r.reg?String(r.reg.distance||''):'—';
+    const regPhone=r.reg?String(r.reg.phone||''):'';
+
+    // Màu sắc rõ ràng theo trạng thái
+    let cardClass='rc-card ';
+    if(r.fraud) cardClass+='match-partial'; // Cờ đỏ gian lận
+    else if(r.autoApproved) cardClass+='match-approved';
+    else if(r.match==='full') cardClass+='match-full';
+    else if(r.match==='partial') cardClass+='match-partial';
+    else cardClass+='match-none';
+
+    // Badge trạng thái
+    let statusBadge='';
+    if(r.fraud) statusBadge='<span class="rc-badge fraud">🚨 Cần kiểm tra gian lận</span>';
+    else if(r.autoApproved) statusBadge='<span class="rc-badge ok">✅ Đã tự duyệt</span>';
+    else if(r.match==='full') statusBadge='<span class="rc-badge ok">✓ Khớp chắc</span>';
+    else if(r.match==='partial') statusBadge='<span class="rc-badge warn">🔍 Cần xem</span>';
+    else statusBadge='<span class="rc-badge muted">Không khớp</span>';
+
+    // Nút hành động
+    let actions='';
+    if(r.fraud){
+      actions+='<button class="rc-btn fraud-flag" onclick="rcFlagFraud('+i+')">🚨 Đánh dấu bất thường</button>';
+      if(regPhone) actions+='<button class="rc-btn zalo" onclick="rcZalo('+i+')">💬 Soạn Zalo</button>';
+    } else if(!r.autoApproved&&r.match==='partial'&&r.reg){
+      actions+='<button class="rc-btn approve" onclick="rcManualApprove('+i+',this)">✓ Duyệt</button>';
+      if(regPhone) actions+='<button class="rc-btn zalo" onclick="rcZalo('+i+')">💬 Soạn Zalo</button>';
+    } else if(r.match==='none'){
+      actions+='<span style="font-size:10px;color:var(--muted)">Giao dịch không liên quan đến race</span>';
+    }
+
+    // Fraud reasons
+    let fraudHtml='';
+    if(r.fraud&&r.fraudReasons){
+      fraudHtml='<div class="rc-explain" style="border-left-color:#D72B2B;color:#e57373">⚠️ '+r.fraudReasons.join(' · ')+'</div>';
+    }
+
+    return '<div class="'+cardClass+'">'
+      +'<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px">'
+        +'<div>'
+          +'<div class="rc-tx">'+esc(txDate)+'</div>'
+          +'<div style="font-size:12px;margin-top:2px">'+esc(txNote)+'</div>'
+        +'</div>'
+        +'<div class="rc-amount">'+txAmt+'</div>'
+      +'</div>'
+      +(r.reg?'<div style="display:flex;justify-content:space-between;align-items:center;gap:8px">'
+        +'<div>'
+          +'<div class="rc-name">'+esc(regName)+'</div>'
+          +'<div class="rc-sub">'+esc(regId)+' · '+esc(regDist)+(regPhone?' · '+regPhone:'')+'</div>'
+        +'</div>'
+        +statusBadge
+        +'</div>':'<div>'+statusBadge+'</div>')
+      +'<div class="rc-explain">'+esc(r.explain||'')+'</div>'
+      +fraudHtml
+      +(actions?'<div class="rc-action-row">'+actions+'</div>':'')
+      +'</div>';
+  }).join('');
+}
+
+// ── BÁO CÁO CUỐI NGÀY ────────────────────────────────────────
+function rcGenerateReport(approved, needCheck, fraud, txList, allRegs){
+  const totalAmount=txList.reduce((s,t)=>s+(parseInt(t.amount)||0),0);
+  const totalRegs=allRegs.length;
+  const approvedRegs=allRegs.filter(r=>r.status==='approved').length+approved;
+  const convRate=totalRegs>0?Math.round(approvedRegs/totalRegs*100):0;
+
+  // Phân tích theo cự ly
+  const distMap={};
+  allRegs.forEach(r=>{ const d=String(r.distance||''); distMap[d]=(distMap[d]||0)+1; });
+  const distReport=Object.entries(distMap).sort((a,b)=>b[1]-a[1])
+    .map(([d,n])=>'  '+d+': '+n+' người').join('\n');
+
+  // Phân tích theo khu vực
+  const cityMap={};
+  allRegs.forEach(r=>{ const c=String(r.city||'Khác'); cityMap[c]=(cityMap[c]||0)+1; });
+  const topCities=Object.entries(cityMap).sort((a,b)=>b[1]-a[1]).slice(0,3)
+    .map(([c,n])=>c+' ('+n+')').join(', ');
+
+  // Giới tính
+  const male=allRegs.filter(r=>r.gender==='Nam'||r.gender==='M').length;
+  const female=allRegs.filter(r=>r.gender==='Nữ'||r.gender==='F').length;
+
+  const today=new Date().toLocaleDateString('vi-VN');
+  const report=
+    '📊 BÁO CÁO ĐỐI SOÁT — '+today+'\n'
+    +'━━━━━━━━━━━━━━━━━━━━━━━━\n\n'
+    +'💰 DOANH THU\n'
+    +'  Tổng thu trong kỳ: '+totalAmount.toLocaleString('vi')+'đ\n'
+    +'  Giao dịch xử lý: '+txList.length+' | Tự duyệt: '+approved+' | Cần xem: '+needCheck+'\n'
+    +(fraud>0?'  ⚠️ Cần kiểm tra bất thường: '+fraud+' giao dịch\n':'')
+    +'\n'
+    +'👥 VĐV (SALE & MARKETING)\n'
+    +'  Tổng đăng ký: '+totalRegs+' | Đã xác nhận: '+approvedRegs+'\n'
+    +'  Tỷ lệ chuyển đổi: '+convRate+'%\n'
+    +'  Chờ duyệt: '+(totalRegs-approvedRegs)+' VĐV — cần follow up\n'
+    +'  Top khu vực: '+topCities+'\n'
+    +'  Giới tính: Nam '+male+' / Nữ '+female+'\n'
+    +'\n'
+    +'📏 PHÂN BỔ CỰ LY\n'
+    +distReport+'\n'
+    +'\n'
+    +'🤝 ĐỐI TÁC & BÁN HÀNG\n'
+    +'  VĐV chưa xác nhận: '+(totalRegs-approvedRegs)+' người → Cơ hội follow up\n'
+    +'  Giao dịch chờ đối chiếu: '+needCheck+' → Liên hệ để xác nhận CK\n'
+    +'  Khu vực tiềm năng mở rộng: '+topCities+'\n';
+
+  document.getElementById('rcReportText').textContent=report;
+  document.getElementById('rcReport').style.display='block';
+}
+
+// ── DUYỆT THỦ CÔNG ────────────────────────────────────────────
+async function rcManualApprove(i,btn){
+  const sorted=[..._rcResults].sort((a,b)=>{
+    if(a.fraud&&!b.fraud) return -1; if(!a.fraud&&b.fraud) return 1;
+    const o={partial:0,full:1,none:2}; return (o[a.match]||2)-(o[b.match]||2);
+  });
+  const r=sorted[i];
+  if(!r||!r.reg) return;
+  const url=localStorage.getItem('race_sheet_url')||'';
+  btn.disabled=true; btn.textContent='⏳';
+  await new Promise(resolve=>{
+    const cbName='rcm_'+Date.now();
+    const s=document.createElement('script');
+    const t=setTimeout(()=>{ delete window[cbName]; resolve(); },8000);
+    window[cbName]=res=>{
+      clearTimeout(t); delete window[cbName]; try{document.body.removeChild(s);}catch(e){}
+      if(res&&res.ok){ r.autoApproved=true; r.match='full'; rcRenderResults(); showToast('Đã duyệt: '+r.reg.fullName,'ok'); }
+      else { btn.disabled=false; btn.textContent='✓ Duyệt'; }
+      resolve();
+    };
+    s.src=url+'?action=approve&regId='+encodeURIComponent(r.reg.regId)+'&status=approved&callback='+cbName+'&t='+Date.now();
+    document.body.appendChild(s);
+  });
+}
+
+// ── GIAN LẬN ─────────────────────────────────────────────────
+function rcFlagFraud(i){
+  const sorted=[..._rcResults].sort((a,b)=>{
+    if(a.fraud&&!b.fraud) return -1; if(!a.fraud&&b.fraud) return 1;
+    const o={partial:0,full:1,none:2}; return (o[a.match]||2)-(o[b.match]||2);
+  });
+  const r=sorted[i];
+  showToast('Đã đánh dấu giao dịch bất thường để kiểm tra','err');
+  r.flaggedFraud=true;
+}
+
+// ── SOẠN TIN NHẮN ZALO ────────────────────────────────────────
+function rcZalo(i){
+  const sorted=[..._rcResults].sort((a,b)=>{
+    if(a.fraud&&!b.fraud) return -1; if(!a.fraud&&b.fraud) return 1;
+    const o={partial:0,full:1,none:2}; return (o[a.match]||2)-(o[b.match]||2);
+  });
+  const r=sorted[i];
+  if(!r||!r.reg) return;
+
+  const cfg={}; try{ Object.assign(cfg,JSON.parse(localStorage.getItem('race_config_cache')||'{}')); }catch(e){}
+  const raceName=cfg.raceName||'Giải chạy HLRace';
+  const bankName=cfg.bankName||'Vietcombank';
+  const stk=cfg.bankAccount||'';
+
+  let msg='';
+  if(r.fraud){
+    msg='Xin chào anh/chị '+String(r.reg.fullName||'')+'!\n\n'
+      +'Chúng tôi nhận được giao dịch '+Number(r.tx.amount||0).toLocaleString('vi')+'đ vào ngày '+String(r.tx.date||'')
+      +' nhưng hệ thống cần xác nhận thêm thông tin.\n\n'
+      +'Anh/chị vui lòng gửi lại ảnh chụp màn hình xác nhận chuyển khoản để chúng tôi đối chiếu nhé.\n\n'
+      +'Mã đăng ký của anh/chị: '+String(r.reg.regId||'')+'\n\nCảm ơn anh/chị! 🙏';
+  } else {
+    msg='Xin chào anh/chị '+String(r.reg.fullName||'')+'!\n\n'
+      +'Hệ thống '+raceName+' chưa xác nhận được thanh toán của anh/chị.\n\n'
+      +'Mã đăng ký: '+String(r.reg.regId||'')+'\n'
+      +'Cự ly: '+String(r.reg.distance||'')+'\n\n'
+      +'Anh/chị vui lòng chuyển khoản đến:\n'
+      +'  Ngân hàng: '+bankName+'\n'
+      +'  STK: '+stk+'\n'
+      +'  Nội dung: '+String(r.reg.regId||'').toUpperCase()+'\n\n'
+      +'Sau khi chuyển khoản xin gửi ảnh xác nhận để được duyệt sớm nhé! 🙏';
+  }
+
+  document.getElementById('zaloTarget').textContent=String(r.reg.fullName||'')+' ('+String(r.reg.phone||'')+')';
+  document.getElementById('zaloMsg').value=msg;
+  document.getElementById('zaloModal').classList.add('show');
+}
+
+function copyReport(){
+  const txt=document.getElementById('rcReportText').textContent;
+  navigator.clipboard.writeText(txt).then(()=>showToast('Đã copy báo cáo!','ok')).catch(()=>{
+    const ta=document.createElement('textarea');
+    ta.value=txt; document.body.appendChild(ta); ta.select();
+    document.execCommand('copy'); document.body.removeChild(ta);
+    showToast('Đã copy!','ok');
+  });
+}
+function closeZalo(){ document.getElementById('zaloModal').classList.remove('show'); }
+function copyZalo(){
+  const msg=document.getElementById('zaloMsg').value;
+  navigator.clipboard.writeText(msg).then(()=>showToast('Đã copy tin nhắn!','ok')).catch(()=>{
+    document.getElementById('zaloMsg').select();
+    document.execCommand('copy');
+    showToast('Đã copy!','ok');
+  });
+}
+
 
 async function runReconcile(){
   const stmt = document.getElementById('rcStmt').value.trim();
@@ -2719,74 +3233,251 @@ async function runReconcile(){
   rcRenderResults();
   btn.disabled=false; btn.textContent='🔍 Phan tich & Doi soat tu dong';
   showToast('Doi soat xong! Tu duyet '+approved+' VDV','ok');
+
+  // Chạy 4 tính năng AI song song sau khi đối soát
+  rcTitle('Dang phan tich AI nang cao...');
+  await aiDetectAnomaly(transactions, url);
+  await aiDraftZalo(_rcResults, url);
+  // Báo cáo cuối ngày dùng allRegs đã load
+  await aiDailyReport(pendingRegs, _rcResults, url);
+  rcTitle('Hoan tat!');
 }
 
-function rcMatch(transactions,regs){
-  const feeMap={'1.5km':50000,'3km':80000,'5km':120000,'10km':150000,'21km':200000};
-  return transactions.map(tx=>{
-    const txAmt=parseInt(tx.amount)||0;
-    const txContent=String(tx.content||'').toLowerCase();
-    let best=null, bestScore=0;
-    regs.forEach(reg=>{
-      const fee=feeMap[String(reg.distance||'').toLowerCase()]||0;
-      const hasCode=reg.regId&&txContent.includes(String(reg.regId).toLowerCase());
-      const hasName=reg.fullName&&txContent.includes(String(reg.fullName||'').toLowerCase().split(' ').pop());
-      const amtOk=fee>0&&Math.abs(txAmt-fee)<=10000;
-      let score=0;
-      if(hasCode) score+=60;
-      if(amtOk)   score+=30;
-      if(hasName)  score+=10;
-      if(score>bestScore){ bestScore=score; best=reg; }
-    });
-    return { tx, reg:best, match: bestScore>=60?'full':bestScore>=25?'partial':'none', score:bestScore };
-  });
-}
 
-function rcRenderResults(){
-  const tbl=document.getElementById('rcResultsTbl');
-  document.getElementById('rcResults').style.display='block';
-  const sorted=[..._rcResults].sort((a,b)=>({partial:0,full:1,none:2}[a.match]||2)-({partial:0,full:1,none:2}[b.match]||2));
-  tbl.innerHTML=sorted.map((r,i)=>{
-    const txAmt=Number(r.tx.amount||0).toLocaleString('vi')+'d';
-    const txDate=r.tx.date||'';
-    const txNote=String(r.tx.content||'').slice(0,35);
-    const regName=r.reg?String(r.reg.fullName||''):'—';
-    const regId=r.reg?String(r.reg.regId||''):'';
-    const regDist=r.reg?String(r.reg.distance||''):'—';
-    const statusCell=r.autoApproved
-      ? '<span style="font-size:10px;padding:3px 8px;border-radius:20px;background:rgba(39,174,96,.15);color:#27AE60;font-weight:700">✅ Da tu duyet</span>'
-      : r.match==='partial'
-        ? '<span style="font-size:10px;color:var(--gold);font-weight:600">🔍 Can xem</span> <button onclick="rcManualApprove('+i+',this)" style="margin-left:6px;padding:3px 8px;border-radius:4px;background:rgba(39,174,96,.15);color:#27AE60;border:1px solid rgba(39,174,96,.25);font-size:10px;font-weight:700;cursor:pointer">Duyet</button>'
-        : '<span style="font-size:10px;color:var(--muted)">Khong khop</span>';
-    return '<tr style="border-bottom:1px solid rgba(255,255,255,.04)'+(r.match==='partial'?';background:rgba(245,166,35,.02)':'')+'">'
-      +'<td style="padding:10px 12px"><div style="font-size:11px;font-family:monospace">'+txDate+'</div><div style="font-size:10px;color:var(--muted);margin-top:2px">'+esc(txNote)+'</div></td>'
-      +'<td style="padding:10px 12px;font-family:monospace;color:#27AE60;font-weight:600;font-size:12px">'+txAmt+'</td>'
-      +'<td style="padding:10px 12px"><div style="font-size:12px;font-weight:600">'+esc(regName)+'</div><div style="font-size:10px;color:var(--muted);font-family:monospace">'+regId+' '+regDist+'</div></td>'
-      +'<td style="padding:10px 12px">'+statusCell+'</td>'
-      +'</tr>';
-  }).join('');
-}
+async 
+async function aiExplainMatches(results, url){
+  const partial = results.filter(r => r.match==='partial');
+  if(!partial.length) return;
 
-async function rcManualApprove(i,btn){
-  const sorted=[..._rcResults].sort((a,b)=>({partial:0,full:1,none:2}[a.match]||2)-({partial:0,full:1,none:2}[b.match]||2));
-  const r=sorted[i];
-  if(!r||!r.reg) return;
-  const url=localStorage.getItem('race_sheet_url')||'';
-  btn.disabled=true; btn.textContent='⏳';
-  await new Promise(resolve=>{
-    const cbName='rcm_'+Date.now();
-    const s=document.createElement('script');
-    const t=setTimeout(()=>{ delete window[cbName]; resolve(); },8000);
-    window[cbName]=res=>{
-      clearTimeout(t); delete window[cbName]; try{document.body.removeChild(s);}catch(e){}
-      if(res&&res.ok){ r.autoApproved=true; r.match='full'; rcRenderResults(); showToast('Da duyet: '+r.reg.fullName,'ok'); }
-      else { btn.disabled=false; btn.textContent='Duyet'; }
+  // Gửi batch lên Apps Script để Claude giải thích
+  const items = partial.map(r => ({
+    txContent: r.tx.content, txAmt: r.tx.amount,
+    regName: r.reg ? r.reg.fullName : '', regDist: r.reg ? r.reg.distance : '',
+    score: r.score
+  }));
+
+  await new Promise(resolve => {
+    const cbName = 'explain_' + Date.now();
+    const s = document.createElement('script');
+    setTimeout(() => { delete window[cbName]; try{document.body.removeChild(s);}catch(e){} resolve(); }, 20000);
+    window[cbName] = res => {
+      try{document.body.removeChild(s);}catch(e){}
+      delete window[cbName];
+      if(res && res.ok && res.explanations){
+        res.explanations.forEach((exp, i) => {
+          if(partial[i]){
+            partial[i].explanation = exp;
+            // Cập nhật UI - tìm card và thêm giải thích
+            const cards = document.querySelectorAll('#rcResultsTbl > div');
+            cards.forEach(card => {
+              if(card.textContent.includes(partial[i].reg ? partial[i].reg.fullName : '')){
+                const expDiv = document.createElement('div');
+                expDiv.style.cssText = 'font-size:10px;color:var(--muted);margin-top:6px;padding:6px 8px;background:rgba(39,174,96,.05);border-radius:4px;border-left:2px solid rgba(39,174,96,.3)';
+                expDiv.textContent = '💡 ' + exp;
+                card.appendChild(expDiv);
+              }
+            });
+          }
+        });
+      }
       resolve();
     };
-    s.src=url+'?action=approve&regId='+encodeURIComponent(r.reg.regId)+'&status=approved&callback='+cbName+'&t='+Date.now();
+    const prompt = 'Giai thich ngan gon (1 dong) tai sao moi giao dich nay khop hoac khong khop voi VDV. Items: ' + JSON.stringify(items);
+    s.src = url + '?action=analyzeStatement&text=' + encodeURIComponent(prompt) + '&mode=explain&callback=' + cbName + '&t=' + Date.now();
     document.body.appendChild(s);
   });
 }
+
+// 2. Phát hiện gian lận
+async function aiDetectAnomaly(transactions, url){
+  if(!document.getElementById('aiAnomaly').checked) return;
+  if(!transactions.length) return;
+
+  const prompt = 'Phan tich danh sach giao dich ngan hang sau va phat hien cac dau hieu bat thuong: chuyen khoan trung lap, so tien bat thuong, pattern gian lan. Tra loi ngan gon bang tieng Viet, liet ke tung diem canh bao:
+
+' +
+    JSON.stringify(transactions.map(t => ({date:t.date, amount:t.amount, content:t.content})));
+
+  await new Promise(resolve => {
+    const cbName = 'anomaly_' + Date.now();
+    const s = document.createElement('script');
+    setTimeout(() => { delete window[cbName]; try{document.body.removeChild(s);}catch(e){} resolve(); }, 20000);
+    window[cbName] = res => {
+      try{document.body.removeChild(s);}catch(e){}
+      delete window[cbName];
+      if(res && res.ok && res.transactions){
+        // Dùng response từ analyzeStatement - extract text
+        const box = document.getElementById('rcAnomalyBox');
+        const txt = document.getElementById('rcAnomalyContent');
+        box.style.display = 'block';
+        txt.innerHTML = res.rawText || 'Khong phat hien bat thuong';
+      }
+      resolve();
+    };
+    s.src = url + '?action=analyzeStatement&text=' + encodeURIComponent(prompt) + '&callback=' + cbName + '&t=' + Date.now();
+    document.body.appendChild(s);
+  });
+}
+
+// 3. Soạn tin Zalo
+async function aiDraftZalo(results, url){
+  if(!document.getElementById('aiZalo').checked) return;
+  const pending = results.filter(r => r.match==='partial' && r.reg);
+  if(!pending.length) return;
+
+  const names = pending.map(r => r.reg.fullName + ' (' + (r.reg.distance||'') + ')').join(', ');
+  const prompt = 'Soan tin nhan Zalo ngan gon bằng tieng Viet (max 3 dong) gui cho cac VDV sau de hoi lai ve chuyen khoan chua khop: ' + names +
+    '. Noi dung: xac nhan da CK chua, neu roi gui lai noi dung CK dung la [ma dang ky] ten giai. Vui ve nhe nhang.';
+
+  await new Promise(resolve => {
+    const cbName = 'zalo_' + Date.now();
+    const s = document.createElement('script');
+    setTimeout(() => { delete window[cbName]; try{document.body.removeChild(s);}catch(e){} resolve(); }, 20000);
+    window[cbName] = res => {
+      try{document.body.removeChild(s);}catch(e){}
+      delete window[cbName];
+      const box = document.getElementById('rcZaloBox');
+      const txt = document.getElementById('rcZaloContent');
+      box.style.display = 'block';
+      // Extract text từ transactions array (Claude trả về raw text trong content field)
+      if(res && res.ok){
+        const rawText = res.rawText || pending.map(r =>
+          'Chào ' + (r.reg.fullName||'bạn') + ' 👋
+' +
+          'BTC Giải chạy kiểm tra chưa nhận được CK của bạn (' + (r.reg.distance||'') + ').
+' +
+          'Bạn vui lòng CK với nội dung: ' + (r.reg.regId||'[ma dang ky]') + '
+' +
+          'Cảm ơn bạn! 🏃'
+        ).join('
+
+---
+
+');
+        txt.textContent = rawText;
+      }
+      resolve();
+    };
+    s.src = url + '?action=analyzeStatement&text=' + encodeURIComponent(prompt) + '&callback=' + cbName + '&t=' + Date.now();
+    document.body.appendChild(s);
+  });
+}
+
+// 4. Báo cáo cuối ngày
+async function aiDailyReport(allRegs, results, url){
+  if(!document.getElementById('aiReport').checked) return;
+
+  const approved  = allRegs.filter(r => r.status==='approved').length;
+  const pending   = allRegs.filter(r => r.status==='pending').length;
+  const total     = allRegs.length;
+  const byDist    = {};
+  const byCity    = {};
+  const byGender  = {Nam:0, Nu:0};
+  const byPkg     = {basic:0, standard:0, premium:0};
+  const byClub    = {};
+
+  allRegs.forEach(r => {
+    const dist = r.distance||'Unknown';
+    byDist[dist] = (byDist[dist]||0) + 1;
+    const city = r.city||'Unknown';
+    byCity[city] = (byCity[city]||0) + 1;
+    if(r.gender==='Nam') byGender.Nam++;
+    else byGender.Nu++;
+    const pkg = (r.photoPkg||'basic').toLowerCase();
+    if(byPkg[pkg]!==undefined) byPkg[pkg]++;
+    const club = r.club||'Cá nhân';
+    byClub[club] = (byClub[club]||0) + 1;
+  });
+
+  const topCities = Object.entries(byCity).sort((a,b)=>b[1]-a[1]).slice(0,5);
+  const topClubs  = Object.entries(byClub).sort((a,b)=>b[1]-a[1]).slice(0,5);
+  const autoApproved = results.filter(r=>r.autoApproved).length;
+
+  // Tính doanh thu dự kiến
+  const feeMap = {'1.5km':50000,'3km':80000,'5km':120000,'10km':150000,'21km':200000};
+  let revenue = 0;
+  allRegs.filter(r=>r.status==='approved').forEach(r=>{
+    revenue += feeMap[(r.distance||'').toLowerCase()] || 0;
+  });
+
+  const box = document.getElementById('rcReportBox');
+  const content = document.getElementById('rcReportContent');
+  box.style.display = 'block';
+
+  const today = new Date().toLocaleDateString('vi-VN');
+
+  content.innerHTML = `
+  <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:16px">
+    <div style="padding:10px;background:rgba(39,174,96,.08);border-radius:6px;text-align:center;border:1px solid rgba(39,174,96,.2)">
+      <div style="font-size:22px;font-weight:800;color:#27AE60">${approved}</div>
+      <div style="font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:1px">Đã duyệt</div>
+    </div>
+    <div style="padding:10px;background:rgba(245,166,35,.08);border-radius:6px;text-align:center;border:1px solid rgba(245,166,35,.2)">
+      <div style="font-size:22px;font-weight:800;color:#F5A623">${pending}</div>
+      <div style="font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:1px">Chờ duyệt</div>
+    </div>
+    <div style="padding:10px;background:rgba(41,128,185,.08);border-radius:6px;text-align:center;border:1px solid rgba(41,128,185,.2)">
+      <div style="font-size:22px;font-weight:800;color:#2980B9">${revenue.toLocaleString('vi')}đ</div>
+      <div style="font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:1px">Doanh thu (đã duyệt)</div>
+    </div>
+  </div>
+
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+
+    <div>
+      <div style="font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#2980B9;margin-bottom:8px">📈 Sales</div>
+      <div style="font-size:11px;line-height:2">
+        <div>Tổng đăng ký: <strong>${total}</strong></div>
+        <div>Tỷ lệ duyệt: <strong>${total ? Math.round(approved/total*100) : 0}%</strong></div>
+        <div>Tự duyệt hôm nay: <strong>${autoApproved}</strong></div>
+        ${Object.entries(byDist).sort((a,b)=>b[1]-a[1]).map(([k,v])=>
+          '<div>'+k+': <strong>'+v+'</strong> người</div>'
+        ).join('')}
+      </div>
+    </div>
+
+    <div>
+      <div style="font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#E67E22;margin-bottom:8px">📣 Marketing</div>
+      <div style="font-size:11px;line-height:2">
+        <div>Nam: <strong>${byGender.Nam}</strong> · Nữ: <strong>${byGender.Nu}</strong></div>
+        <div style="margin-top:4px;font-size:10px;color:var(--muted)">Top khu vực:</div>
+        ${topCities.map(([k,v])=>'<div>'+k+': <strong>'+v+'</strong></div>').join('')}
+      </div>
+    </div>
+
+    <div>
+      <div style="font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#27AE60;margin-bottom:8px">🤝 Đối tác bán hàng</div>
+      <div style="font-size:11px;line-height:2">
+        <div>Basic (miễn phí): <strong>${byPkg.basic}</strong></div>
+        <div>Standard (299k): <strong>${byPkg.standard}</strong></div>
+        <div>Premium (599k): <strong>${byPkg.premium}</strong></div>
+        <div>DT gói ảnh: <strong>${(byPkg.standard*299000+byPkg.premium*599000).toLocaleString('vi')}đ</strong></div>
+      </div>
+    </div>
+
+    <div>
+      <div style="font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#9B59B6;margin-bottom:8px">🏃 Top CLB</div>
+      <div style="font-size:11px;line-height:2">
+        ${topClubs.filter(([k])=>k!=='Cá nhân'&&k!=='').map(([k,v])=>
+          '<div>'+k+': <strong>'+v+'</strong></div>'
+        ).join('') || '<div style="color:var(--muted)">Chưa có dữ liệu club</div>'}
+      </div>
+    </div>
+
+  </div>
+
+  <div style="margin-top:12px;padding:8px 10px;background:var(--dark3);border-radius:6px;font-size:10px;color:var(--muted);text-align:right">
+    Báo cáo lúc ${today} · ${new Date().toLocaleTimeString('vi-VN')}
+  </div>`;
+}
+
+function copyZalo(){
+  const txt = document.getElementById('rcZaloContent').textContent;
+  navigator.clipboard.writeText(txt).then(()=> showToast('Đã copy tin nhắn Zalo','ok'));
+}
+
+// Hook vào runReconcile - gọi 4 tính năng sau khi đối soát xong
+const _origRunReconcile = window.runReconcile;
 
 </script>
 
@@ -2817,9 +3508,41 @@ async function rcManualApprove(i,btn){
     </div>
 
     <button onclick="runReconcile()" id="rcRunBtn"
-      style="width:100%;padding:13px;border-radius:8px;background:var(--red);color:#fff;font-family:'Be Vietnam Pro',sans-serif;font-size:14px;font-weight:700;border:none;cursor:pointer;margin-bottom:20px;transition:all .2s">
+      style="width:100%;padding:13px;border-radius:8px;background:var(--red);color:#fff;font-family:'Be Vietnam Pro',sans-serif;font-size:14px;font-weight:700;border:none;cursor:pointer;margin-bottom:12px;transition:all .2s">
       🔍 Phân tích & Đối soát tự động
     </button>
+
+    <!-- AI OPTIONS -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:20px">
+      <label style="display:flex;align-items:center;gap:8px;padding:10px 12px;background:rgba(39,174,96,.06);border:1px solid rgba(39,174,96,.2);border-radius:8px;cursor:pointer">
+        <input type="checkbox" id="aiExplain" checked style="accent-color:#27AE60;width:14px;height:14px">
+        <div>
+          <div style="font-size:11px;font-weight:700;color:#27AE60">🔍 Giải thích độ khớp</div>
+          <div style="font-size:10px;color:var(--muted)">Lý do AI khớp/không khớp</div>
+        </div>
+      </label>
+      <label style="display:flex;align-items:center;gap:8px;padding:10px 12px;background:rgba(215,43,43,.06);border:1px solid rgba(215,43,43,.2);border-radius:8px;cursor:pointer">
+        <input type="checkbox" id="aiAnomaly" checked style="accent-color:#D72B2B;width:14px;height:14px">
+        <div>
+          <div style="font-size:11px;font-weight:700;color:#D72B2B">🚨 Phát hiện gian lận</div>
+          <div style="font-size:10px;color:var(--muted)">Pattern bất thường</div>
+        </div>
+      </label>
+      <label style="display:flex;align-items:center;gap:8px;padding:10px 12px;background:rgba(41,128,185,.06);border:1px solid rgba(41,128,185,.2);border-radius:8px;cursor:pointer">
+        <input type="checkbox" id="aiReport" checked style="accent-color:#2980B9;width:14px;height:14px">
+        <div>
+          <div style="font-size:11px;font-weight:700;color:#2980B9">📊 Báo cáo cuối ngày</div>
+          <div style="font-size:10px;color:var(--muted)">Sales · Marketing · Đối tác</div>
+        </div>
+      </label>
+      <label style="display:flex;align-items:center;gap:8px;padding:10px 12px;background:rgba(155,89,182,.06);border:1px solid rgba(155,89,182,.2);border-radius:8px;cursor:pointer">
+        <input type="checkbox" id="aiZalo" checked style="accent-color:#9B59B6;width:14px;height:14px">
+        <div>
+          <div style="font-size:11px;font-weight:700;color:#9B59B6">💬 Soạn tin Zalo</div>
+          <div style="font-size:10px;color:var(--muted)">Mẫu hỏi VĐV chưa khớp</div>
+        </div>
+      </label>
+    </div>
 
     <!-- PROGRESS -->
     <div id="rcProgress" style="display:none;background:var(--dark2);border:1px solid var(--border);border-radius:10px;padding:16px;margin-bottom:16px">
@@ -2831,29 +3554,46 @@ async function rcManualApprove(i,btn){
     </div>
 
     <!-- STATS -->
-    <div id="rcStats" style="display:none;display:none;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:16px">
+    <div id="rcStats" style="display:none;grid-template-columns:repeat(5,1fr);gap:8px;margin-bottom:16px">
       <div class="sc" style="text-align:center"><div class="sn" id="rcSMatch" style="color:#27AE60">0</div><div class="sl">Tự duyệt</div></div>
       <div class="sc" style="text-align:center"><div class="sn" id="rcSPartial" style="color:var(--gold)">0</div><div class="sl">Cần xem</div></div>
+      <div class="sc" style="text-align:center"><div class="sn" id="rcSFraud" style="color:#D72B2B">0</div><div class="sl">Cờ đỏ</div></div>
       <div class="sc" style="text-align:center"><div class="sn" id="rcSMiss" style="color:var(--muted)">0</div><div class="sl">Không khớp</div></div>
       <div class="sc" style="text-align:center"><div class="sn" id="rcSTotal">0</div><div class="sl">Giao dịch</div></div>
     </div>
 
-    <!-- RESULTS -->
-    <div id="rcResults" style="display:none;background:var(--dark2);border:1px solid var(--border);border-radius:10px;overflow:hidden">
-      <div style="padding:12px 16px;border-bottom:1px solid var(--border);font-size:13px;font-weight:700">Kết quả đối soát</div>
-      <table style="width:100%;border-collapse:collapse">
-        <thead>
-          <tr style="background:var(--dark3)">
-            <th style="padding:9px 12px;font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--muted);text-align:left">Giao dịch</th>
-            <th style="padding:9px 12px;font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--muted);text-align:left">Số tiền</th>
-            <th style="padding:9px 12px;font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--muted);text-align:left">VĐV khớp</th>
-            <th style="padding:9px 12px;font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--muted);text-align:left">Trạng thái</th>
-          </tr>
-        </thead>
-        <tbody id="rcResultsTbl"></tbody>
-      </table>
+    <!-- RESULTS CARDS -->
+    <div id="rcResults" style="display:none">
+      <div style="padding:0 0 10px;font-size:13px;font-weight:700;display:flex;align-items:center;justify-content:space-between">
+        <span>Kết quả đối soát</span>
+        <span style="font-size:10px;color:var(--muted);font-weight:400">🚨 Cờ đỏ hiện trước · 🔍 Cần xem · ✅ Đã duyệt</span>
+      </div>
+      <div id="rcResultsCards"></div>
     </div>
 
+    <!-- BÁO CÁO -->
+    <div id="rcReport" style="display:none" class="rc-report">
+      <div class="rc-report-title">📊 Báo cáo tổng hợp — Sale / Marketing / Đối tác</div>
+      <pre id="rcReportText" class="rc-report-text" style="font-family:'JetBrains Mono',monospace;font-size:11px"></pre>
+      <button onclick="copyReport()" style="margin-top:8px;padding:7px 14px;border-radius:6px;background:rgba(245,166,35,.1);color:var(--gold);border:1px solid rgba(245,166,35,.2);font-size:11px;font-weight:700;cursor:pointer">📋 Copy báo cáo</button>
+    </div>
+
+  </div>
+</div>
+
+
+<div class="zalo-modal" id="zaloModal" onclick="if(event.target===this)closeZalo()">
+  <div class="zalo-box">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
+      <div style="font-size:14px;font-weight:700">💬 Tin nhắn Zalo</div>
+      <button onclick="closeZalo()" style="background:none;border:none;color:var(--muted);font-size:18px;cursor:pointer">✕</button>
+    </div>
+    <div style="font-size:11px;color:var(--muted);margin-bottom:8px">Gửi cho: <span id="zaloTarget" style="color:var(--light);font-weight:600"></span></div>
+    <textarea id="zaloMsg" style="width:100%;min-height:160px;background:var(--dark3);border:1px solid var(--border2);border-radius:7px;color:var(--light);font-family:'Be Vietnam Pro',sans-serif;font-size:12px;padding:10px;resize:vertical;outline:none;line-height:1.7"></textarea>
+    <div style="display:flex;gap:8px;margin-top:10px">
+      <button onclick="copyZalo()" style="flex:1;padding:9px;border-radius:6px;background:rgba(0,149,255,.15);color:#0095FF;border:1px solid rgba(0,149,255,.25);font-size:12px;font-weight:700;cursor:pointer">📋 Copy tin nhắn</button>
+      <button onclick="closeZalo()" style="padding:9px 16px;border-radius:6px;background:none;color:var(--muted);border:1px solid var(--border);font-size:12px;cursor:pointer">Đóng</button>
+    </div>
   </div>
 </div>
 
