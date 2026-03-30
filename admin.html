@@ -3293,10 +3293,10 @@ async function aiDetectAnomaly(transactions, url){
   if(!document.getElementById('aiAnomaly').checked) return;
   if(!transactions.length) return;
 
-  const prompt = 'Phan tich danh sach giao dich ngan hang sau va phat hien cac dau hieu bat thuong: chuyen khoan trung lap, so tien bat thuong, pattern gian lan. Tra loi ngan gon bang tieng Viet, liet ke tung diem canh bao:
+  const txData = JSON.stringify(transactions.map(t => ({date:t.date, amount:t.amount, content:t.content})));
+  const prompt = 'Phan tich giao dich, phat hien bat thuong (trung lap, so tien la, gian lan). Tra loi ngan tieng Viet. Data: ' + txData;
 
-' +
-    JSON.stringify(transactions.map(t => ({date:t.date, amount:t.amount, content:t.content})));
+
 
   await new Promise(resolve => {
     const cbName = 'anomaly_' + Date.now();
@@ -3326,8 +3326,7 @@ async function aiDraftZalo(results, url){
   if(!pending.length) return;
 
   const names = pending.map(r => r.reg.fullName + ' (' + (r.reg.distance||'') + ')').join(', ');
-  const prompt = 'Soan tin nhan Zalo ngan gon bằng tieng Viet (max 3 dong) gui cho cac VDV sau de hoi lai ve chuyen khoan chua khop: ' + names +
-    '. Noi dung: xac nhan da CK chua, neu roi gui lai noi dung CK dung la [ma dang ky] ten giai. Vui ve nhe nhang.';
+  const zaloPrompt = 'Soan tin Zalo ngan (max 3 dong) tieng Viet hoi VDV ve CK chua khop: ' + names + '. Noi dung: xac nhan CK chua, neu roi gui noi dung [ma dang ky]. Vui ve.';
 
   await new Promise(resolve => {
     const cbName = 'zalo_' + Date.now();
@@ -3358,7 +3357,7 @@ async function aiDraftZalo(results, url){
       }
       resolve();
     };
-    s.src = url + '?action=analyzeStatement&text=' + encodeURIComponent(prompt) + '&callback=' + cbName + '&t=' + Date.now();
+    s.src = url + '?action=analyzeStatement&text=' + encodeURIComponent(zaloPrompt) + '&callback=' + cbName + '&t=' + Date.now();
     document.body.appendChild(s);
   });
 }
