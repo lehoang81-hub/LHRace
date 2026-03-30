@@ -797,7 +797,7 @@ function loadRegs() {
         '<tr><td colspan="10" class="empty">❌ Lỗi kết nối Sheets. Kiểm tra URL và deploy lại Apps Script.</td></tr>';
       return;
     }
-    allRegs = data.data || [];
+    allRegs = (data.data || []).map((r, i) => ({...r, _idx: i, rowIndex: r.regId || i}));
     renderRegs();
     renderCityFilter();
   });
@@ -988,31 +988,31 @@ function rowHTML(r,i){
   }
 
   const acts=r.status==='pending'
-    ?`<div class="act"><button class="ab ab-ok" id="aok-${r.rowIndex}" onclick="approve('${r.rowIndex}')">✓ Duyệt</button><button class="ab ab-rej" id="arej-${r.rowIndex}" onclick="reject('${r.rowIndex}')">✕</button></div>`
+    ?`<div class="act"><button class="ab ab-ok" id="aok-${r.regId||r._idx}" onclick="approve('${r.regId||r._idx}')">✓ Duyệt</button><button class="ab ab-rej" id="arej-${r.regId||r._idx}" onclick="reject('${r.regId||r._idx}')">✕</button></div>`
     :`<button class="ab ab-rst" onclick="resetSt('${r.rowIndex}')">↺</button>`;
 
-  return `<tr id="row-${r.rowIndex}">
+  return `<tr id="row-${r.regId||r._idx}">
     <td>${tick}</td>
     <td style="color:var(--muted);font-size:10px">${i+1}</td>
     <td><strong>${esc(r.fullName||r.teamName||'—')}</strong><br><span style="font-size:10px;color:var(--muted)">${r.timestamp||''}</span></td>
     <td><span>${esc(r.phone||'')}</span><br><span style="font-size:10px;color:var(--muted)">${esc(r.email||'')}</span></td>
     <td>${dPill}</td><td>${gBadge}</td><td>${typePill}</td>
     <td>${imgEl}</td>
-    <td id="st-${r.rowIndex}">${stPill}</td>
+    <td id="st-${r.regId||r._idx}">${stPill}</td>
     <td>${acts}</td>
   </tr>`;
 }
 
 // ── UPDATE STATUS (tức thì) ────────────────────────────
-async function updateStatus(rowIndex, status){
+async async function updateStatus(rowIndex, status){
   const url=localStorage.getItem('race_sheet_url')||'';
   if(!url){showToast('Chưa cấu hình URL!','err');return;}
   // Disable buttons
   ['aok','arej'].forEach(p=>{const b=document.getElementById(p+'-'+rowIndex);if(b){b.disabled=true;b.innerHTML='<span class="spin"></span>';}});
   try{
     await fetch(url,{method:'POST',mode:'no-cors',headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({action:'updateStatus',rowIndex,status})});
-    allRegs=allRegs.map(r=>r.rowIndex===rowIndex?{...r,status}:r);
+      body:JSON.stringify({action:'approve',regId:rowIndex,status})});
+    allRegs=allRegs.map(r=>(r.regId||r._idx)===rowIndex?{...r,status}:r);
     // Update UI tức thì
     const row=document.getElementById('row-'+rowIndex);
     const stCell=document.getElementById('st-'+rowIndex);
