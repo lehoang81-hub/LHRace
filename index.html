@@ -624,19 +624,28 @@ async function doSubmit(){
       ckMode:ptype==='join-team'?gr('ck'):'self',paymentImg:payImg||''});
   }
 
-  // Upload ảnh lên Google Drive qua Apps Script, lấy link
-  let imgLink='';
-  const url=localStorage.getItem('race_sheet_url')||'';
-  if(url&&payImg&&payImg.startsWith('data:')){
-    try{
-      const uploadRes=await fetch(url,{method:'POST',mode:'cors',headers:{'Content-Type':'application/json'},
-        body:JSON.stringify({action:'uploadImage',imageBase64:payImg,fileName:regId+'.jpg'})});
-      const uploadData=await uploadRes.json();
-      if(uploadData.url) imgLink=uploadData.url;
-    }catch(e){
-      // Nếu upload Drive thất bại, dùng placeholder
-      imgLink='[IMG_'+regId+']';
-    }
+  // Upload ảnh lên Google Drive — gửi registration trước, upload ảnh sau
+  let imgLink = '';
+  const url = localStorage.getItem('race_sheet_url') || '';
+
+  // Upload ảnh bất đồng bộ sau khi submit (không block luồng đăng ký)
+  if(url && payImg && payImg.startsWith('data:')){
+    // Gửi ảnh sau 1 giây để không làm chậm registration
+    setTimeout(function(){
+      fetch(url, {
+        method: 'POST',
+        mode: 'no-cors',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({
+          action: 'uploadPhoto',
+          regId: regId,
+          imageBase64: payImg,
+          fileName: regId + '_ck.jpg',
+          uploadedBy: 'vdv_self'
+        })
+      }).catch(function(){});
+    }, 1000);
+    imgLink = '[UPLOADING]'; // sẽ được cập nhật bởi Apps Script
   }
 
   // Gửi đăng ký lên Sheets
