@@ -797,7 +797,22 @@ function loadRegs() {
         '<tr><td colspan="10" class="empty">❌ Lỗi kết nối Sheets. Kiểm tra URL và deploy lại Apps Script.</td></tr>';
       return;
     }
-    allRegs = (data.data || []).map((r, i) => ({...r, _idx: i, rowIndex: r.regId || i}));
+    allRegs = (data.data || []).map((r, i) => ({
+      ...r,
+      _idx: i,
+      rowIndex: r.regId || i,
+      // Ép string để tránh .includes() lỗi
+      fullName: String(r.fullName||''),
+      phone:    String(r.phone||''),
+      email:    String(r.email||''),
+      idCard:   String(r.idCard||''),
+      teamCode: String(r.teamCode||''),
+      city:     String(r.city||''),
+      gender:   String(r.gender||''),
+      distance: String(r.distance||''),
+      status:   String(r.status||'pending'),
+      eventType:String(r.eventType||''),
+    }));
     renderRegs();
     renderCityFilter();
   });
@@ -926,7 +941,7 @@ function filtered(){
     // Giới tính
     if(fG!=='all' && r.gender!==fG) return false;
     // Khu vực
-    if(fCity!=='all' && (r.city||'')!==fCity) return false;
+    if(fCity!=='all' && String(r.city||'')!==fCity) return false;
     return true;
   });
 }
@@ -946,9 +961,9 @@ function renderRegs(){
   const q=(document.getElementById('srch').value||'').toLowerCase();
   let list=filtered();
   if(q) list=list.filter(r=>
-    (r.fullName||r.teamName||'').toLowerCase().includes(q)||
-    (r.phone||'').includes(q)||(r.email||'').toLowerCase().includes(q)||
-    (r.teamCode||'').toLowerCase().includes(q)||(r.idCard||'').includes(q)
+    String(r.fullName||r.teamName||'').toLowerCase().includes(q)||
+    String(r.phone||'').includes(q)||String(r.email||'').toLowerCase().includes(q)||
+    String(r.teamCode||'').toLowerCase().includes(q)||String(r.idCard||'').includes(q)
   );
   renderStats();
   if(!list.length){document.getElementById('regsTbl').innerHTML='<tr><td colspan="10" class="empty">Không có kết quả phù hợp</td></tr>';return;}
