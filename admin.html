@@ -176,6 +176,7 @@ tr.fl-rej td{animation:flashRej .8s ease forwards}
       <button class="tb-btn" onclick="swTab('report',this)">📄 Xuất PDF</button>
       <button class="tb-btn" onclick="swTab('profiles',this)">🔍 Hồ sơ người dùng</button>
       <button class="tb-btn" onclick="swTab('setup',this)">⚙️ Cài đặt</button>
+      <button class="tb-btn" onclick="swTab('reconcile',this)">🏦 Đối soát CK</button>
     </div>
     <div class="tb-right">
       <span style="font-size:11px;color:var(--muted)">Admin</span>
@@ -1449,6 +1450,73 @@ function exportHonorPDF(){
       </div>
     </div>
     
+
+<!-- ── ĐỐI SOÁT CHUYỂN KHOẢN ─────────────────────────────── -->
+<div class="view" id="reconcile-view">
+  <div class="wrap" style="max-width:800px">
+
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:20px">
+      <span style="font-size:20px">🏦</span>
+      <div>
+        <div style="font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:1px">Đối soát chuyển khoản</div>
+        <div style="font-size:11px;color:var(--muted)">Dán sao kê ngân hàng → AI tự khớp và duyệt VĐV</div>
+      </div>
+      <div style="margin-left:auto;padding:4px 10px;border-radius:20px;font-size:10px;font-weight:700;background:rgba(245,166,35,.12);color:var(--gold);border:1px solid rgba(245,166,35,.25)">AI Powered</div>
+    </div>
+
+    <div style="background:rgba(245,166,35,.06);border:1px solid rgba(245,166,35,.2);border-radius:8px;padding:12px 14px;font-size:11px;color:#F5A623;margin-bottom:18px;line-height:1.7">
+      💡 <strong>Cách dùng:</strong> Vào internet banking → copy lịch sử giao dịch → dán vào ô bên dưới → nhấn Phân tích.<br>
+      Hệ thống tự khớp số tiền + nội dung CK với VĐV chờ duyệt → tự động duyệt những trường hợp khớp chắc chắn.
+    </div>
+
+    <!-- PASTE INPUT -->
+    <div class="sec" style="margin-bottom:16px">
+      <div class="sec-title">📋 Nội dung sao kê</div>
+      <textarea id="rcStmt" style="width:100%;min-height:140px;background:var(--dark2);border:1.5px solid var(--border);border-radius:7px;color:var(--light);font-family:'JetBrains Mono',monospace;font-size:11px;padding:10px 12px;resize:vertical;outline:none;line-height:1.7;margin-top:8px"
+        placeholder="Dán nội dung sao kê vào đây...&#10;&#10;Ví dụ:&#10;30/03/2026  +150,000  GIAICHAY REG-1234ABC&#10;30/03/2026  +120,000  CHAY 5KM NGUYEN VAN A&#10;..."></textarea>
+    </div>
+
+    <button onclick="runReconcile()" id="rcRunBtn"
+      style="width:100%;padding:13px;border-radius:8px;background:var(--red);color:#fff;font-family:'Be Vietnam Pro',sans-serif;font-size:14px;font-weight:700;border:none;cursor:pointer;margin-bottom:20px;transition:all .2s">
+      🔍 Phân tích & Đối soát tự động
+    </button>
+
+    <!-- PROGRESS -->
+    <div id="rcProgress" style="display:none;background:var(--dark2);border:1px solid var(--border);border-radius:10px;padding:16px;margin-bottom:16px">
+      <div id="rcProgressTitle" style="font-size:12px;font-weight:700;color:var(--gold);margin-bottom:8px">⏳ Đang xử lý...</div>
+      <div style="height:5px;background:var(--dark3);border-radius:3px;overflow:hidden;margin-bottom:8px">
+        <div id="rcProgressBar" style="height:100%;background:var(--gold);border-radius:3px;transition:width .3s;width:0%"></div>
+      </div>
+      <div id="rcProgressLog" style="font-family:monospace;font-size:10px;color:var(--muted);line-height:1.8;max-height:100px;overflow-y:auto"></div>
+    </div>
+
+    <!-- STATS -->
+    <div id="rcStats" style="display:none;display:none;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:16px">
+      <div class="sc" style="text-align:center"><div class="sn" id="rcSMatch" style="color:#27AE60">0</div><div class="sl">Tự duyệt</div></div>
+      <div class="sc" style="text-align:center"><div class="sn" id="rcSPartial" style="color:var(--gold)">0</div><div class="sl">Cần xem</div></div>
+      <div class="sc" style="text-align:center"><div class="sn" id="rcSMiss" style="color:var(--muted)">0</div><div class="sl">Không khớp</div></div>
+      <div class="sc" style="text-align:center"><div class="sn" id="rcSTotal">0</div><div class="sl">Giao dịch</div></div>
+    </div>
+
+    <!-- RESULTS -->
+    <div id="rcResults" style="display:none;background:var(--dark2);border:1px solid var(--border);border-radius:10px;overflow:hidden">
+      <div style="padding:12px 16px;border-bottom:1px solid var(--border);font-size:13px;font-weight:700">Kết quả đối soát</div>
+      <table style="width:100%;border-collapse:collapse">
+        <thead>
+          <tr style="background:var(--dark3)">
+            <th style="padding:9px 12px;font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--muted);text-align:left">Giao dịch</th>
+            <th style="padding:9px 12px;font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--muted);text-align:left">Số tiền</th>
+            <th style="padding:9px 12px;font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--muted);text-align:left">VĐV khớp</th>
+            <th style="padding:9px 12px;font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--muted);text-align:left">Trạng thái</th>
+          </tr>
+        </thead>
+        <tbody id="rcResultsTbl"></tbody>
+      </table>
+    </div>
+
+  </div>
+</div>
+
 </body></html>`);
   win.document.close();
   setTimeout(()=>win.print(), 600);
@@ -2009,6 +2077,73 @@ function printReport() {
 </style>
 
 </head><body>${content}
+
+<!-- ── ĐỐI SOÁT CHUYỂN KHOẢN ─────────────────────────────── -->
+<div class="view" id="reconcile-view">
+  <div class="wrap" style="max-width:800px">
+
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:20px">
+      <span style="font-size:20px">🏦</span>
+      <div>
+        <div style="font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:1px">Đối soát chuyển khoản</div>
+        <div style="font-size:11px;color:var(--muted)">Dán sao kê ngân hàng → AI tự khớp và duyệt VĐV</div>
+      </div>
+      <div style="margin-left:auto;padding:4px 10px;border-radius:20px;font-size:10px;font-weight:700;background:rgba(245,166,35,.12);color:var(--gold);border:1px solid rgba(245,166,35,.25)">AI Powered</div>
+    </div>
+
+    <div style="background:rgba(245,166,35,.06);border:1px solid rgba(245,166,35,.2);border-radius:8px;padding:12px 14px;font-size:11px;color:#F5A623;margin-bottom:18px;line-height:1.7">
+      💡 <strong>Cách dùng:</strong> Vào internet banking → copy lịch sử giao dịch → dán vào ô bên dưới → nhấn Phân tích.<br>
+      Hệ thống tự khớp số tiền + nội dung CK với VĐV chờ duyệt → tự động duyệt những trường hợp khớp chắc chắn.
+    </div>
+
+    <!-- PASTE INPUT -->
+    <div class="sec" style="margin-bottom:16px">
+      <div class="sec-title">📋 Nội dung sao kê</div>
+      <textarea id="rcStmt" style="width:100%;min-height:140px;background:var(--dark2);border:1.5px solid var(--border);border-radius:7px;color:var(--light);font-family:'JetBrains Mono',monospace;font-size:11px;padding:10px 12px;resize:vertical;outline:none;line-height:1.7;margin-top:8px"
+        placeholder="Dán nội dung sao kê vào đây...&#10;&#10;Ví dụ:&#10;30/03/2026  +150,000  GIAICHAY REG-1234ABC&#10;30/03/2026  +120,000  CHAY 5KM NGUYEN VAN A&#10;..."></textarea>
+    </div>
+
+    <button onclick="runReconcile()" id="rcRunBtn"
+      style="width:100%;padding:13px;border-radius:8px;background:var(--red);color:#fff;font-family:'Be Vietnam Pro',sans-serif;font-size:14px;font-weight:700;border:none;cursor:pointer;margin-bottom:20px;transition:all .2s">
+      🔍 Phân tích & Đối soát tự động
+    </button>
+
+    <!-- PROGRESS -->
+    <div id="rcProgress" style="display:none;background:var(--dark2);border:1px solid var(--border);border-radius:10px;padding:16px;margin-bottom:16px">
+      <div id="rcProgressTitle" style="font-size:12px;font-weight:700;color:var(--gold);margin-bottom:8px">⏳ Đang xử lý...</div>
+      <div style="height:5px;background:var(--dark3);border-radius:3px;overflow:hidden;margin-bottom:8px">
+        <div id="rcProgressBar" style="height:100%;background:var(--gold);border-radius:3px;transition:width .3s;width:0%"></div>
+      </div>
+      <div id="rcProgressLog" style="font-family:monospace;font-size:10px;color:var(--muted);line-height:1.8;max-height:100px;overflow-y:auto"></div>
+    </div>
+
+    <!-- STATS -->
+    <div id="rcStats" style="display:none;display:none;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:16px">
+      <div class="sc" style="text-align:center"><div class="sn" id="rcSMatch" style="color:#27AE60">0</div><div class="sl">Tự duyệt</div></div>
+      <div class="sc" style="text-align:center"><div class="sn" id="rcSPartial" style="color:var(--gold)">0</div><div class="sl">Cần xem</div></div>
+      <div class="sc" style="text-align:center"><div class="sn" id="rcSMiss" style="color:var(--muted)">0</div><div class="sl">Không khớp</div></div>
+      <div class="sc" style="text-align:center"><div class="sn" id="rcSTotal">0</div><div class="sl">Giao dịch</div></div>
+    </div>
+
+    <!-- RESULTS -->
+    <div id="rcResults" style="display:none;background:var(--dark2);border:1px solid var(--border);border-radius:10px;overflow:hidden">
+      <div style="padding:12px 16px;border-bottom:1px solid var(--border);font-size:13px;font-weight:700">Kết quả đối soát</div>
+      <table style="width:100%;border-collapse:collapse">
+        <thead>
+          <tr style="background:var(--dark3)">
+            <th style="padding:9px 12px;font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--muted);text-align:left">Giao dịch</th>
+            <th style="padding:9px 12px;font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--muted);text-align:left">Số tiền</th>
+            <th style="padding:9px 12px;font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--muted);text-align:left">VĐV khớp</th>
+            <th style="padding:9px 12px;font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--muted);text-align:left">Trạng thái</th>
+          </tr>
+        </thead>
+        <tbody id="rcResultsTbl"></tbody>
+      </table>
+    </div>
+
+  </div>
+</div>
+
 </body></html>`);
   win.document.close();
   win.onload = () => { setTimeout(() => win.print(), 500); };
@@ -2488,7 +2623,240 @@ function hideProfileMsg() {
 
 
 
+
+// ── ĐỐI SOÁT CHUYỂN KHOẢN ────────────────────────────────────
+let _rcResults = [];
+
+function rcLog(msg){
+  const el = document.getElementById('rcProgressLog');
+  if(el){ el.innerHTML += new Date().toLocaleTimeString('vi') + ' — ' + msg + '\n'; el.scrollTop = el.scrollHeight; }
+}
+function rcBar(pct){ const el=document.getElementById('rcProgressBar'); if(el) el.style.width=pct+'%'; }
+function rcTitle(t){ const el=document.getElementById('rcProgressTitle'); if(el) el.textContent=t; }
+
+async function runReconcile(){
+  const stmt = document.getElementById('rcStmt').value.trim();
+  const url  = localStorage.getItem('race_sheet_url')||'';
+  if(!stmt){ showToast('Vui long dan noi dung sao ke','err'); return; }
+  if(!url){  showToast('Chua cau hinh Apps Script URL','err'); return; }
+
+  const btn = document.getElementById('rcRunBtn');
+  btn.disabled=true; btn.textContent='⏳ Dang xu ly...';
+  document.getElementById('rcProgress').style.display='block';
+  document.getElementById('rcStats').style.display='none';
+  document.getElementById('rcResults').style.display='none';
+  document.getElementById('rcProgressLog').textContent='';
+  rcBar(0); rcTitle('Buoc 1/3: Lay danh sach VDV cho duyet...');
+
+  let pendingRegs=[];
+  await new Promise(resolve=>{
+    fetchSheet(url+'?action=getRegistrations&t='+Date.now(), function(data){
+      if(data&&data.data){
+        pendingRegs=data.data.filter(r=>String(r.status||'')==='pending');
+        rcLog('Tai duoc '+pendingRegs.length+' VDV cho duyet');
+      } else { rcLog('Khong tai duoc danh sach VDV'); }
+      resolve();
+    });
+  });
+  rcBar(25);
+
+  rcTitle('Buoc 2/3: Claude dang doc sao ke...');
+  rcLog('Gui sao ke len Apps Script...');
+  let transactions=[];
+  await new Promise(resolve=>{
+    const cbName='rc_'+Date.now();
+    const s=document.createElement('script');
+    const timer=setTimeout(()=>{ delete window[cbName]; try{document.body.removeChild(s);}catch(e){} rcLog('Timeout'); resolve(); },40000);
+    window[cbName]=function(res){
+      clearTimeout(timer); delete window[cbName]; try{document.body.removeChild(s);}catch(e){}
+      if(res&&res.ok){ transactions=res.transactions||[]; rcLog('Claude trich xuat duoc '+transactions.length+' giao dich'); }
+      else { rcLog('Loi: '+(res?res.error:'Khong phan hoi')); }
+      resolve();
+    };
+    s.src=url+'?action=analyzeStatement&text='+encodeURIComponent(stmt.slice(0,5000))+'&callback='+cbName+'&t='+Date.now();
+    document.body.appendChild(s);
+  });
+  rcBar(60);
+
+  if(!transactions.length){
+    rcTitle('Khong tim thay giao dich nao');
+    btn.disabled=false; btn.textContent='🔍 Phan tich & Doi soat tu dong';
+    return;
+  }
+
+  rcTitle('Buoc 3/3: Doi soat va tu dong duyet...');
+  _rcResults=rcMatch(transactions,pendingRegs);
+  const toApprove=_rcResults.filter(r=>r.match==='full'&&r.reg);
+  rcLog('Khop chac: '+toApprove.length+' | Can xem: '+_rcResults.filter(r=>r.match==='partial').length);
+
+  let approved=0;
+  for(const item of toApprove){
+    await new Promise(resolve=>{
+      const cbName='rcok_'+Date.now()+'_'+Math.random().toString(36).substr(2,4);
+      const s=document.createElement('script');
+      const t=setTimeout(()=>{ delete window[cbName]; resolve(); },8000);
+      window[cbName]=function(res){
+        clearTimeout(t); delete window[cbName]; try{document.body.removeChild(s);}catch(e){}
+        if(res&&res.ok){ item.autoApproved=true; approved++; }
+        resolve();
+      };
+      s.src=url+'?action=approve&regId='+encodeURIComponent(item.reg.regId)+'&status=approved&callback='+cbName+'&t='+Date.now();
+      document.body.appendChild(s);
+    });
+    rcBar(60+Math.round(approved/toApprove.length*35));
+    await new Promise(r=>setTimeout(r,350));
+  }
+
+  rcBar(100);
+  rcTitle('Hoan tat — Tu duyet: '+approved+' | Can xem: '+_rcResults.filter(r=>r.match==='partial').length);
+  rcLog('--- XONG ---');
+
+  document.getElementById('rcSMatch').textContent  = approved;
+  document.getElementById('rcSPartial').textContent = _rcResults.filter(r=>r.match==='partial').length;
+  document.getElementById('rcSMiss').textContent   = _rcResults.filter(r=>r.match==='none').length;
+  document.getElementById('rcSTotal').textContent  = transactions.length;
+  document.getElementById('rcStats').style.display='grid';
+
+  rcRenderResults();
+  btn.disabled=false; btn.textContent='🔍 Phan tich & Doi soat tu dong';
+  showToast('Doi soat xong! Tu duyet '+approved+' VDV','ok');
+}
+
+function rcMatch(transactions,regs){
+  const feeMap={'1.5km':50000,'3km':80000,'5km':120000,'10km':150000,'21km':200000};
+  return transactions.map(tx=>{
+    const txAmt=parseInt(tx.amount)||0;
+    const txContent=String(tx.content||'').toLowerCase();
+    let best=null, bestScore=0;
+    regs.forEach(reg=>{
+      const fee=feeMap[String(reg.distance||'').toLowerCase()]||0;
+      const hasCode=reg.regId&&txContent.includes(String(reg.regId).toLowerCase());
+      const hasName=reg.fullName&&txContent.includes(String(reg.fullName||'').toLowerCase().split(' ').pop());
+      const amtOk=fee>0&&Math.abs(txAmt-fee)<=10000;
+      let score=0;
+      if(hasCode) score+=60;
+      if(amtOk)   score+=30;
+      if(hasName)  score+=10;
+      if(score>bestScore){ bestScore=score; best=reg; }
+    });
+    return { tx, reg:best, match: bestScore>=60?'full':bestScore>=25?'partial':'none', score:bestScore };
+  });
+}
+
+function rcRenderResults(){
+  const tbl=document.getElementById('rcResultsTbl');
+  document.getElementById('rcResults').style.display='block';
+  const sorted=[..._rcResults].sort((a,b)=>({partial:0,full:1,none:2}[a.match]||2)-({partial:0,full:1,none:2}[b.match]||2));
+  tbl.innerHTML=sorted.map((r,i)=>{
+    const txAmt=Number(r.tx.amount||0).toLocaleString('vi')+'d';
+    const txDate=r.tx.date||'';
+    const txNote=String(r.tx.content||'').slice(0,35);
+    const regName=r.reg?String(r.reg.fullName||''):'—';
+    const regId=r.reg?String(r.reg.regId||''):'';
+    const regDist=r.reg?String(r.reg.distance||''):'—';
+    const statusCell=r.autoApproved
+      ? '<span style="font-size:10px;padding:3px 8px;border-radius:20px;background:rgba(39,174,96,.15);color:#27AE60;font-weight:700">✅ Da tu duyet</span>'
+      : r.match==='partial'
+        ? '<span style="font-size:10px;color:var(--gold);font-weight:600">🔍 Can xem</span> <button onclick="rcManualApprove('+i+',this)" style="margin-left:6px;padding:3px 8px;border-radius:4px;background:rgba(39,174,96,.15);color:#27AE60;border:1px solid rgba(39,174,96,.25);font-size:10px;font-weight:700;cursor:pointer">Duyet</button>'
+        : '<span style="font-size:10px;color:var(--muted)">Khong khop</span>';
+    return '<tr style="border-bottom:1px solid rgba(255,255,255,.04)'+(r.match==='partial'?';background:rgba(245,166,35,.02)':'')+'">'
+      +'<td style="padding:10px 12px"><div style="font-size:11px;font-family:monospace">'+txDate+'</div><div style="font-size:10px;color:var(--muted);margin-top:2px">'+esc(txNote)+'</div></td>'
+      +'<td style="padding:10px 12px;font-family:monospace;color:#27AE60;font-weight:600;font-size:12px">'+txAmt+'</td>'
+      +'<td style="padding:10px 12px"><div style="font-size:12px;font-weight:600">'+esc(regName)+'</div><div style="font-size:10px;color:var(--muted);font-family:monospace">'+regId+' '+regDist+'</div></td>'
+      +'<td style="padding:10px 12px">'+statusCell+'</td>'
+      +'</tr>';
+  }).join('');
+}
+
+async function rcManualApprove(i,btn){
+  const sorted=[..._rcResults].sort((a,b)=>({partial:0,full:1,none:2}[a.match]||2)-({partial:0,full:1,none:2}[b.match]||2));
+  const r=sorted[i];
+  if(!r||!r.reg) return;
+  const url=localStorage.getItem('race_sheet_url')||'';
+  btn.disabled=true; btn.textContent='⏳';
+  await new Promise(resolve=>{
+    const cbName='rcm_'+Date.now();
+    const s=document.createElement('script');
+    const t=setTimeout(()=>{ delete window[cbName]; resolve(); },8000);
+    window[cbName]=res=>{
+      clearTimeout(t); delete window[cbName]; try{document.body.removeChild(s);}catch(e){}
+      if(res&&res.ok){ r.autoApproved=true; r.match='full'; rcRenderResults(); showToast('Da duyet: '+r.reg.fullName,'ok'); }
+      else { btn.disabled=false; btn.textContent='Duyet'; }
+      resolve();
+    };
+    s.src=url+'?action=approve&regId='+encodeURIComponent(r.reg.regId)+'&status=approved&callback='+cbName+'&t='+Date.now();
+    document.body.appendChild(s);
+  });
+}
+
 </script>
+
+
+<!-- ── ĐỐI SOÁT CHUYỂN KHOẢN ─────────────────────────────── -->
+<div class="view" id="reconcile-view">
+  <div class="wrap" style="max-width:800px">
+
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:20px">
+      <span style="font-size:20px">🏦</span>
+      <div>
+        <div style="font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:1px">Đối soát chuyển khoản</div>
+        <div style="font-size:11px;color:var(--muted)">Dán sao kê ngân hàng → AI tự khớp và duyệt VĐV</div>
+      </div>
+      <div style="margin-left:auto;padding:4px 10px;border-radius:20px;font-size:10px;font-weight:700;background:rgba(245,166,35,.12);color:var(--gold);border:1px solid rgba(245,166,35,.25)">AI Powered</div>
+    </div>
+
+    <div style="background:rgba(245,166,35,.06);border:1px solid rgba(245,166,35,.2);border-radius:8px;padding:12px 14px;font-size:11px;color:#F5A623;margin-bottom:18px;line-height:1.7">
+      💡 <strong>Cách dùng:</strong> Vào internet banking → copy lịch sử giao dịch → dán vào ô bên dưới → nhấn Phân tích.<br>
+      Hệ thống tự khớp số tiền + nội dung CK với VĐV chờ duyệt → tự động duyệt những trường hợp khớp chắc chắn.
+    </div>
+
+    <!-- PASTE INPUT -->
+    <div class="sec" style="margin-bottom:16px">
+      <div class="sec-title">📋 Nội dung sao kê</div>
+      <textarea id="rcStmt" style="width:100%;min-height:140px;background:var(--dark2);border:1.5px solid var(--border);border-radius:7px;color:var(--light);font-family:'JetBrains Mono',monospace;font-size:11px;padding:10px 12px;resize:vertical;outline:none;line-height:1.7;margin-top:8px"
+        placeholder="Dán nội dung sao kê vào đây...&#10;&#10;Ví dụ:&#10;30/03/2026  +150,000  GIAICHAY REG-1234ABC&#10;30/03/2026  +120,000  CHAY 5KM NGUYEN VAN A&#10;..."></textarea>
+    </div>
+
+    <button onclick="runReconcile()" id="rcRunBtn"
+      style="width:100%;padding:13px;border-radius:8px;background:var(--red);color:#fff;font-family:'Be Vietnam Pro',sans-serif;font-size:14px;font-weight:700;border:none;cursor:pointer;margin-bottom:20px;transition:all .2s">
+      🔍 Phân tích & Đối soát tự động
+    </button>
+
+    <!-- PROGRESS -->
+    <div id="rcProgress" style="display:none;background:var(--dark2);border:1px solid var(--border);border-radius:10px;padding:16px;margin-bottom:16px">
+      <div id="rcProgressTitle" style="font-size:12px;font-weight:700;color:var(--gold);margin-bottom:8px">⏳ Đang xử lý...</div>
+      <div style="height:5px;background:var(--dark3);border-radius:3px;overflow:hidden;margin-bottom:8px">
+        <div id="rcProgressBar" style="height:100%;background:var(--gold);border-radius:3px;transition:width .3s;width:0%"></div>
+      </div>
+      <div id="rcProgressLog" style="font-family:monospace;font-size:10px;color:var(--muted);line-height:1.8;max-height:100px;overflow-y:auto"></div>
+    </div>
+
+    <!-- STATS -->
+    <div id="rcStats" style="display:none;display:none;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:16px">
+      <div class="sc" style="text-align:center"><div class="sn" id="rcSMatch" style="color:#27AE60">0</div><div class="sl">Tự duyệt</div></div>
+      <div class="sc" style="text-align:center"><div class="sn" id="rcSPartial" style="color:var(--gold)">0</div><div class="sl">Cần xem</div></div>
+      <div class="sc" style="text-align:center"><div class="sn" id="rcSMiss" style="color:var(--muted)">0</div><div class="sl">Không khớp</div></div>
+      <div class="sc" style="text-align:center"><div class="sn" id="rcSTotal">0</div><div class="sl">Giao dịch</div></div>
+    </div>
+
+    <!-- RESULTS -->
+    <div id="rcResults" style="display:none;background:var(--dark2);border:1px solid var(--border);border-radius:10px;overflow:hidden">
+      <div style="padding:12px 16px;border-bottom:1px solid var(--border);font-size:13px;font-weight:700">Kết quả đối soát</div>
+      <table style="width:100%;border-collapse:collapse">
+        <thead>
+          <tr style="background:var(--dark3)">
+            <th style="padding:9px 12px;font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--muted);text-align:left">Giao dịch</th>
+            <th style="padding:9px 12px;font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--muted);text-align:left">Số tiền</th>
+            <th style="padding:9px 12px;font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--muted);text-align:left">VĐV khớp</th>
+            <th style="padding:9px 12px;font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--muted);text-align:left">Trạng thái</th>
+          </tr>
+        </thead>
+        <tbody id="rcResultsTbl"></tbody>
+      </table>
+    </div>
+
+  </div>
+</div>
 
 </body>
 </html>
