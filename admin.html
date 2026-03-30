@@ -3294,7 +3294,7 @@ async function aiDetectAnomaly(transactions, url){
   if(!transactions.length) return;
 
   const txData = JSON.stringify(transactions.map(t => ({date:t.date, amount:t.amount, content:t.content})));
-  const prompt = 'Phan tich giao dich, phat hien bat thuong (trung lap, so tien la, gian lan). Tra loi ngan tieng Viet. Data: ' + txData;
+  const prompt = 'Phan tich giao dich, phat hien bat thuong. Data: ' + txData;
 
 
 
