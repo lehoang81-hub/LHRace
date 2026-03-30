@@ -2018,16 +2018,30 @@ function printReport() {
 let _distances = [];
 let _sponsors  = [];
 
-async function loadRaceConfigAdmin(){
-  const url = localStorage.getItem('race_sheet_url')||'';
-  let cfg = {};
-  if(url){
-    try{
-      const res = await fetch(url+'?action=getConfig&t='+Date.now());
-      const j = await res.json();
-      cfg = j.config || {};
-    }catch(e){ showToast('Dùng config mặc định (không kết nối được Sheets)','info'); }
+function loadRaceConfigAdmin(){
+  // Ưu tiên cache localStorage (lưu khi save)
+  let cached = {};
+  try{ cached = JSON.parse(localStorage.getItem('race_config_cache')||'{}'); }catch(e){}
+
+  if(cached && cached.raceName){
+    // Có cache → dùng ngay, không cần gọi Sheets
+    applyRaceConfig(cached);
+  } else {
+    // Chưa có cache → thử lấy từ Sheets
+    const url = localStorage.getItem('race_sheet_url')||'';
+    if(!url){ applyRaceConfig({}); return; }
+    fetchSheet(url+'?action=getConfig&t='+Date.now(), function(j){
+      const cfg = (j && j.config) ? j.config : {};
+      if(cfg.raceName){
+        try{ localStorage.setItem('race_config_cache', JSON.stringify(cfg)); }catch(e){}
+      }
+      applyRaceConfig(cfg);
+    });
   }
+}
+
+function applyRaceConfig(cfg){
+  if(!cfg) cfg = {};
 
   // Điền form
   const fields = ['raceName','raceNameHighlight','slogan','story','badgeText',
@@ -2186,6 +2200,8 @@ function toggleCharity(on){
 }
 
 // ── SAVE ───────────────────────────────────────────────────
+}
+
 async function saveRaceConfig(){
   const url = localStorage.getItem('race_sheet_url')||'';
   if(!url){ showToast('⚠️ Chưa cấu hình Sheets URL!','err'); return; }
