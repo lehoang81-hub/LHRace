@@ -82,7 +82,7 @@ body{background:var(--dark);color:var(--light);font-family:"Be Vietnam Pro",sans
 <div class="wrap">
 
   <!-- RACE SELECTOR -->
-  <div class="race-selector">
+  <div class="race-selector" id="race-selector-wrap">
     <div class="rs-label">📅 Chọn giải để xem</div>
     <select class="rs-select" id="raceSelect" onchange="onRaceChange()">
       <option value="all">— Tất cả các giải —</option>
@@ -174,28 +174,26 @@ function loadData(){
 
 // ── RACE DROPDOWN ─────────────────────────────────────────────
 function buildRaceDropdown() {
-  // Gom theo raceName hoac distance nhom
-  const races = [...new Set(allData.map(r => r.raceName || r.raceId || '').filter(Boolean))];
-  const sel = document.getElementById('raceSelect');
-  // Giu option "tat ca"
+  // Gom theo raceName thực sự (không dùng eventType)
+  const races = [...new Set(allData.map(r => r.raceName || '').filter(Boolean))];
+  const wrap = document.getElementById('race-selector-wrap');
+  const sel  = document.getElementById('raceSelect');
+
+  // Nếu chỉ có 1 giải (hoặc không có raceName) -> ẩn dropdown
+  if(races.length <= 1) {
+    if(wrap) wrap.style.display = 'none';
+    return;
+  }
+
+  // Có nhiều giải -> hiện dropdown
+  if(wrap) wrap.style.display = 'block';
   sel.innerHTML = '<option value="all">— Tất cả các giải —</option>';
-  // Them tung race
   races.forEach(race => {
     const opt = document.createElement('option');
     opt.value = race;
     opt.textContent = race;
     sel.appendChild(opt);
   });
-  // Neu khong co raceName, tao dropdown theo eventType
-  if(!races.length) {
-    const events = [...new Set(allData.map(r => r.eventType || '').filter(Boolean))];
-    events.forEach(ev => {
-      const opt = document.createElement('option');
-      opt.value = 'event:'+ev;
-      opt.textContent = evLabel(ev);
-      sel.appendChild(opt);
-    });
-  }
   sel.value = curRace;
 }
 
