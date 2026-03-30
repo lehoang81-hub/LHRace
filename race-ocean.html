@@ -1,0 +1,940 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Race Ocean — Kho hàng Runner</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Syne:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --ocean:#020B18;--deep:#051428;--mid:#07213C;--surface:#0A3060;
+  --foam:#E8F4FF;--foam2:#C8DFFF;--muted:#4A7AA8;
+  --gold:#F5C842;--coral:#FF4D6D;--cyan:#00D4FF;--green:#00E5A0;
+  --border:rgba(0,212,255,.1);--glow:rgba(0,212,255,.15);
+  --shadow:0 4px 24px rgba(0,0,0,.4);
+}
+html{scroll-behavior:smooth}
+body{background:var(--ocean);color:var(--foam);font-family:'Syne',sans-serif;min-height:100vh;overflow-x:hidden}
+
+/* ══ OCEAN BACKGROUND ══ */
+body::before{content:'';position:fixed;inset:0;background:
+  radial-gradient(ellipse 120% 60% at 80% 20%,rgba(0,50,100,.4),transparent 60%),
+  radial-gradient(ellipse 80% 80% at 20% 80%,rgba(0,30,80,.5),transparent 60%),
+  linear-gradient(180deg,#020B18 0%,#051428 50%,#020B18 100%);
+  pointer-events:none;z-index:0}
+body::after{content:'';position:fixed;top:0;left:0;right:0;height:3px;
+  background:linear-gradient(90deg,transparent,var(--cyan),var(--gold),var(--cyan),transparent);
+  z-index:200}
+
+/* ══ WAVES ══ */
+.waves{position:fixed;bottom:0;left:0;right:0;height:120px;z-index:0;opacity:.15;pointer-events:none}
+.wave{position:absolute;width:200%;height:100%;background:linear-gradient(transparent,rgba(0,212,255,.3));
+  border-radius:50% 50% 0 0;animation:wave 8s ease-in-out infinite}
+.wave:nth-child(2){animation-delay:-4s;opacity:.5;animation-duration:10s}
+@keyframes wave{0%,100%{transform:translateX(-25%) scaleY(1)}50%{transform:translateX(-10%) scaleY(1.3)}}
+
+/* ══ TOPBAR ══ */
+.topbar{position:sticky;top:0;z-index:100;background:rgba(2,11,24,.9);backdrop-filter:blur(12px);
+  border-bottom:1px solid var(--border);height:54px;display:flex;align-items:center;
+  justify-content:space-between;padding:0 20px}
+.tb-brand{display:flex;align-items:center;gap:10px}
+.tb-logo{font-family:'Bebas Neue';font-size:22px;letter-spacing:3px;
+  background:linear-gradient(135deg,var(--cyan),var(--gold));-webkit-background-clip:text;
+  -webkit-text-fill-color:transparent}
+.tb-tagline{font-size:9px;font-weight:600;letter-spacing:2px;text-transform:uppercase;
+  color:var(--muted);border-left:1px solid var(--border);padding-left:10px}
+.tb-right{display:flex;align-items:center;gap:10px}
+.tb-timer{display:flex;align-items:center;gap:6px;font-size:10px;font-weight:700;
+  color:var(--coral);background:rgba(255,77,109,.08);border:1px solid rgba(255,77,109,.2);
+  padding:5px 12px;border-radius:20px;animation:glow-pulse 2s ease-in-out infinite}
+@keyframes glow-pulse{0%,100%{box-shadow:none}50%{box-shadow:0 0 12px rgba(255,77,109,.3)}}
+.tb-user{display:flex;align-items:center;gap:7px;font-size:11px;color:var(--foam2)}
+.user-badge{background:var(--surface);border:1px solid var(--border);border-radius:6px;
+  padding:4px 10px;font-size:10px;font-weight:700;color:var(--cyan)}
+
+/* ══ HERO ══ */
+.hero{text-align:center;padding:40px 20px 30px;position:relative;z-index:1}
+.hero-eyebrow{display:inline-flex;align-items:center;gap:8px;font-size:9px;font-weight:700;
+  letter-spacing:3px;text-transform:uppercase;color:var(--cyan);margin-bottom:14px}
+.hero-eyebrow::before,.hero-eyebrow::after{content:'';width:30px;height:1px;background:currentColor;opacity:.5}
+.hero-h{font-family:'Bebas Neue';font-size:clamp(42px,8vw,80px);letter-spacing:2px;
+  line-height:.9;margin-bottom:8px}
+.hero-h .wave-text{background:linear-gradient(135deg,var(--cyan),var(--gold),var(--coral));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.hero-sub{font-size:12px;color:var(--muted);font-weight:400;max-width:480px;
+  margin:0 auto 24px;line-height:1.7}
+.hero-stats{display:flex;justify-content:center;gap:20px;flex-wrap:wrap}
+.hs{text-align:center;padding:10px 16px;background:rgba(255,255,255,.03);
+  border:1px solid var(--border);border-radius:8px}
+.hs-num{font-family:'Bebas Neue';font-size:26px;line-height:1}
+.hs-lbl{font-size:8px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--muted)}
+
+/* ══ MAIN LAYOUT ══ */
+.layout{display:grid;grid-template-columns:1fr 360px;gap:16px;max-width:1200px;
+  margin:0 auto;padding:0 16px 80px;position:relative;z-index:1}
+@media(max-width:900px){.layout{grid-template-columns:1fr}}
+
+/* ══ PRODUCT GRID ══ */
+.grid-head{display:flex;align-items:center;justify-content:space-between;
+  margin-bottom:14px;flex-wrap:wrap;gap:8px}
+.gh-left{display:flex;align-items:center;gap:10px}
+.section-lbl{font-size:9px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:var(--cyan)}
+.prod-count{font-size:10px;color:var(--muted);background:var(--surface);
+  padding:3px 9px;border-radius:10px}
+.sort-tabs{display:flex;gap:4px}
+.sort-btn{padding:5px 12px;border-radius:5px;border:1px solid var(--border);
+  background:none;font-family:'Syne';font-size:9px;font-weight:700;
+  letter-spacing:.5px;cursor:pointer;color:var(--muted);transition:all .2s}
+.sort-btn.on{background:var(--surface);border-color:var(--cyan);color:var(--cyan)}
+
+/* CAT PILLS */
+.cat-scroll{display:flex;gap:7px;overflow-x:auto;padding-bottom:10px;margin-bottom:14px;
+  scrollbar-width:none}
+.cat-scroll::-webkit-scrollbar{display:none}
+.cat-pill{display:inline-flex;align-items:center;gap:5px;padding:6px 13px;
+  border-radius:20px;border:1px solid var(--border);background:rgba(255,255,255,.03);
+  font-size:10px;font-weight:700;cursor:pointer;white-space:nowrap;
+  color:var(--muted);transition:all .2s;flex-shrink:0}
+.cat-pill:hover{border-color:var(--cyan);color:var(--foam)}
+.cat-pill.on{border-color:var(--cyan);background:rgba(0,212,255,.08);color:var(--cyan)}
+
+/* PRODUCT CARDS */
+.prod-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px}
+.prod-card{background:rgba(7,33,60,.6);border:1px solid var(--border);border-radius:12px;
+  overflow:hidden;transition:all .3s;cursor:pointer;position:relative;backdrop-filter:blur(4px)}
+.prod-card:hover{border-color:rgba(0,212,255,.4);transform:translateY(-3px);
+  box-shadow:0 8px 32px rgba(0,212,255,.1)}
+.prod-card.hot{border-color:rgba(245,200,66,.3)}
+.prod-card.hot::before{content:'🔥 HOT';position:absolute;top:10px;right:10px;
+  background:var(--gold);color:#000;font-size:8px;font-weight:800;
+  padding:2px 8px;border-radius:3px;z-index:2;letter-spacing:.5px}
+.prod-card.limited::before{content:'⚡ SẮP HẾT';position:absolute;top:10px;right:10px;
+  background:var(--coral);color:#fff;font-size:8px;font-weight:800;
+  padding:2px 8px;border-radius:3px;z-index:2;letter-spacing:.5px}
+.pc-img{width:100%;height:140px;background:var(--deep);display:flex;align-items:center;
+  justify-content:center;font-size:52px;border-bottom:1px solid var(--border);
+  position:relative;overflow:hidden}
+.pc-img::after{content:'';position:absolute;inset:0;
+  background:linear-gradient(transparent 60%,rgba(2,11,24,.6))}
+.pc-discount-badge{position:absolute;top:10px;left:10px;background:var(--coral);
+  color:#fff;font-family:'Bebas Neue';font-size:18px;width:40px;height:40px;
+  border-radius:50%;display:flex;align-items:center;justify-content:center;
+  letter-spacing:.5px;z-index:2;line-height:1}
+.pc-body{padding:12px}
+.pc-shop{font-size:8px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;
+  color:var(--muted);margin-bottom:4px}
+.pc-name{font-size:12px;font-weight:700;line-height:1.4;margin-bottom:6px;
+  color:var(--foam)}
+.pc-tags{display:flex;gap:4px;flex-wrap:wrap;margin-bottom:8px}
+.pc-tag{font-size:8px;font-weight:700;padding:2px 7px;border-radius:3px;
+  background:rgba(0,212,255,.08);color:var(--cyan);border:1px solid rgba(0,212,255,.15)}
+.pc-footer{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.pc-pricing{flex:1}
+.pc-price{font-family:'Bebas Neue';font-size:20px;color:var(--green);letter-spacing:.5px}
+.pc-original{font-size:10px;color:var(--muted);text-decoration:line-through}
+.pc-stock{font-size:9px;color:var(--coral);font-weight:700;margin-top:2px}
+.pc-btn{padding:7px 13px;border-radius:6px;border:none;cursor:pointer;
+  font-family:'Syne';font-size:10px;font-weight:700;transition:all .2s;
+  background:var(--surface);border:1px solid var(--cyan);color:var(--cyan);flex-shrink:0}
+.pc-btn:hover{background:var(--cyan);color:var(--ocean)}
+.pc-viewers{font-size:8px;color:var(--gold);margin-top:4px}
+
+/* ══ AI CHAT PANEL ══ */
+.ai-panel{position:sticky;top:70px;height:calc(100vh - 90px);display:flex;flex-direction:column;
+  background:rgba(5,20,40,.85);border:1px solid var(--border);border-radius:16px;
+  overflow:hidden;backdrop-filter:blur(8px);z-index:10}
+.ai-header{padding:14px 16px;border-bottom:1px solid var(--border);flex-shrink:0;
+  background:linear-gradient(180deg,rgba(0,212,255,.06),transparent)}
+.ai-title{display:flex;align-items:center;gap:8px;margin-bottom:4px}
+.ai-avatar{width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,var(--cyan),var(--gold));
+  display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;
+  position:relative}
+.ai-avatar::after{content:'';position:absolute;inset:-2px;border-radius:50%;
+  background:linear-gradient(135deg,var(--cyan),var(--gold));z-index:-1;
+  animation:ai-ring 3s ease-in-out infinite}
+@keyframes ai-ring{0%,100%{opacity:.4;transform:scale(1)}50%{opacity:1;transform:scale(1.08)}}
+.ai-name{font-size:13px;font-weight:800;color:var(--foam)}
+.ai-status{display:flex;align-items:center;gap:5px;font-size:9px;color:var(--muted)}
+.ai-dot{width:6px;height:6px;border-radius:50%;background:var(--green);animation:blink 2s infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
+.ai-context{font-size:10px;color:var(--muted);font-style:italic;margin-top:4px}
+
+/* CHAT MESSAGES */
+.ai-messages{flex:1;overflow-y:auto;padding:14px;display:flex;flex-direction:column;gap:10px;
+  scrollbar-width:thin;scrollbar-color:var(--surface) transparent}
+.ai-messages::-webkit-scrollbar{width:3px}
+.ai-messages::-webkit-scrollbar-thumb{background:var(--surface);border-radius:2px}
+.msg{display:flex;gap:8px;animation:msgIn .3s ease}
+@keyframes msgIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.msg-ai{flex-direction:row}
+.msg-user{flex-direction:row-reverse}
+.msg-bubble{max-width:85%;padding:10px 13px;border-radius:12px;font-size:12px;
+  line-height:1.6;position:relative}
+.msg-ai .msg-bubble{background:rgba(0,212,255,.06);border:1px solid rgba(0,212,255,.12);
+  color:var(--foam);border-radius:4px 12px 12px 12px}
+.msg-user .msg-bubble{background:rgba(245,200,66,.08);border:1px solid rgba(245,200,66,.18);
+  color:var(--foam2);border-radius:12px 4px 12px 12px}
+.msg-time{font-size:8px;color:var(--muted);margin-top:4px;letter-spacing:.5px}
+
+/* PRODUCT CARDS IN CHAT */
+.chat-product{background:rgba(7,33,60,.8);border:1px solid rgba(0,212,255,.15);
+  border-radius:8px;padding:10px;margin-top:8px;cursor:pointer;transition:all .2s}
+.chat-product:hover{border-color:var(--cyan)}
+.cp-top{display:flex;gap:8px;align-items:flex-start;margin-bottom:7px}
+.cp-icon{font-size:22px;width:32px;text-align:center;flex-shrink:0}
+.cp-info .cp-pname{font-size:11px;font-weight:700;color:var(--foam);margin-bottom:2px}
+.cp-info .cp-pshop{font-size:9px;color:var(--muted)}
+.cp-pricerow{display:flex;align-items:center;gap:8px;justify-content:space-between}
+.cp-pprice{font-family:'Bebas Neue';font-size:17px;color:var(--green);letter-spacing:.5px}
+.cp-pdiscount{font-size:9px;font-weight:700;color:var(--coral);
+  background:rgba(255,77,109,.1);padding:2px 6px;border-radius:3px}
+.cp-paction{font-size:9px;font-weight:700;color:var(--cyan);
+  padding:4px 10px;border:1px solid rgba(0,212,255,.3);border-radius:5px;
+  background:rgba(0,212,255,.05);cursor:pointer;white-space:nowrap;transition:all .2s}
+.cp-paction:hover{background:var(--cyan);color:var(--ocean)}
+
+/* QUICK PROMPTS */
+.quick-prompts{padding:10px 14px;border-top:1px solid var(--border);
+  display:flex;gap:6px;flex-wrap:wrap;flex-shrink:0;
+  background:linear-gradient(transparent,rgba(5,20,40,.9))}
+.qp{padding:5px 11px;border-radius:15px;border:1px solid var(--border);
+  background:rgba(255,255,255,.03);font-family:'Syne';font-size:9px;font-weight:700;
+  cursor:pointer;color:var(--muted);transition:all .2s;white-space:nowrap}
+.qp:hover{border-color:var(--cyan);color:var(--cyan);background:rgba(0,212,255,.05)}
+
+/* CHAT INPUT */
+.ai-input-wrap{padding:12px 14px;border-top:1px solid var(--border);flex-shrink:0;
+  background:rgba(2,11,24,.5)}
+.ai-input-row{display:flex;gap:8px;align-items:flex-end}
+.ai-textarea{flex:1;background:rgba(7,33,60,.8);border:1.5px solid var(--border);
+  border-radius:8px;color:var(--foam);font-family:'Syne';font-size:12px;
+  padding:9px 12px;outline:none;resize:none;min-height:40px;max-height:100px;
+  transition:border-color .2s;line-height:1.5}
+.ai-textarea:focus{border-color:rgba(0,212,255,.4)}
+.ai-textarea::placeholder{color:var(--muted)}
+.ai-send{width:38px;height:38px;border-radius:8px;border:none;
+  background:linear-gradient(135deg,var(--cyan),#0088cc);
+  color:var(--ocean);font-size:16px;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;flex-shrink:0;
+  transition:all .2s;font-weight:700}
+.ai-send:hover{transform:scale(1.05);box-shadow:0 4px 12px rgba(0,212,255,.3)}
+.ai-send:disabled{opacity:.4;cursor:not-allowed;transform:none}
+
+/* TYPING INDICATOR */
+.typing{display:flex;align-items:center;gap:4px;padding:8px 12px}
+.t-dot{width:5px;height:5px;border-radius:50%;background:var(--muted);
+  animation:tdot .9s ease-in-out infinite}
+.t-dot:nth-child(2){animation-delay:.15s}.t-dot:nth-child(3){animation-delay:.3s}
+@keyframes tdot{0%,80%,100%{transform:scale(1);opacity:.5}40%{transform:scale(1.3);opacity:1}}
+
+/* ANALYSIS CARD IN CHAT */
+.analysis-card{background:rgba(0,229,160,.04);border:1px solid rgba(0,229,160,.15);
+  border-radius:8px;padding:10px;margin-top:8px}
+.ac-head{display:flex;align-items:center;gap:6px;margin-bottom:7px;
+  font-size:10px;font-weight:800;color:var(--green)}
+.ac-row{display:flex;justify-content:space-between;align-items:center;
+  padding:4px 0;border-bottom:1px solid rgba(0,229,160,.08);font-size:10px}
+.ac-row:last-child{border:none}
+.ac-key{color:var(--muted)}
+.ac-val{font-weight:700;color:var(--foam)}
+.verdict-buy{color:var(--green)}.verdict-wait{color:var(--gold)}.verdict-skip{color:var(--coral)}
+
+/* MODAL */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:500;
+  display:flex;align-items:center;justify-content:center;padding:16px;display:none}
+.modal-overlay.open{display:flex}
+.modal{background:var(--deep);border:1px solid var(--border);border-radius:16px;
+  max-width:560px;width:100%;max-height:80vh;overflow-y:auto;position:relative}
+.modal-head{padding:18px 20px;border-bottom:1px solid var(--border);
+  display:flex;justify-content:space-between;align-items:center;
+  background:linear-gradient(180deg,rgba(0,212,255,.04),transparent)}
+.modal-close{background:none;border:none;color:var(--muted);font-size:18px;
+  cursor:pointer;padding:4px;transition:color .2s}
+.modal-close:hover{color:var(--foam)}
+.modal-body{padding:20px}
+
+/* COUPON */
+.coupon-box{background:rgba(245,200,66,.06);border:1px dashed rgba(245,200,66,.3);
+  border-radius:10px;padding:14px;text-align:center;margin:12px 0}
+.coupon-code{font-family:'Bebas Neue';font-size:28px;letter-spacing:4px;color:var(--gold);
+  margin-bottom:4px}
+.coupon-sub{font-size:10px;color:var(--muted)}
+.copy-btn{padding:6px 14px;background:rgba(245,200,66,.1);border:1px solid rgba(245,200,66,.3);
+  border-radius:5px;color:var(--gold);font-family:'Syne';font-size:10px;font-weight:700;
+  cursor:pointer;margin-top:8px;transition:all .2s}
+.copy-btn:hover{background:var(--gold);color:var(--ocean)}
+
+/* BUTTON */
+.btn{padding:11px 22px;border-radius:8px;font-family:'Syne';font-size:11px;
+  font-weight:700;border:none;cursor:pointer;transition:all .2s;
+  display:inline-flex;align-items:center;gap:7px}
+.btn-primary{background:linear-gradient(135deg,var(--cyan),#0099dd);color:var(--ocean)}
+.btn-primary:hover{transform:translateY(-1px);box-shadow:0 6px 20px rgba(0,212,255,.3)}
+.btn-gold{background:linear-gradient(135deg,var(--gold),#e0a800);color:#000}
+.btn-full{width:100%;justify-content:center}
+
+/* CART BUTTON */
+.cart-float{position:fixed;bottom:24px;right:24px;z-index:50;
+  background:linear-gradient(135deg,var(--cyan),var(--gold));
+  color:var(--ocean);border:none;border-radius:50px;padding:12px 20px;
+  font-family:'Syne';font-size:12px;font-weight:800;cursor:pointer;
+  display:flex;align-items:center;gap:8px;box-shadow:0 8px 32px rgba(0,212,255,.3);
+  transition:all .2s;animation:float-in .5s ease .5s both}
+.cart-float:hover{transform:translateY(-2px);box-shadow:0 12px 40px rgba(0,212,255,.4)}
+@keyframes float-in{from{transform:translateY(60px);opacity:0}to{transform:translateY(0);opacity:1}}
+.cart-badge{background:var(--coral);color:#fff;border-radius:50%;width:18px;height:18px;
+  font-size:10px;display:flex;align-items:center;justify-content:center;
+  font-weight:800;flex-shrink:0}
+
+/* SKELETON */
+.skel{background:linear-gradient(90deg,rgba(255,255,255,.03) 25%,rgba(255,255,255,.07) 50%,rgba(255,255,255,.03) 75%);
+  background-size:200% 100%;animation:skel 1.5s ease-in-out infinite;border-radius:6px}
+@keyframes skel{0%{background-position:200% 0}100%{background-position:-200% 0}}
+</style>
+</head>
+<body>
+
+<div class="waves"><div class="wave"></div><div class="wave"></div></div>
+
+<!-- TOPBAR -->
+<div class="topbar">
+  <div class="tb-brand">
+    <div class="tb-logo">RACE OCEAN</div>
+    <div class="tb-tagline">🌊 Kho hàng runner · Flash window</div>
+  </div>
+  <div class="tb-right">
+    <div class="tb-timer" id="timerEl">⏳ Đóng cửa sau 48:00:00</div>
+    <div class="tb-user">
+      <span id="userNameEl">Runner</span>
+      <span class="user-badge" id="userBibEl">BIB #001</span>
+    </div>
+  </div>
+</div>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-eyebrow">Chỉ mở khi race đang diễn ra</div>
+  <h1 class="hero-h">
+    ĐẠI DƯƠNG<br><span class="wave-text">HÀNG HOÁ</span><br>RUNNER
+  </h1>
+  <p class="hero-sub">Kho hàng đặc biệt chỉ dành cho VĐV & TNV đã đăng ký. Giá tốt nhất, mã giảm độc quyền. Hỏi AI chuyên gia để mua thông minh hơn.</p>
+  <div class="hero-stats">
+    <div class="hs"><div class="hs-num" style="color:var(--cyan)" id="prodCountEl">0</div><div class="hs-lbl">Sản phẩm</div></div>
+    <div class="hs"><div class="hs-num" style="color:var(--gold)">23</div><div class="hs-lbl">Cửa hàng</div></div>
+    <div class="hs"><div class="hs-num" style="color:var(--coral)">847</div><div class="hs-lbl">Runner đang xem</div></div>
+    <div class="hs"><div class="hs-num" style="color:var(--green)">Đến 40%</div><div class="hs-lbl">Giảm giá</div></div>
+  </div>
+</div>
+
+<div class="layout">
+
+  <!-- LEFT: PRODUCTS -->
+  <div>
+    <!-- CAT FILTER -->
+    <div class="cat-scroll" id="catScroll">
+      <div class="cat-pill on" onclick="filterProd('all',this)">🌊 Tất cả</div>
+      <div class="cat-pill" onclick="filterProd('shoes',this)">👟 Giày chạy</div>
+      <div class="cat-pill" onclick="filterProd('apparel',this)">👕 Quần áo</div>
+      <div class="cat-pill" onclick="filterProd('hydration',this)">💧 Dinh dưỡng</div>
+      <div class="cat-pill" onclick="filterProd('gear',this)">🎒 Phụ kiện</div>
+      <div class="cat-pill" onclick="filterProd('recovery',this)">💊 Phục hồi</div>
+      <div class="cat-pill" onclick="filterProd('tech',this)">⌚ Thiết bị</div>
+      <div class="cat-pill" onclick="filterProd('coupon',this)">🎟️ Mã giảm giá</div>
+    </div>
+
+    <div class="grid-head">
+      <div class="gh-left">
+        <div class="section-lbl">SẢN PHẨM</div>
+        <div class="prod-count" id="filteredCountEl">Đang tải...</div>
+      </div>
+      <div class="sort-tabs">
+        <button class="sort-btn on" onclick="sortProd('hot',this)">🔥 Nổi bật</button>
+        <button class="sort-btn" onclick="sortProd('discount',this)">% Giảm nhiều</button>
+        <button class="sort-btn" onclick="sortProd('price',this)">💰 Giá thấp</button>
+      </div>
+    </div>
+
+    <div class="prod-grid" id="prodGrid"></div>
+  </div>
+
+  <!-- RIGHT: AI PANEL -->
+  <div class="ai-panel">
+    <div class="ai-header">
+      <div class="ai-title">
+        <div class="ai-avatar">🌊</div>
+        <div>
+          <div class="ai-name">Hải — AI Chuyên Gia Đại Dương</div>
+          <div class="ai-status"><div class="ai-dot"></div> Đang trực tuyến · Sẵn sàng tư vấn</div>
+        </div>
+      </div>
+      <div class="ai-context" id="aiCtx">Đang tải thông tin runner...</div>
+    </div>
+
+    <div class="ai-messages" id="aiMessages">
+      <div class="msg msg-ai">
+        <div class="ai-avatar" style="width:26px;height:26px;font-size:11px;flex-shrink:0;animation:none">🌊</div>
+        <div>
+          <div class="msg-bubble">
+            Chào bạn! Mình là <strong>Hải</strong> — chuyên gia dẫn đường trong đại dương hàng hoá runner này 🌊<br><br>
+            Hỏi mình bất cứ điều gì: giày nào tốt cho cự ly của bạn, mã giảm nào đáng dùng, nên mua ngay hay chờ... Mình phân tích thẳng thắn, kể cả khi câu trả lời là <em>"đừng mua"</em>.
+          </div>
+          <div class="msg-time">Vừa xong</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="quick-prompts">
+      <div class="qp" onclick="sendQuick('Giày nào phù hợp với tôi nhất?')">👟 Giày cho tôi</div>
+      <div class="qp" onclick="sendQuick('Có mã giảm giá nào tốt không?')">🎟️ Mã giảm giá</div>
+      <div class="qp" onclick="sendQuick('Sản phẩm nào sắp hết hàng?')">⚡ Sắp hết</div>
+      <div class="qp" onclick="sendQuick('Tôi nên mua gì trong ngân sách 500k?')">💰 Dưới 500k</div>
+      <div class="qp" onclick="sendQuick('Phân tích top 3 sản phẩm đáng mua nhất hôm nay')">📊 Top 3 đáng mua</div>
+    </div>
+
+    <div class="ai-input-wrap">
+      <div class="ai-input-row">
+        <textarea class="ai-textarea" id="aiInput" placeholder="Hỏi Hải bất cứ điều gì..." rows="1"
+          onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendMsg()}"
+          oninput="autoResize(this)"></textarea>
+        <button class="ai-send" id="aiSendBtn" onclick="sendMsg()">↑</button>
+      </div>
+      <div style="font-size:8px;color:var(--muted);margin-top:5px;text-align:center">
+        Hải dùng Claude AI · Không quảng cáo · Phân tích khách quan
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- CART FLOAT -->
+<button class="cart-float" onclick="openCart()" id="cartBtn" style="display:none">
+  🛒 Giỏ hàng
+  <div class="cart-badge" id="cartBadge">0</div>
+</button>
+
+<!-- PRODUCT MODAL -->
+<div class="modal-overlay" id="prodModal">
+  <div class="modal">
+    <div class="modal-head">
+      <div style="font-size:14px;font-weight:800" id="modalTitle">Chi tiết sản phẩm</div>
+      <button class="modal-close" onclick="closeProdModal()">✕</button>
+    </div>
+    <div class="modal-body" id="modalBody"></div>
+  </div>
+</div>
+
+<!-- CART MODAL -->
+<div class="modal-overlay" id="cartModal">
+  <div class="modal">
+    <div class="modal-head">
+      <div style="font-size:14px;font-weight:800">🛒 Giỏ hàng của bạn</div>
+      <button class="modal-close" onclick="closeCart()">✕</button>
+    </div>
+    <div class="modal-body" id="cartBody"></div>
+  </div>
+</div>
+
+<script>
+// ══════════════════════════════════════════════════════════
+// PRODUCT DATA
+// ══════════════════════════════════════════════════════════
+const PRODUCTS = [
+  {id:'p1',shop:'Asics Vietnam',icon:'👟',name:'Asics Gel-Nimbus 25 — Giày chạy đường dài',
+   cat:'shoes',price:2850000,original:3200000,discount:11,stock:8,viewers:34,
+   tags:['Đường dài','Cushion cao','Unisex'],hot:true,limited:false,
+   desc:'Dòng flagship cushion của Asics. Phù hợp runner 5-21km, chân thẳng hoặc overpronation nhẹ.',
+   sizes:['39','40','41','42','43','44'],
+   commission:8,coupon:'ASICS-VRACE10'},
+
+  {id:'p2',shop:'Garmin Vietnam',icon:'⌚',name:'Garmin Forerunner 165 — GPS Running Watch',
+   cat:'tech',price:5200000,original:6500000,discount:20,stock:15,viewers:52,
+   tags:['GPS','Heart Rate','5ATM'],hot:true,limited:false,
+   desc:'Đồng hồ GPS entry-mid cho runner nghiêm túc. Pin 11 ngày, map, pace alert.',
+   sizes:null,
+   commission:10,coupon:'GARMIN-RACE20'},
+
+  {id:'p3',shop:'GU Energy Vietnam',icon:'💧',name:'GU Energy Gel Pack x10 — Năng lượng chạy bộ',
+   cat:'hydration',price:380000,original:450000,discount:16,stock:3,viewers:19,
+   tags:['Energy gel','Caffeine','10 gói'],hot:false,limited:true,
+   desc:'10 gói gel năng lượng các vị. Dùng cho 5km+ để duy trì sức bền.',
+   sizes:null,
+   commission:12,coupon:'GU-OCEAN15'},
+
+  {id:'p4',shop:'Nike Vietnam',icon:'👕',name:'Nike Dri-FIT Running Tee — Áo chạy bộ',
+   cat:'apparel',price:620000,original:890000,discount:30,stock:25,viewers:41,
+   tags:['Dri-FIT','Nhẹ','UV50+'],hot:true,limited:false,
+   desc:'Áo chạy bộ vải Dri-FIT, thoáng khí, chống UV. Phù hợp sáng sớm & ngoài trời.',
+   sizes:['S','M','L','XL','XXL'],
+   commission:15,coupon:'NIKE-VRN30'},
+
+  {id:'p5',shop:'Nathan Sports',icon:'🎒',name:'Nathan QuickStart 4L Running Vest',
+   cat:'gear',price:1450000,original:1800000,discount:19,stock:6,viewers:27,
+   tags:['Vest 4L','Soft flask 2x500ml','Không bounce'],hot:false,limited:true,
+   desc:'Áo vest chạy trail có 2 bình nước mềm. Phù hợp trail run 10km+.',
+   sizes:['S/M','M/L','L/XL'],
+   commission:10,coupon:'NATHAN-RACE'},
+
+  {id:'p6',shop:'Therabody Vietnam',icon:'💊',name:'TheraGun Mini 2.0 — Súng massage phục hồi',
+   cat:'recovery',price:3900000,original:4800000,discount:19,stock:12,viewers:38,
+   tags:['Percussion','4 đầu','Quiet Force'],hot:true,limited:false,
+   desc:'Súng massage cầm tay cho phục hồi sau race. 150 phút pin, 3 tốc độ, siêu êm.',
+   sizes:null,
+   commission:8,coupon:'THERA-R20'},
+
+  {id:'p7',shop:'Decathlon Vietnam',icon:'👟',name:'Kiprun KS900 Light 2 — Giày marathon',
+   cat:'shoes',price:1990000,original:2490000,discount:20,stock:20,viewers:63,
+   tags:['Carbon plate','Sub-4h','Nhẹ 185g'],hot:true,limited:false,
+   desc:'Giày marathon có carbon plate giá tốt nhất phân khúc. Dành cho PB hunter.',
+   sizes:['39','40','41','42','43'],
+   commission:6,coupon:'KIPO-20OFF'},
+
+  {id:'p8',shop:'Voucherland x Race',icon:'🎟️',name:'Combo 5 mã giảm giá độc quyền race',
+   cat:'coupon',price:0,original:0,discount:0,stock:999,viewers:128,
+   tags:['FREE','5 brands','Race exclusive'],hot:false,limited:false,
+   desc:'Nhận ngay 5 mã giảm giá từ Asics, Nike, Garmin, GU và 1 cửa hàng bí ẩn chỉ khi đang ở race.',
+   sizes:null,
+   commission:0,coupon:'GET-5-FREE'},
+];
+
+// ══════════════════════════════════════════════════════════
+// STATE
+// ══════════════════════════════════════════════════════════
+let cart = [];
+let curCat = 'all';
+let curSort = 'hot';
+let userCtx = {};
+
+// ══════════════════════════════════════════════════════════
+// INIT
+// ══════════════════════════════════════════════════════════
+document.addEventListener('DOMContentLoaded', () => {
+  // Load user context from URL or localStorage
+  const params = new URLSearchParams(location.search);
+  userCtx = {
+    name: params.get('name') || localStorage.getItem('reg_fullName') || 'Runner',
+    bib: params.get('bib') || localStorage.getItem('reg_bib') || '#???',
+    distance: params.get('dist') || localStorage.getItem('reg_distance') || '5km',
+    gender: params.get('gender') || localStorage.getItem('reg_gender') || '',
+    role: params.get('role') || 'vdv',
+  };
+
+  document.getElementById('userNameEl').textContent = userCtx.name.split(' ').slice(-1)[0];
+  document.getElementById('userBibEl').textContent = 'BIB ' + userCtx.bib;
+  document.getElementById('aiCtx').textContent =
+    `Đang tư vấn cho: ${userCtx.name} · Cự ly ${userCtx.distance} · ${userCtx.role === 'staff' ? 'TNV' : 'VĐV'}`;
+  document.getElementById('prodCountEl').textContent = PRODUCTS.length;
+
+  renderProducts();
+  startTimer();
+
+  // Auto-welcome with context
+  setTimeout(() => {
+    const greeting = buildWelcomeMsg();
+    appendMsg('ai', greeting);
+  }, 1000);
+});
+
+function buildWelcomeMsg() {
+  const dist = userCtx.distance;
+  const isLong = dist.includes('10') || dist.includes('21') || dist.includes('HM');
+  const isShort = dist.includes('1.5') || dist.includes('3');
+  let tip = '';
+  if (isLong) tip = `Chạy ${dist} thì mình gợi ý ưu tiên gel năng lượng và giày cushion tốt.`;
+  else if (isShort) tip = `Chạy ${dist} thì nhẹ nhàng — áo thoáng khí và đôi giày thoải mái là đủ.`;
+  else tip = `Cự ly ${dist} — mình sẽ lọc sản phẩm phù hợp cho bạn.`;
+
+  const hot = PRODUCTS.filter(p => p.hot).slice(0, 2);
+  return `Chào <strong>${userCtx.name.split(' ').slice(-1)[0]}</strong>! Mình thấy bạn đăng ký cự ly <strong>${dist}</strong>.<br><br>${tip}<br><br>Hôm nay có <strong>${PRODUCTS.length} sản phẩm</strong> trong kho, trong đó <strong>${PRODUCTS.filter(p=>p.limited).length} sắp hết hàng</strong>. Bạn muốn mình tư vấn bắt đầu từ đâu?`;
+}
+
+// ══════════════════════════════════════════════════════════
+// TIMER
+// ══════════════════════════════════════════════════════════
+let timeLeft = 48 * 3600; // 48 hours
+function startTimer() {
+  const el = document.getElementById('timerEl');
+  setInterval(() => {
+    if (timeLeft <= 0) { el.textContent = '🔒 Đã đóng cửa'; return; }
+    timeLeft--;
+    const h = Math.floor(timeLeft / 3600);
+    const m = Math.floor((timeLeft % 3600) / 60);
+    const s = timeLeft % 60;
+    el.textContent = `⏳ Đóng cửa sau ${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+  }, 1000);
+}
+
+// ══════════════════════════════════════════════════════════
+// PRODUCTS
+// ══════════════════════════════════════════════════════════
+function filterProd(cat, btn) {
+  curCat = cat;
+  document.querySelectorAll('.cat-pill').forEach(p => p.classList.remove('on'));
+  btn.classList.add('on');
+  renderProducts();
+}
+
+function sortProd(sort, btn) {
+  curSort = sort;
+  document.querySelectorAll('.sort-btn').forEach(b => b.classList.remove('on'));
+  btn.classList.add('on');
+  renderProducts();
+}
+
+function getFiltered() {
+  let list = curCat === 'all' ? [...PRODUCTS] : PRODUCTS.filter(p => p.cat === curCat);
+  if (curSort === 'hot') list.sort((a,b) => (b.hot?1:0) - (a.hot?1:0) || b.viewers - a.viewers);
+  else if (curSort === 'discount') list.sort((a,b) => b.discount - a.discount);
+  else if (curSort === 'price') list.sort((a,b) => a.price - b.price);
+  return list;
+}
+
+function renderProducts() {
+  const list = getFiltered();
+  document.getElementById('filteredCountEl').textContent = `${list.length} sản phẩm`;
+  document.getElementById('prodGrid').innerHTML = list.map(p => {
+    const cls = p.hot ? 'hot' : p.limited ? 'limited' : '';
+    return `<div class="prod-card ${cls}" onclick="openProd('${p.id}')">
+      <div class="pc-img">
+        ${p.discount > 0 ? `<div class="pc-discount-badge">-${p.discount}%</div>` : ''}
+        ${p.icon}
+      </div>
+      <div class="pc-body">
+        <div class="pc-shop">${p.shop}</div>
+        <div class="pc-name">${p.name}</div>
+        <div class="pc-tags">${p.tags.map(t=>`<span class="pc-tag">${t}</span>`).join('')}</div>
+        <div class="pc-footer">
+          <div class="pc-pricing">
+            <div class="pc-price">${p.price === 0 ? 'MIỄN PHÍ' : fmtPrice(p.price)}</div>
+            ${p.original > p.price ? `<div class="pc-original">${fmtPrice(p.original)}</div>` : ''}
+            ${p.limited ? `<div class="pc-stock">⚡ Còn ${p.stock} sản phẩm</div>` : ''}
+          </div>
+          <button class="pc-btn" onclick="event.stopPropagation();addToCart('${p.id}')">+ Giỏ</button>
+        </div>
+        ${p.viewers > 20 ? `<div class="pc-viewers">👁 ${p.viewers} người đang xem</div>` : ''}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ══════════════════════════════════════════════════════════
+// PRODUCT MODAL
+// ══════════════════════════════════════════════════════════
+function openProd(id) {
+  const p = PRODUCTS.find(x => x.id === id);
+  if (!p) return;
+  document.getElementById('modalTitle').textContent = p.shop + ' — ' + p.name;
+  document.getElementById('modalBody').innerHTML = `
+    <div style="text-align:center;font-size:72px;padding:20px;background:var(--deep);border-radius:10px;margin-bottom:16px">${p.icon}</div>
+    <div style="font-size:13px;color:var(--muted);line-height:1.7;margin-bottom:14px">${p.desc}</div>
+    ${p.sizes ? `<div style="margin-bottom:14px">
+      <div style="font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:7px">Chọn size</div>
+      <div style="display:flex;gap:6px;flex-wrap:wrap">${p.sizes.map(s=>`<button onclick="selectSize(this)" style="padding:7px 13px;border:1.5px solid var(--border);background:none;color:var(--foam2);border-radius:6px;cursor:pointer;font-family:'Syne';font-size:11px;font-weight:700;transition:all .2s" onmouseover="this.style.borderColor='var(--cyan)'" onmouseout="this.style.borderColor='var(--border)'">${s}</button>`).join('')}</div>
+    </div>` : ''}
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;flex-wrap:wrap;gap:10px">
+      <div>
+        <div style="font-family:'Bebas Neue';font-size:32px;color:var(--green)">${p.price === 0 ? 'MIỄN PHÍ' : fmtPrice(p.price)}</div>
+        ${p.original > p.price ? `<div style="font-size:11px;color:var(--muted);text-decoration:line-through">${fmtPrice(p.original)}</div>` : ''}
+        ${p.discount ? `<div style="font-size:11px;font-weight:700;color:var(--coral)">Tiết kiệm ${fmtPrice(p.original - p.price)} (${p.discount}%)</div>` : ''}
+      </div>
+      <div style="display:flex;gap:8px">
+        <button class="btn btn-gold" onclick="askAbout('${p.id}');closeProdModal()">🌊 Hỏi Hải</button>
+        <button class="btn btn-primary" onclick="addToCart('${p.id}');closeProdModal()">+ Thêm giỏ hàng</button>
+      </div>
+    </div>
+    ${p.coupon ? `<div class="coupon-box">
+      <div style="font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:5px">Mã giảm độc quyền cho runner HLRace</div>
+      <div class="coupon-code">${p.coupon}</div>
+      <div class="coupon-sub">Dùng khi thanh toán tại ${p.shop}</div>
+      <button class="copy-btn" onclick="copyCoupon('${p.coupon}',this)">📋 Sao chép mã</button>
+    </div>` : ''}
+    <div style="margin-top:12px;padding:10px;background:rgba(0,212,255,.04);border:1px solid rgba(0,212,255,.1);border-radius:8px;font-size:10px;color:var(--muted)">
+      💼 Hoa hồng hỗ trợ HLRace: ${p.commission}% trên mỗi đơn hàng. Giá hiển thị là giá thực tế.
+    </div>`;
+  document.getElementById('prodModal').classList.add('open');
+}
+function closeProdModal() { document.getElementById('prodModal').classList.remove('open'); }
+function selectSize(btn) {
+  btn.closest('div').querySelectorAll('button').forEach(b => { b.style.borderColor='var(--border)'; b.style.background='none'; b.style.color='var(--foam2)'; });
+  btn.style.borderColor = 'var(--cyan)'; btn.style.background = 'rgba(0,212,255,.1)'; btn.style.color = 'var(--cyan)';
+}
+
+// ══════════════════════════════════════════════════════════
+// CART
+// ══════════════════════════════════════════════════════════
+function addToCart(id) {
+  const p = PRODUCTS.find(x => x.id === id);
+  if (!p) return;
+  const existing = cart.find(c => c.id === id);
+  if (existing) existing.qty++;
+  else cart.push({ ...p, qty: 1 });
+  updateCartUI();
+  // Small toast
+  showToast(`✅ Đã thêm: ${p.name.split(' — ')[0]}`);
+}
+
+function updateCartUI() {
+  const total = cart.reduce((s,c) => s + c.qty, 0);
+  document.getElementById('cartBadge').textContent = total;
+  document.getElementById('cartBtn').style.display = total > 0 ? 'flex' : 'none';
+}
+
+function openCart() {
+  const total = cart.reduce((s,c) => s + c.price * c.qty, 0);
+  document.getElementById('cartBody').innerHTML = cart.length === 0
+    ? `<div style="text-align:center;padding:32px;color:var(--muted)">🛒 Giỏ hàng trống</div>`
+    : `${cart.map(c => `
+      <div style="display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--border)">
+        <div style="font-size:24px">${c.icon}</div>
+        <div style="flex:1">
+          <div style="font-size:12px;font-weight:700;color:var(--foam)">${c.name.split(' — ')[0]}</div>
+          <div style="font-size:10px;color:var(--muted)">${c.shop}</div>
+          ${c.coupon ? `<div style="font-size:9px;color:var(--gold);margin-top:2px">Mã: ${c.coupon}</div>` : ''}
+        </div>
+        <div style="text-align:right">
+          <div style="font-family:'Bebas Neue';font-size:18px;color:var(--green)">${c.price === 0 ? 'FREE' : fmtPrice(c.price)}</div>
+          <div style="display:flex;gap:5px;justify-content:flex-end;margin-top:3px">
+            <button onclick="changeQty('${c.id}',-1)" style="width:22px;height:22px;border-radius:50%;border:1px solid var(--border);background:none;color:var(--muted);cursor:pointer;font-size:12px">−</button>
+            <span style="font-size:11px;font-weight:700;width:20px;text-align:center">${c.qty}</span>
+            <button onclick="changeQty('${c.id}',1)" style="width:22px;height:22px;border-radius:50%;border:1px solid var(--border);background:none;color:var(--muted);cursor:pointer;font-size:12px">+</button>
+          </div>
+        </div>
+      </div>`).join('')}
+    <div style="margin-top:16px;padding-top:16px;border-top:1px solid var(--border)">
+      <div style="display:flex;justify-content:space-between;font-size:14px;font-weight:800;margin-bottom:14px">
+        <span>Tổng</span>
+        <span style="color:var(--green)">${fmtPrice(total)}</span>
+      </div>
+      <div style="font-size:10px;color:var(--muted);margin-bottom:12px;line-height:1.6">
+        💡 Bạn sẽ được chuyển đến trang mua hàng của từng cửa hàng. Sử dụng mã giảm giá khi thanh toán.
+      </div>
+      <button class="btn btn-primary btn-full" onclick="checkout()">🛒 Tiến hành mua hàng</button>
+    </div>`;
+  document.getElementById('cartModal').classList.add('open');
+}
+function closeCart() { document.getElementById('cartModal').classList.remove('open'); }
+function changeQty(id, delta) {
+  const idx = cart.findIndex(c => c.id === id);
+  if (idx === -1) return;
+  cart[idx].qty += delta;
+  if (cart[idx].qty <= 0) cart.splice(idx, 1);
+  updateCartUI();
+  openCart();
+}
+function checkout() {
+  closeCart();
+  showToast('🛒 Đang chuyển đến cửa hàng... Nhớ dùng mã giảm giá nhé!');
+}
+
+function copyCoupon(code, btn) {
+  navigator.clipboard?.writeText(code).catch(()=>{});
+  btn.textContent = '✅ Đã sao chép!';
+  setTimeout(() => btn.textContent = '📋 Sao chép mã', 2000);
+}
+
+// ══════════════════════════════════════════════════════════
+// AI CHAT
+// ══════════════════════════════════════════════════════════
+let chatHistory = [];
+let isAiTyping = false;
+
+function autoResize(el) {
+  el.style.height = 'auto';
+  el.style.height = Math.min(el.scrollHeight, 100) + 'px';
+}
+
+function sendQuick(text) {
+  document.getElementById('aiInput').value = text;
+  sendMsg();
+}
+
+function askAbout(productId) {
+  const p = PRODUCTS.find(x => x.id === productId);
+  if (!p) return;
+  sendQuick(`Phân tích cho tôi: ${p.name} giá ${fmtPrice(p.price)} của ${p.shop}. Có nên mua không?`);
+}
+
+async function sendMsg() {
+  const inp = document.getElementById('aiInput');
+  const text = inp.value.trim();
+  if (!text || isAiTyping) return;
+
+  inp.value = ''; inp.style.height = 'auto';
+  appendMsg('user', text);
+  chatHistory.push({ role: 'user', content: text });
+
+  showTyping();
+  isAiTyping = true;
+  document.getElementById('aiSendBtn').disabled = true;
+
+  try {
+    const apiKey = localStorage.getItem('race_api_key') || '';
+    if (!apiKey) {
+      hideTyping();
+      appendMsg('ai', `⚙️ Để Hải hoạt động, BTC cần cài đặt Claude API Key trong <a href="admin.html" style="color:var(--cyan)">trang Admin → Cài đặt</a>.`);
+      isAiTyping = false;
+      document.getElementById('aiSendBtn').disabled = false;
+      return;
+    }
+
+    const systemPrompt = buildSystemPrompt();
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': apiKey,
+        'anthropic-version': '2023-06-01',
+        'anthropic-dangerous-direct-browser-access': 'true',
+      },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 1000,
+        system: systemPrompt,
+        messages: chatHistory.slice(-10), // keep last 10 turns
+      }),
+    });
+
+    const data = await res.json();
+    const reply = data.content?.[0]?.text || '🌊 Xin lỗi, mình gặp sự cố. Thử lại nhé!';
+    chatHistory.push({ role: 'assistant', content: reply });
+
+    hideTyping();
+    appendAiReply(reply, text);
+  } catch (e) {
+    hideTyping();
+    appendMsg('ai', '🌊 Lỗi kết nối. Kiểm tra API key và thử lại.');
+  }
+
+  isAiTyping = false;
+  document.getElementById('aiSendBtn').disabled = false;
+}
+
+function buildSystemPrompt() {
+  const prodList = PRODUCTS.map(p =>
+    `[${p.id}] ${p.name} | Shop: ${p.shop} | Giá: ${fmtPrice(p.price)} (gốc ${fmtPrice(p.original)}, -${p.discount}%) | Còn: ${p.stock} | Đang xem: ${p.viewers} người | Tags: ${p.tags.join(', ')} | Mã: ${p.coupon}`
+  ).join('\n');
+
+  return `Bạn là HAI — AI chuyên gia tư vấn mua sắm trong Race Ocean, một kho hàng flash chỉ mở trong thời gian race chạy bộ tại Hà Nội.
+
+THÔNG TIN RUNNER BẠN ĐANG TƯ VẤN:
+- Tên: ${userCtx.name}
+- Cự ly đăng ký: ${userCtx.distance}
+- Giới tính: ${userCtx.gender || 'không rõ'}
+- Vai trò: ${userCtx.role === 'staff' ? 'TNV' : 'VĐV'}
+
+KHO HÀNG HIỆN TẠI (${PRODUCTS.length} sản phẩm):
+${prodList}
+
+NGUYÊN TẮC CỦA BẠN:
+1. Tư vấn khách quan — kể cả khi câu trả lời là "đừng mua" hay "chờ tốt hơn"
+2. Cá nhân hoá theo cự ly và nhu cầu của runner này
+3. Phân tích giá: tốt/bình thường/đắt so với thị trường
+4. Cảnh báo thật nếu hàng sắp hết (stock < 5)
+5. Gợi ý combo thông minh (mua A nên kèm B)
+6. Nếu runner hỏi về sản phẩm ngoài kho, nói thẳng là không có nhưng gợi ý tương đương trong kho
+7. Trả lời ngắn gọn, dễ hiểu, thân thiện như người bạn chạy bộ
+8. Không quảng cáo, không hoa mỹ thái quá — runner chạy bộ thích thẳng thắn
+9. Khi đề xuất sản phẩm, format: [TÊN SẢN PHẨM] - [GIÁ] - [LÝ DO NGẮN]
+10. Khi phân tích, dùng: ✅ Nên mua / ⏰ Có thể chờ / ❌ Không cần thiết
+
+Trả lời bằng tiếng Việt. Ngắn gọn, có ích, chân thật.`;
+}
+
+function appendMsg(role, html) {
+  const wrap = document.getElementById('aiMessages');
+  const now = new Date().toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
+  const div = document.createElement('div');
+  div.className = `msg msg-${role}`;
+  div.innerHTML = `
+    ${role === 'ai' ? '<div style="width:26px;height:26px;border-radius:50%;background:linear-gradient(135deg,var(--cyan),var(--gold));display:flex;align-items:center;justify-content:center;font-size:11px;flex-shrink:0">🌊</div>' : ''}
+    <div>
+      <div class="msg-bubble">${html}</div>
+      <div class="msg-time">${now}</div>
+    </div>`;
+  wrap.appendChild(div);
+  wrap.scrollTop = wrap.scrollHeight;
+}
+
+function appendAiReply(text, userQuestion) {
+  // Find referenced products in reply
+  const mentioned = PRODUCTS.filter(p =>
+    text.toLowerCase().includes(p.name.toLowerCase().split(' ')[0]) ||
+    text.toLowerCase().includes(p.id)
+  ).slice(0, 2);
+
+  let html = text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>').replace(/\n/g, '<br>');
+
+  // Append product cards if AI mentions them
+  if (mentioned.length > 0) {
+    html += mentioned.map(p => `
+      <div class="chat-product" onclick="openProd('${p.id}')">
+        <div class="cp-top">
+          <div class="cp-icon">${p.icon}</div>
+          <div class="cp-info">
+            <div class="cp-pname">${p.name.split(' — ')[0]}</div>
+            <div class="cp-pshop">${p.shop}</div>
+          </div>
+        </div>
+        <div class="cp-pricerow">
+          <div class="cp-pprice">${fmtPrice(p.price)}</div>
+          ${p.discount ? `<div class="cp-pdiscount">-${p.discount}%</div>` : ''}
+          <div class="cp-paction" onclick="event.stopPropagation();addToCart('${p.id}')">+ Giỏ hàng</div>
+        </div>
+      </div>`).join('');
+  }
+
+  // If reply contains analysis keywords, add analysis card
+  const isAnalysis = /nên mua|không nên|phân tích|so sánh/i.test(userQuestion);
+  if (isAnalysis && mentioned[0]) {
+    const p = mentioned[0];
+    const marketDiff = p.discount >= 20 ? 'Giá rất tốt' : p.discount >= 10 ? 'Giá tốt' : 'Giá bình thường';
+    html += `
+      <div class="analysis-card">
+        <div class="ac-head">📊 Phân tích nhanh: ${p.name.split(' — ')[0]}</div>
+        <div class="ac-row"><span class="ac-key">Giảm so với niêm yết</span><span class="ac-val">${p.discount}%</span></div>
+        <div class="ac-row"><span class="ac-key">Đánh giá giá</span><span class="ac-val" style="color:${p.discount>=20?'var(--green)':'var(--gold)'}">${marketDiff}</span></div>
+        <div class="ac-row"><span class="ac-key">Tình trạng kho</span><span class="ac-val" style="color:${p.stock<10?'var(--coral)':'var(--foam)'}">${p.stock < 5 ? '⚡ Chỉ còn '+p.stock : p.stock + ' sản phẩm'}</span></div>
+        <div class="ac-row"><span class="ac-key">Mức độ quan tâm</span><span class="ac-val">${p.viewers} người đang xem</span></div>
+      </div>`;
+  }
+
+  appendMsg('ai', html);
+}
+
+function showTyping() {
+  const wrap = document.getElementById('aiMessages');
+  const div = document.createElement('div');
+  div.className = 'msg msg-ai'; div.id = 'typingIndicator';
+  div.innerHTML = `
+    <div style="width:26px;height:26px;border-radius:50%;background:linear-gradient(135deg,var(--cyan),var(--gold));display:flex;align-items:center;justify-content:center;font-size:11px;flex-shrink:0">🌊</div>
+    <div class="msg-bubble" style="padding:8px 12px">
+      <div class="typing"><div class="t-dot"></div><div class="t-dot"></div><div class="t-dot"></div></div>
+    </div>`;
+  wrap.appendChild(div);
+  wrap.scrollTop = wrap.scrollHeight;
+}
+function hideTyping() {
+  document.getElementById('typingIndicator')?.remove();
+}
+
+// ══════════════════════════════════════════════════════════
+// HELPERS
+// ══════════════════════════════════════════════════════════
+function fmtPrice(n) {
+  if (!n) return '0đ';
+  return n.toLocaleString('vi-VN') + 'đ';
+}
+
+function showToast(msg) {
+  const t = document.createElement('div');
+  t.textContent = msg;
+  t.style.cssText = `position:fixed;bottom:80px;left:50%;transform:translateX(-50%);
+    background:var(--surface);border:1px solid var(--border);color:var(--foam);
+    padding:10px 18px;border-radius:8px;font-size:12px;font-weight:600;
+    z-index:300;animation:msgIn .3s ease;white-space:nowrap;
+    box-shadow:0 4px 20px rgba(0,0,0,.3)`;
+  document.body.appendChild(t);
+  setTimeout(() => t.remove(), 2500);
+}
+</script>
+</body>
+</html>

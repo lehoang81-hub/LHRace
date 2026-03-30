@@ -1,0 +1,770 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HLRace — Hồ sơ cá nhân</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Outfit:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0B0C12;--bg2:#13141C;--bg3:#1A1B25;
+  --ink:#F0EEF8;--ink2:#B0AACC;--muted:#52506A;
+  --v:#6B3FFF;--pk:#FF3D7A;--green:#00CC7A;--amber:#FFB020;
+  --cyan:#00C8D4;--br:rgba(107,63,255,.14);--brd:rgba(255,255,255,.07);
+}
+body{background:var(--bg);color:var(--ink);font-family:'Outfit',sans-serif;min-height:100vh}
+body::before{content:'';position:fixed;inset:0;pointer-events:none;
+  background:radial-gradient(ellipse 60% 50% at 15% 0%,rgba(107,63,255,.06),transparent 60%),
+             radial-gradient(ellipse 50% 40% at 85% 100%,rgba(255,61,122,.04),transparent 60%)}
+
+/* NAV */
+.nav{height:50px;background:rgba(11,12,18,.94);backdrop-filter:blur(16px);border-bottom:1px solid var(--br);
+  display:flex;align-items:center;justify-content:space-between;padding:0 18px;position:sticky;top:0;z-index:100}
+.nl{display:flex;align-items:center;gap:9px}
+.nav-logo{font-family:'Syne';font-size:16px;font-weight:800;color:var(--v)}
+.nav-slash{color:var(--muted)}.nav-page{font-size:11px;font-weight:700;color:var(--ink2)}
+.nav-links{display:flex;gap:4px}
+.nl-a{padding:5px 10px;border-radius:6px;font-size:10px;font-weight:700;color:var(--muted);text-decoration:none;transition:all .2s}
+.nl-a:hover{color:var(--ink);background:rgba(255,255,255,.04)}
+
+/* LOOKUP SCREEN */
+.lookup{max-width:480px;margin:0 auto;padding:60px 20px 40px;text-align:center}
+.lk-icon{font-size:48px;margin-bottom:16px}
+.lk-h{font-family:'Syne';font-size:30px;font-weight:800;margin-bottom:6px;letter-spacing:-.5px}
+.lk-sub{font-size:12px;color:var(--muted);line-height:1.7;margin-bottom:28px}
+.lk-form{display:flex;flex-direction:column;gap:10px;text-align:left}
+.lk-label{font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:4px;font-family:'JetBrains Mono'}
+.lk-input{width:100%;padding:12px 14px;background:var(--bg2);border:1.5px solid var(--brd);border-radius:9px;
+  color:var(--ink);font-family:'Outfit';font-size:14px;outline:none;transition:border-color .2s}
+.lk-input:focus{border-color:rgba(107,63,255,.5)}
+.lk-input::placeholder{color:var(--muted)}
+.btn{padding:11px 20px;border-radius:8px;font-family:'Outfit';font-size:12px;font-weight:700;border:none;cursor:pointer;transition:all .2s;display:inline-flex;align-items:center;justify-content:center;gap:6px}
+.btn-v{background:var(--v);color:#fff}.btn-v:hover{background:#5a32e0;transform:translateY(-1px)}
+.btn-ghost{background:rgba(255,255,255,.04);border:1.5px solid var(--brd);color:var(--muted)}.btn-ghost:hover{border-color:var(--v);color:var(--v)}
+.btn-green{background:var(--green);color:#000}.btn-green:hover{background:#00a863}
+.btn-amber{background:var(--amber);color:#000}.btn-amber:hover{background:#e09e18}
+.btn-full{width:100%}
+.lk-msg{padding:10px 14px;border-radius:7px;font-size:12px;margin-top:6px}
+.msg-err{background:rgba(255,61,122,.08);border:1px solid rgba(255,61,122,.2);color:var(--pk)}
+.msg-info{background:rgba(107,63,255,.08);border:1px solid var(--br);color:var(--ink2)}
+.msg-ok{background:rgba(0,204,122,.08);border:1px solid rgba(0,204,122,.2);color:var(--green)}
+
+/* PROFILE SCREEN */
+.profile{display:none;max-width:900px;margin:0 auto;padding:24px 16px 80px}
+
+/* HERO */
+.hero-card{background:linear-gradient(135deg,rgba(107,63,255,.1),rgba(255,61,122,.06));border:1px solid rgba(107,63,255,.2);border-radius:16px;padding:22px;margin-bottom:18px;position:relative;overflow:hidden}
+.hc-bg{position:absolute;right:-40px;top:-40px;width:200px;height:200px;border-radius:50%;background:radial-gradient(circle,rgba(107,63,255,.12),transparent 70%)}
+.hc-top{display:flex;gap:14px;align-items:flex-start;margin-bottom:16px;position:relative}
+.av{width:58px;height:58px;border-radius:50%;background:linear-gradient(135deg,var(--v),var(--pk));display:flex;align-items:center;justify-content:center;font-size:24px;flex-shrink:0}
+.hc-info{flex:1}
+.hc-name{font-family:'Syne';font-size:22px;font-weight:800;letter-spacing:-.5px;margin-bottom:3px}
+.hc-meta{font-size:11px;color:var(--muted);margin-bottom:8px}
+.badge-row{display:flex;gap:5px;flex-wrap:wrap}
+.badge{padding:3px 9px;border-radius:4px;font-size:9px;font-weight:700;font-family:'JetBrains Mono'}
+.b-v{background:rgba(107,63,255,.12);color:#a78bfa}
+.b-green{background:rgba(0,204,122,.1);color:#34d399}
+.b-amber{background:rgba(255,176,32,.1);color:var(--amber)}
+.b-cyan{background:rgba(0,200,212,.1);color:var(--cyan)}
+
+/* STATS ROW */
+.stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;position:relative}
+@media(max-width:500px){.stats-row{grid-template-columns:repeat(2,1fr)}}
+.stat{text-align:center;padding:11px 8px;background:rgba(255,255,255,.03);border:1px solid var(--brd);border-radius:9px}
+.stat-n{font-family:'Syne';font-size:24px;font-weight:800;line-height:1}
+.stat-l{font-size:8px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--muted);margin-top:3px}
+
+/* TABS */
+.tabs{display:flex;border-bottom:1px solid var(--brd);margin-bottom:14px;overflow-x:auto;scrollbar-width:none}
+.tabs::-webkit-scrollbar{display:none}
+.tab{padding:10px 14px;font-size:10px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;cursor:pointer;color:var(--muted);border-bottom:2px solid transparent;white-space:nowrap;transition:all .2s}
+.tab:hover{color:var(--ink)}.tab.on{color:var(--v);border-color:var(--v)}
+
+/* CARDS */
+.card{background:var(--bg2);border:1px solid var(--brd);border-radius:12px;overflow:hidden;margin-bottom:12px}
+.card-h{padding:12px 15px;border-bottom:1px solid var(--brd);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px}
+.card-t{font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--muted);display:flex;align-items:center;gap:6px}
+.card-t::before{content:'';width:3px;height:11px;background:var(--v);border-radius:2px}
+.card-b{padding:14px}
+
+/* TIMELINE */
+.timeline{position:relative;padding-left:22px}
+.timeline::before{content:'';position:absolute;left:6px;top:4px;bottom:4px;width:1px;background:rgba(107,63,255,.2)}
+.tl-item{position:relative;margin-bottom:14px;cursor:default}
+.tl-dot{position:absolute;left:-20px;top:5px;width:9px;height:9px;border-radius:50%;border:2px solid var(--bg2);flex-shrink:0}
+.tl-race{background:var(--v)}.tl-checkin{background:var(--green)}.tl-staff{background:var(--cyan)}.tl-points{background:var(--amber)}
+.tl-card{background:var(--bg3);border:1px solid var(--brd);border-radius:8px;padding:10px 12px;transition:all .2s}
+.tl-card:hover{border-color:rgba(107,63,255,.3)}
+.tl-top{display:flex;justify-content:space-between;align-items:flex-start;gap:8px;margin-bottom:4px}
+.tl-title{font-size:12px;font-weight:700}
+.tl-time{font-size:9px;color:var(--muted);font-family:'JetBrains Mono';white-space:nowrap}
+.tl-sub{font-size:10px;color:var(--muted);line-height:1.5}
+.tl-pts{font-size:10px;font-weight:700;color:var(--amber);margin-top:3px}
+
+/* RACE CARD */
+.race-card{background:var(--bg3);border:1px solid var(--brd);border-radius:10px;padding:13px;margin-bottom:9px;transition:all .2s}
+.race-card:hover{border-color:rgba(107,63,255,.25)}
+.rc-top{display:flex;justify-content:space-between;align-items:flex-start;gap:8px;margin-bottom:8px}
+.rc-name{font-size:13px;font-weight:800;line-height:1.3}
+.rc-bib{font-family:'JetBrains Mono';font-size:11px;font-weight:700;color:var(--v);background:rgba(107,63,255,.1);padding:3px 8px;border-radius:5px;white-space:nowrap}
+.rc-meta{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:9px}
+.rc-m{font-size:10px;color:var(--muted)}
+.rc-status{display:inline-flex;align-items:center;gap:4px;font-size:9px;font-weight:700;padding:3px 8px;border-radius:4px}
+.rs-ok{background:rgba(0,204,122,.1);color:var(--green)}
+.rs-pend{background:rgba(255,176,32,.1);color:var(--amber)}
+.rs-ci{background:rgba(0,200,212,.1);color:var(--cyan)}
+.rc-actions{display:flex;gap:6px;flex-wrap:wrap}
+
+/* CERT PREVIEW */
+.cert-prev{position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:200;display:none;align-items:center;justify-content:center;padding:14px}
+.cert-prev.open{display:flex}
+.cert-wrap{background:#fff;border-radius:12px;overflow:hidden;max-width:740px;width:100%;max-height:90vh;overflow-y:auto}
+.cert-actions{padding:12px 16px;background:#f8f8f8;border-top:1px solid #eee;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px}
+canvas{display:block;width:100% !important;height:auto !important}
+
+/* RANK PROGRESS */
+.rank-bar{background:rgba(255,255,255,.04);border-radius:4px;height:7px;overflow:hidden;margin-top:5px}
+.rank-fill{height:100%;border-radius:4px;background:linear-gradient(90deg,var(--v),var(--pk));transition:width .8s ease}
+
+/* EMPTY */
+.empty-state{padding:36px;text-align:center;color:var(--muted);font-size:12px}
+.empty-state .ei{font-size:36px;margin-bottom:10px}
+</style>
+</head>
+<body>
+
+<nav class="nav">
+  <div class="nl">
+    <div class="nav-logo">VRACE</div>
+    <div class="nav-slash">/</div>
+    <div class="nav-page">HỒ SƠ CÁ NHÂN</div>
+  </div>
+  <div class="nav-links">
+    <a class="nl-a" href="index.html">📋 Đăng ký</a>
+    <a class="nl-a" href="leaderboard.html">🏆 BXH</a>
+    <a class="nl-a" href="runner-connect.html">🤝 Connect</a>
+  </div>
+</nav>
+
+<!-- LOOKUP -->
+<div class="lookup" id="lookupScreen">
+  <div class="lk-icon">🏃</div>
+  <div class="lk-h">Hồ sơ của bạn</div>
+  <div class="lk-sub">Nhập số điện thoại đã đăng ký để xem lịch sử race, điểm cống hiến, và tải Certificate của bạn.</div>
+  <div class="lk-form">
+    <div>
+      <div class="lk-label">Số điện thoại đã đăng ký</div>
+      <input class="lk-input" type="tel" id="phoneInput" placeholder="0912 345 678"
+        onkeydown="if(event.key==='Enter')lookup()">
+    </div>
+    <button class="btn btn-v btn-full" onclick="lookup()" id="lookupBtn">🔍 Xem hồ sơ</button>
+    <div id="lookupMsg" style="display:none"></div>
+    <div style="text-align:center;margin-top:8px">
+      <a href="index.html" style="font-size:11px;color:var(--muted);text-decoration:none">Chưa đăng ký? → Đăng ký ngay</a>
+    </div>
+    <div style="margin-top:18px;border-top:1px solid rgba(255,255,255,.07);padding-top:14px;text-align:center">
+      <div style="font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:8px">HOẶC XEM DEMO</div>
+      <button onclick="demoProfile()" style="width:100%;padding:10px;background:rgba(255,255,255,.03);border:1.5px solid rgba(255,255,255,.07);border-radius:8px;color:rgba(255,255,255,.5);font-family:Outfit;font-size:11px;font-weight:700;cursor:pointer">👁 Xem hồ sơ mẫu · Test Certificate download</button>
+    </div>
+  </div>
+</div>
+
+<!-- PROFILE -->
+<div class="profile" id="profileScreen">
+
+  <!-- HERO -->
+  <div class="hero-card">
+    <div class="hc-bg"></div>
+    <div class="hc-top">
+      <div class="av" id="pAv">🏃</div>
+      <div class="hc-info">
+        <div class="hc-name" id="pName">—</div>
+        <div class="hc-meta" id="pMeta">—</div>
+        <div class="badge-row" id="pBadges"></div>
+      </div>
+      <button class="btn btn-ghost" onclick="logout()" style="font-size:10px;padding:7px 12px;flex-shrink:0">↩ Đổi SĐT</button>
+    </div>
+    <div class="stats-row">
+      <div class="stat"><div class="stat-n" id="st-races" style="color:var(--v)">0</div><div class="stat-l">Races</div></div>
+      <div class="stat"><div class="stat-n" id="st-km" style="color:var(--cyan)">0</div><div class="stat-l">Tổng km</div></div>
+      <div class="stat"><div class="stat-n" id="st-pts" style="color:var(--amber)">0</div><div class="stat-l">Điểm CĐ</div></div>
+      <div class="stat"><div class="stat-n" id="st-streak" style="color:var(--green)">0</div><div class="stat-l">Streak</div></div>
+    </div>
+  </div>
+
+  <!-- TABS -->
+  <div class="tabs">
+    <div class="tab on" id="ptab-races" onclick="showTab('races',this)">🏁 Races đã chạy</div>
+    <div class="tab" id="ptab-contrib" onclick="showTab('contrib',this)">👥 Cống hiến</div>
+    <div class="tab" id="ptab-certs" onclick="showTab('certs',this)">📜 Certificates</div>
+    <div class="tab" id="ptab-stats" onclick="showTab('stats',this)">📊 Thống kê</div>
+    <div class="tab" id="ptab-activity" onclick="showTab('activity',this)">📋 Lịch sử</div>
+  </div>
+
+  <div id="tabContent"></div>
+</div>
+
+<!-- CERT PREVIEW OVERLAY -->
+<div class="cert-prev" id="certPrev">
+  <div class="cert-wrap">
+    <canvas id="certCanvas"></canvas>
+    <div class="cert-actions">
+      <div style="font-size:11px;color:#555" id="certLabel">Certificate</div>
+      <div style="display:flex;gap:8px">
+        <button class="btn btn-ghost" onclick="closeCert()" style="font-size:10px;padding:7px 12px;color:#333;background:#eee;border-color:#ddd">✕ Đóng</button>
+        <button class="btn btn-green" onclick="downloadCert()" style="font-size:10px;padding:7px 14px">⬇ Tải PDF</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="race-config.js"></script>
+<script>
+// ═══ STATE ═══
+let userData = null;
+let certCtx  = null;
+let certFileName = 'certificate.pdf';
+
+// ═══ LOOKUP ═══
+async function lookup() {
+  const phone = document.getElementById('phoneInput').value.trim().replace(/\s/g,'');
+  if (!phone || phone.length < 9) { showMsg('lookupMsg','⚠️ Nhập số điện thoại hợp lệ','msg-err'); return; }
+
+  const url = localStorage.getItem('race_sheet_url');
+  if (!url) { showMsg('lookupMsg','⚙️ Hệ thống chưa được cấu hình. Liên hệ ban tổ chức.','msg-err'); return; }
+
+  const btn = document.getElementById('lookupBtn');
+  btn.textContent = '⏳ Đang tìm...'; btn.disabled = true;
+
+  try {
+    const res = await fetch(url + '?action=getProfile&phone=' + encodeURIComponent(phone));
+    const d = await res.json();
+    if (!d.user) {
+      showMsg('lookupMsg','❌ Không tìm thấy hồ sơ với số điện thoại này. Kiểm tra lại hoặc liên hệ BTC.','msg-err');
+    } else {
+      userData = d;
+      renderProfile(d);
+      document.getElementById('lookupScreen').style.display = 'none';
+      document.getElementById('profileScreen').style.display = 'block';
+      localStorage.setItem('vrace_last_phone', phone);
+    }
+  } catch(e) {
+    showMsg('lookupMsg','🔴 Lỗi kết nối. Thử lại sau.','msg-err');
+  }
+  btn.textContent = '🔍 Xem hồ sơ'; btn.disabled = false;
+}
+
+function logout() {
+  userData = null;
+  document.getElementById('lookupScreen').style.display = 'block';
+  document.getElementById('profileScreen').style.display = 'none';
+}
+
+// ═══ RENDER PROFILE ═══
+function renderProfile(d) {
+  const u = d.user;
+  const races = d.races || [];
+  const staff = d.staff || [];
+  const activity = d.activity || [];
+
+  // Avatar chữ cái đầu
+  const initials = (u.fullName||'?').split(' ').map(w=>w[0]).slice(-2).join('').toUpperCase();
+  document.getElementById('pAv').textContent = initials || '🏃';
+  document.getElementById('pName').textContent = u.fullName || '—';
+  document.getElementById('pMeta').textContent =
+    [u.phone, u.city, u.gender, u.shirtSize ? 'Size '+u.shirtSize : ''].filter(Boolean).join(' · ');
+
+  // Badges
+  const totalPts = Number(u.totalPointsEver) || staff.reduce((s,r)=>s+Number(r.totalPoints||0),0);
+  const rankInfo = getRank(totalPts);
+  const badges = [];
+  if (races.length > 0) badges.push(`<span class="badge b-v">🏁 ${races.length} race${races.length>1?'s':''}</span>`);
+  if (staff.length > 0) badges.push(`<span class="badge b-cyan">👥 TNV ${staff.length} giải</span>`);
+  if (totalPts > 0) badges.push(`<span class="badge b-amber">${rankInfo.icon} ${rankInfo.name}</span>`);
+  document.getElementById('pBadges').innerHTML = badges.join('');
+
+  // Stats
+  const totalKm = races.reduce((s,r)=>{
+    const d = parseFloat(r.distance)||0;
+    return s + (d < 10 ? d : d/1000);
+  }, 0);
+  const streak = calcStreak(activity);
+  document.getElementById('st-races').textContent = races.length;
+  document.getElementById('st-km').textContent = totalKm.toFixed(1);
+  document.getElementById('st-pts').textContent = totalPts;
+  document.getElementById('st-streak').textContent = streak;
+
+  showTab('races', document.getElementById('ptab-races'));
+}
+
+function showTab(id, el) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('on'));
+  if (el) el.classList.add('on');
+  const tc = document.getElementById('tabContent');
+  const d  = userData;
+  if (!d) return;
+
+  const races = d.races || [];
+  const staff = d.staff || [];
+  const act   = d.activity || [];
+
+  if (id === 'races') {
+    if (!races.length) { tc.innerHTML = emptyState('🏁','Chưa có race nào','Đăng ký race đầu tiên tại trang chủ!'); return; }
+    const cfg = JSON.parse(localStorage.getItem('race_config_cache')||'{}');
+    tc.innerHTML = races.map(r => {
+      const ci = String(r.checkedIn).toUpperCase()==='TRUE';
+      const statusHtml = ci
+        ? `<span class="rc-status rs-ci">✅ Đã nhận BIB ${r.bibNumber?'· '+r.bibNumber:''}</span>`
+        : r.status==='approved'
+          ? `<span class="rc-status rs-ok">✓ Đã duyệt</span>`
+          : `<span class="rc-status rs-pend">⏳ Chờ duyệt</span>`;
+      return `<div class="race-card">
+        <div class="rc-top">
+          <div class="rc-name">${cfg.raceName||'HLRace Event'}</div>
+          ${r.bibNumber ? `<div class="rc-bib">BIB ${r.bibNumber}</div>` : ''}
+        </div>
+        <div class="rc-meta">
+          <span class="rc-m">📅 ${fmtDate(r.timestamp)}</span>
+          <span class="rc-m">🏃 ${r.distance||'—'}</span>
+          <span class="rc-m">👕 Size ${r.shirtSize||'?'}</span>
+          ${statusHtml}
+        </div>
+        <div class="rc-actions">
+          ${ci ? `<button class="btn btn-amber" style="font-size:10px;padding:7px 14px" onclick="previewCert('vdv','${r.bibNumber||''}','${r.distance||''}','${fmtDateShort(r.checkedInTime||r.timestamp)}')">📜 Certificate VĐV</button>` : ''}
+        </div>
+      </div>`;
+    }).join('');
+  }
+
+  else if (id === 'contrib') {
+    if (!staff.length) { tc.innerHTML = emptyState('👥','Chưa có đóng góp nhân sự','Tham gia làm TNV tại trang đăng ký nhân sự!'); return; }
+    tc.innerHTML = staff.map(r => {
+      const pts = Number(r.totalPoints)||0;
+      const rankInfo = getRank(pts);
+      return `<div class="race-card">
+        <div class="rc-top">
+          <div style="flex:1">
+            <div class="rc-name">${r.roleIcon||''} ${r.roleName||'—'}</div>
+            <div class="rc-meta" style="margin-top:4px">
+              <span class="rc-m">📅 ${fmtDate(r.timestamp)}</span>
+              <span class="rc-m ${r.status==='approved'?'':''}">
+                ${r.status==='approved'?'<span class="rc-status rs-ok">✓ Đã duyệt</span>':'<span class="rc-status rs-pend">⏳ Chờ</span>'}
+              </span>
+            </div>
+          </div>
+          <div style="text-align:right;flex-shrink:0">
+            <div style="font-family:'Syne';font-size:22px;font-weight:800;color:var(--amber)">${pts}</div>
+            <div style="font-size:8px;color:var(--muted)">điểm CĐ</div>
+          </div>
+        </div>
+        <div style="background:rgba(255,255,255,.03);border-radius:7px;padding:9px 11px">
+          <div style="display:flex;justify-content:space-between;font-size:10px;margin-bottom:5px">
+            <span style="color:var(--muted)">${rankInfo.icon} ${rankInfo.name}</span>
+            <span style="color:var(--amber);font-weight:700">${pts} / ${rankInfo.next} điểm</span>
+          </div>
+          <div class="rank-bar"><div class="rank-fill" style="width:${Math.min(pts/rankInfo.next*100,100)}%"></div></div>
+        </div>
+        ${r.status==='approved'?`<div class="rc-actions" style="margin-top:9px">
+          <button class="btn btn-amber" style="font-size:10px;padding:7px 14px" onclick="previewCert('tnv','','${r.roleName||''}','${fmtDateShort(r.timestamp)}','${pts}')">📜 Certificate TNV</button>
+        </div>`:''}
+      </div>`;
+    }).join('');
+  }
+
+  else if (id === 'certs') {
+    const cfg = JSON.parse(localStorage.getItem('race_config_cache')||'{}');
+    const races = d.races||[];
+    const staff = d.staff||[];
+    const raceName = cfg.raceName||'HLRace Event';
+    const raceDate = cfg.raceDate||new Date().toLocaleDateString('vi-VN');
+
+    const certList = [];
+    races.filter(r=>String(r.checkedIn).toUpperCase()==='TRUE').forEach(r => {
+      certList.push({
+        type:'vdv', icon:'🏅', title:'Certificate VĐV',
+        sub:`${r.distance} · BIB ${r.bibNumber||'?'} · ${raceName}`,
+        action:`previewCert('vdv','${r.bibNumber||''}','${r.distance||''}','${fmtDateShort(r.checkedInTime||r.timestamp)}')`
+      });
+    });
+    staff.filter(r=>r.status==='approved').forEach(r => {
+      certList.push({
+        type:'tnv', icon:'🤝', title:'Certificate TNV',
+        sub:`${r.roleIcon||''} ${r.roleName} · ${Number(r.totalPoints)||0} điểm · ${raceName}`,
+        action:`previewCert('tnv','','${r.roleName||''}','${fmtDateShort(r.timestamp)}','${r.totalPoints||0}')`
+      });
+    });
+
+    if (!certList.length) {
+      tc.innerHTML = emptyState('📜','Chưa có Certificate nào','Certificate sẽ xuất hiện sau khi race hoàn thành và được BTC xác nhận.');
+      return;
+    }
+
+    tc.innerHTML = `<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:10px">`
+      + certList.map(c => `
+        <div style="background:var(--bg2);border:1.5px solid var(--brd);border-radius:12px;padding:16px;transition:all .2s;cursor:pointer" onclick="${c.action}" onmouseover="this.style.borderColor='rgba(107,63,255,.35)'" onmouseout="this.style.borderColor='rgba(255,255,255,.07)'">
+          <div style="font-size:28px;margin-bottom:8px">${c.icon}</div>
+          <div style="font-size:13px;font-weight:800;margin-bottom:4px">${c.title}</div>
+          <div style="font-size:10px;color:var(--muted);margin-bottom:12px;line-height:1.5">${c.sub}</div>
+          <button class="btn btn-amber" style="font-size:10px;padding:7px 14px;width:100%;justify-content:center">📜 Xem & Tải PDF</button>
+        </div>`).join('')
+      + `</div>`;
+  }
+
+  else if (id === 'stats') {
+    const races = d.races||[];
+    const staff = d.staff||[];
+    const totalPts = Number(d.user.totalPointsEver)||0;
+    const rankInfo = getRank(totalPts);
+    const ciRaces = races.filter(r=>String(r.checkedIn).toUpperCase()==='TRUE');
+    const distMap = {};
+    ciRaces.forEach(r => { distMap[r.distance] = (distMap[r.distance]||0)+1; });
+
+    tc.innerHTML = `
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px">
+        ${[
+          {icon:'🏁',label:'Races hoàn thành',val:ciRaces.length,color:'var(--v)'},
+          {icon:'📝',label:'Tổng đăng ký',val:races.length,color:'var(--ink)'},
+          {icon:'👥',label:'Lần làm TNV',val:staff.length,color:'var(--cyan)'},
+          {icon:'⭐',label:'Điểm cống hiến',val:totalPts,color:'var(--amber)'},
+        ].map(s=>`<div style="background:var(--bg2);border:1px solid var(--brd);border-radius:10px;padding:14px;text-align:center">
+          <div style="font-size:24px;margin-bottom:4px">${s.icon}</div>
+          <div style="font-family:'Syne';font-size:26px;font-weight:800;color:${s.color};line-height:1">${s.val}</div>
+          <div style="font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-top:3px">${s.label}</div>
+        </div>`).join('')}
+      </div>
+      <div class="card">
+        <div class="card-h"><div class="card-t">Cấp bậc & tiến độ</div></div>
+        <div class="card-b">
+          <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px">
+            <div style="font-size:32px">${rankInfo.icon}</div>
+            <div>
+              <div style="font-size:16px;font-weight:800">${rankInfo.name}</div>
+              <div style="font-size:10px;color:var(--muted)">${totalPts} điểm · Cần thêm ${Math.max(0,rankInfo.next-totalPts)} điểm lên ${rankInfo.nextName}</div>
+            </div>
+          </div>
+          <div class="rank-bar" style="height:9px"><div class="rank-fill" style="width:${Math.min(totalPts/rankInfo.next*100,100)}%"></div></div>
+          <div style="display:flex;justify-content:space-between;font-size:8px;color:var(--muted);margin-top:4px">
+            <span>${rankInfo.name}</span><span>${rankInfo.nextName} (${rankInfo.next}đ)</span>
+          </div>
+        </div>
+      </div>
+      ${Object.keys(distMap).length ? `<div class="card">
+        <div class="card-h"><div class="card-t">Cự ly yêu thích</div></div>
+        <div class="card-b" style="display:flex;gap:8px;flex-wrap:wrap">
+          ${Object.entries(distMap).sort((a,b)=>b[1]-a[1]).map(([k,v])=>`
+            <div style="padding:10px 14px;background:rgba(107,63,255,.08);border:1px solid rgba(107,63,255,.2);border-radius:8px;text-align:center">
+              <div style="font-family:'Syne';font-size:20px;font-weight:800;color:var(--v)">${v}</div>
+              <div style="font-size:10px;color:var(--muted)">${k}</div>
+            </div>`).join('')}
+        </div>
+      </div>` : ''}`;
+  }
+
+  else if (id === 'activity') {
+    if (!act.length) { tc.innerHTML = emptyState('📋','Chưa có hoạt động nào','Mọi hoạt động sẽ được ghi lại ở đây.'); return; }
+    const typeColor = {race_register:'var(--v)',race_checkin:'var(--green)',staff_register:'var(--cyan)',points_added:'var(--amber)'};
+    const typeLbl   = {race_register:'Đăng ký race',race_checkin:'Nhận BIB',staff_register:'Đăng ký TNV',points_added:'Nhận điểm'};
+    tc.innerHTML = `<div class="timeline">${act.slice().reverse().map(a=>`
+      <div class="tl-item">
+        <div class="tl-dot tl-${a.activityType?.includes('checkin')?'checkin':a.activityType?.includes('staff')?'staff':a.activityType?.includes('points')?'points':'race'}"></div>
+        <div class="tl-card">
+          <div class="tl-top">
+            <div class="tl-title" style="color:${typeColor[a.activityType]||'var(--ink)'}">${typeLbl[a.activityType]||a.activityType}</div>
+            <div class="tl-time">${fmtDate(a.timestamp)}</div>
+          </div>
+          <div class="tl-sub">${a.detail||''}${a.raceName?' · '+a.raceName:''}</div>
+          ${Number(a.points)>0?`<div class="tl-pts">+${a.points} điểm cống hiến</div>`:''}
+        </div>
+      </div>`).join('')}</div>`;
+  }
+}
+
+// ═══ CERTIFICATE GENERATOR ═══
+let _certData = null;
+
+function previewCert(type, bib, detail, date, pts) {
+  _certData = { type, bib, detail, date, pts };
+  const canvas = document.getElementById('certCanvas');
+  const u = userData?.user || {};
+  const cfg = JSON.parse(localStorage.getItem('race_config_cache')||'{}');
+  drawCertificate(canvas, type, u.fullName||'—', bib, detail, date, pts, cfg);
+  document.getElementById('certLabel').textContent = certTypeLabel(type);
+  certFileName = `HLRace_Certificate_${type.toUpperCase()}_${(u.fullName||'').replace(/\s/g,'_')}.png`;
+  document.getElementById('certPrev').classList.add('open');
+}
+
+function closeCert() { document.getElementById('certPrev').classList.remove('open'); }
+
+function downloadCert() {
+  const canvas = document.getElementById('certCanvas');
+  const link = document.createElement('a');
+  link.download = certFileName;
+  link.href = canvas.toDataURL('image/png', 1.0);
+  link.click();
+}
+
+function certTypeLabel(type) {
+  return {vdv:'Certificate hoàn thành race',tnv:'Certificate tình nguyện viên',btc:'Certificate ban tổ chức',sponsor:'Certificate nhà tài trợ'}[type]||'Certificate';
+}
+
+function drawCertificate(canvas, type, name, bib, detail, date, pts, cfg) {
+  // A4 landscape proportions at 2x for quality
+  const W = 1122, H = 794;
+  canvas.width = W; canvas.height = H;
+  const ctx = canvas.getContext('2d');
+
+  // BACKGROUND GRADIENT
+  const bg = ctx.createLinearGradient(0,0,W,H);
+  if (type==='vdv')     { bg.addColorStop(0,'#0B0C20'); bg.addColorStop(1,'#1A0A2E'); }
+  else if (type==='tnv'){ bg.addColorStop(0,'#0A1A15'); bg.addColorStop(1,'#001A10'); }
+  else if (type==='btc'){ bg.addColorStop(0,'#1A0C00'); bg.addColorStop(1,'#0A0A00'); }
+  else                  { bg.addColorStop(0,'#0A0A1A'); bg.addColorStop(1,'#15000A'); }
+  ctx.fillStyle = bg; ctx.fillRect(0,0,W,H);
+
+  // ACCENT COLOR per type
+  const acc = {vdv:'#6B3FFF',tnv:'#00CC7A',btc:'#FFB020',sponsor:'#FF3D7A'}[type]||'#6B3FFF';
+  const acc2= {vdv:'#FF3D7A',tnv:'#00C8D4',btc:'#FF6D00',sponsor:'#FFB020'}[type]||'#FF3D7A';
+
+  // DECORATIVE — left gradient band
+  const lb = ctx.createLinearGradient(0,0,0,H);
+  lb.addColorStop(0,acc+'33'); lb.addColorStop(.5,acc+'88'); lb.addColorStop(1,acc+'33');
+  ctx.fillStyle = lb; ctx.fillRect(0,0,8,H);
+
+  // DECORATIVE — circles
+  ctx.save();
+  const c1 = ctx.createRadialGradient(W,0,10,W,0,300);
+  c1.addColorStop(0,acc+'22'); c1.addColorStop(1,'transparent');
+  ctx.fillStyle = c1; ctx.beginPath(); ctx.arc(W,0,300,0,Math.PI*2); ctx.fill();
+  const c2 = ctx.createRadialGradient(0,H,10,0,H,250);
+  c2.addColorStop(0,acc2+'18'); c2.addColorStop(1,'transparent');
+  ctx.fillStyle = c2; ctx.beginPath(); ctx.arc(0,H,250,0,Math.PI*2); ctx.fill();
+  ctx.restore();
+
+  // BORDER
+  ctx.strokeStyle = acc+'44'; ctx.lineWidth = 1.5;
+  ctx.strokeRect(20,20,W-40,H-40);
+  ctx.strokeStyle = acc+'22'; ctx.lineWidth = .8;
+  ctx.strokeRect(26,26,W-52,H-52);
+
+  // LOGO / ORG NAME
+  ctx.fillStyle = acc;
+  ctx.font = 'bold 14px JetBrains Mono, monospace';
+  ctx.letterSpacing = '3px';
+  ctx.fillText('VRACE.VN', 54, 62);
+
+  // RACE NAME
+  ctx.fillStyle = 'rgba(255,255,255,0.35)';
+  ctx.font = '11px Outfit, sans-serif';
+  const raceName = cfg.raceName || 'HLRace Event 2026';
+  ctx.fillText(raceName.toUpperCase(), 54, 82);
+
+  // CERT TYPE LABEL (top right)
+  const typeLabels = {vdv:'GIẤY CHỨNG NHẬN HOÀN THÀNH',tnv:'GIẤY CHỨNG NHẬN TÌNH NGUYỆN VIÊN',btc:'GIẤY CHỨNG NHẬN BAN TỔ CHỨC',sponsor:'GIẤY XÁC NHẬN TÀI TRỢ'};
+  ctx.fillStyle = acc+'CC';
+  ctx.font = 'bold 11px JetBrains Mono, monospace';
+  ctx.textAlign = 'right';
+  ctx.fillText(typeLabels[type]||'CERTIFICATE', W-54, 62);
+  ctx.textAlign = 'left';
+
+  // DIVIDER LINE
+  const dg = ctx.createLinearGradient(54,0,W-54,0);
+  dg.addColorStop(0,acc); dg.addColorStop(.5,acc2); dg.addColorStop(1,acc);
+  ctx.strokeStyle = dg; ctx.lineWidth = 1.5;
+  ctx.beginPath(); ctx.moveTo(54,96); ctx.lineTo(W-54,96); ctx.stroke();
+
+  // MAIN: "CHỨNG NHẬN" label
+  ctx.fillStyle = 'rgba(255,255,255,0.2)';
+  ctx.font = '13px JetBrains Mono, monospace';
+  ctx.fillText('XIN TRÂN TRỌNG CHỨNG NHẬN', 54, 145);
+
+  // NAME — large
+  ctx.fillStyle = '#FFFFFF';
+  const nameSize = name.length > 25 ? 42 : name.length > 18 ? 50 : 58;
+  ctx.font = `bold ${nameSize}px Syne, sans-serif`;
+  ctx.fillText(name, 54, 220);
+
+  // UNDERLINE NAME
+  const nameW = ctx.measureText(name).width;
+  const ng = ctx.createLinearGradient(54,0,54+nameW,0);
+  ng.addColorStop(0,acc); ng.addColorStop(1,acc2);
+  ctx.strokeStyle = ng; ctx.lineWidth = 2;
+  ctx.beginPath(); ctx.moveTo(54,228); ctx.lineTo(Math.min(54+nameW, W-100),228); ctx.stroke();
+
+  // DESCRIPTION based on type
+  ctx.fillStyle = 'rgba(255,255,255,0.65)';
+  ctx.font = '16px Outfit, sans-serif';
+  if (type==='vdv') {
+    ctx.fillText(`đã hoàn thành race ${detail||''}`, 54, 268);
+    ctx.fillText(`tại sự kiện ${raceName}`, 54, 292);
+  } else if (type==='tnv') {
+    ctx.fillText(`đã tham gia tình nguyện với vai trò`, 54, 268);
+    ctx.fillText(`${detail||'Tình nguyện viên'} tại sự kiện ${raceName}`, 54, 292);
+  } else if (type==='btc') {
+    ctx.fillText(`đã đóng góp vào công tác tổ chức`, 54, 268);
+    ctx.fillText(`sự kiện ${raceName}`, 54, 292);
+  } else {
+    ctx.fillText(`đã đồng hành tài trợ cho sự kiện`, 54, 268);
+    ctx.fillText(raceName, 54, 292);
+  }
+
+  // INFO BOXES bottom left
+  const boxes = [];
+  if (type==='vdv') {
+    if (bib)    boxes.push({lbl:'SỐ BIB', val:bib});
+    if (detail) boxes.push({lbl:'CỰ LY', val:detail});
+    boxes.push({lbl:'NGÀY', val:date||cfg.raceDate||'21/03/2026'});
+    if (cfg.racePlace) boxes.push({lbl:'ĐỊA ĐIỂM', val:cfg.racePlace.substring(0,22)});
+  } else if (type==='tnv') {
+    boxes.push({lbl:'VAI TRÒ', val:detail||'TNV'});
+    if (pts) boxes.push({lbl:'ĐIỂM CĐ', val:pts+'⭐'});
+    boxes.push({lbl:'NGÀY', val:date||cfg.raceDate||'21/03/2026'});
+  } else {
+    boxes.push({lbl:'NGÀY', val:date||cfg.raceDate||'21/03/2026'});
+    if (cfg.racePlace) boxes.push({lbl:'ĐỊA ĐIỂM', val:cfg.racePlace.substring(0,22)});
+  }
+
+  let bx = 54;
+  boxes.forEach(b => {
+    const bw = Math.max(b.val.length * 10 + 30, 100);
+    ctx.fillStyle = acc+'18';
+    roundRect(ctx, bx, H-160, bw, 68, 8);
+    ctx.fill();
+    ctx.strokeStyle = acc+'40'; ctx.lineWidth = 1;
+    roundRect(ctx, bx, H-160, bw, 68, 8);
+    ctx.stroke();
+    ctx.fillStyle = acc+'99';
+    ctx.font = 'bold 8px JetBrains Mono, monospace';
+    ctx.fillText(b.lbl, bx+12, H-140);
+    ctx.fillStyle = '#FFFFFF';
+    ctx.font = 'bold 16px Outfit, sans-serif';
+    ctx.fillText(b.val, bx+12, H-112);
+    bx += bw + 10;
+  });
+
+  // SPONSOR LOGO area (right side)
+  ctx.fillStyle = 'rgba(255,255,255,0.05)';
+  roundRect(ctx, W-220, H-190, 166, 60, 8); ctx.fill();
+  ctx.fillStyle = 'rgba(255,255,255,0.2)';
+  ctx.font = '10px JetBrains Mono, monospace';
+  ctx.textAlign = 'center';
+  ctx.fillText(cfg.sponsorName||'PHỞ ĐỆ NHẤT', W-220+83, H-154);
+  ctx.font = '9px JetBrains Mono, monospace';
+  ctx.fillStyle = 'rgba(255,255,255,0.1)';
+  ctx.fillText('NHÀ TÀI TRỢ CHÍNH', W-220+83, H-170);
+  ctx.textAlign = 'left';
+
+  // SIGNATURE LINE
+  ctx.strokeStyle = 'rgba(255,255,255,0.15)'; ctx.lineWidth = 1;
+  ctx.beginPath(); ctx.moveTo(W-220, H-80); ctx.lineTo(W-60, H-80); ctx.stroke();
+  ctx.fillStyle = 'rgba(255,255,255,0.3)';
+  ctx.font = '10px JetBrains Mono, monospace';
+  ctx.textAlign = 'center';
+  ctx.fillText('BAN TỔ CHỨC', W-140, H-65);
+  ctx.fillText(cfg.orgName||'VRACE.VN', W-140, H-50);
+  ctx.textAlign = 'left';
+
+  // BOTTOM LINE
+  ctx.strokeStyle = acc+'30'; ctx.lineWidth = 1;
+  ctx.beginPath(); ctx.moveTo(54, H-32); ctx.lineTo(W-54, H-32); ctx.stroke();
+  ctx.fillStyle = 'rgba(255,255,255,0.15)';
+  ctx.font = '9px JetBrains Mono, monospace';
+  ctx.fillText('vrace.vn · ' + (cfg.contactEmail||'lehoang81@gmail.com') + ' · ' + (cfg.contactPhone||'0904 028 281'), 54, H-18);
+  const verifyCode = 'VR-'+Date.now().toString(36).toUpperCase().substr(-8);
+  ctx.textAlign = 'right';
+  ctx.fillText('Mã xác thực: ' + verifyCode, W-54, H-18);
+  ctx.textAlign = 'left';
+}
+
+function roundRect(ctx, x, y, w, h, r) {
+  ctx.beginPath();
+  ctx.moveTo(x+r,y);
+  ctx.lineTo(x+w-r,y); ctx.quadraticCurveTo(x+w,y,x+w,y+r);
+  ctx.lineTo(x+w,y+h-r); ctx.quadraticCurveTo(x+w,y+h,x+w-r,y+h);
+  ctx.lineTo(x+r,y+h); ctx.quadraticCurveTo(x,y+h,x,y+h-r);
+  ctx.lineTo(x,y+r); ctx.quadraticCurveTo(x,y,x+r,y);
+  ctx.closePath();
+}
+
+// ═══ HELPERS ═══
+function getRank(pts) {
+  if (pts >= 500) return {icon:'⭐',name:'Tiêu Biểu',next:1000,nextName:'Huyền Thoại'};
+  if (pts >= 300) return {icon:'🔴',name:'Xuất Sắc',next:500,nextName:'Tiêu Biểu'};
+  if (pts >= 150) return {icon:'🟠',name:'Nòng Cốt',next:300,nextName:'Xuất Sắc'};
+  if (pts >= 50)  return {icon:'🔵',name:'Tích Cực',next:150,nextName:'Nòng Cốt'};
+  return {icon:'🌱',name:'Mới',next:50,nextName:'Tích Cực'};
+}
+
+function calcStreak(activity) {
+  if (!activity.length) return 0;
+  const months = [...new Set(activity
+    .filter(a=>a.activityType==='race_register'||a.activityType==='staff_register')
+    .map(a=>new Date(a.timestamp).toISOString().substr(0,7)))].sort();
+  if (!months.length) return 0;
+  let streak = 1, max = 1;
+  for (let i=1;i<months.length;i++) {
+    const prev = new Date(months[i-1]+'-01');
+    const cur  = new Date(months[i]+'-01');
+    const diff = (cur - prev) / (1000*60*60*24*28);
+    if (diff <= 1.2) { streak++; max = Math.max(max,streak); } else streak = 1;
+  }
+  return max;
+}
+
+function fmtDate(str) {
+  if (!str) return '—';
+  try { const d=new Date(str); return isNaN(d)?String(str).substr(0,10):d.toLocaleDateString('vi-VN',{day:'2-digit',month:'2-digit',year:'numeric'}); }
+  catch(e){ return String(str).substr(0,10); }
+}
+function fmtDateShort(str) {
+  if (!str) return new Date().toLocaleDateString('vi-VN');
+  try { return new Date(str).toLocaleDateString('vi-VN',{day:'2-digit',month:'2-digit',year:'numeric'}); }
+  catch(e){ return String(str).substr(0,10); }
+}
+function showMsg(id, msg, cls) {
+  const el=document.getElementById(id);
+  el.className='lk-msg '+cls; el.textContent=msg; el.style.display='block';
+}
+function emptyState(icon, title, sub) {
+  return `<div class="empty-state"><div class="ei">${icon}</div><div style="font-weight:700;margin-bottom:5px">${title}</div><div>${sub}</div></div>`;
+}
+
+
+// ═══ DEMO MODE ═══
+function demoProfile() {
+  const DEMO = {
+    user:{userId:'U-DEMO-001',phone:'0912345678',fullName:'Nguyễn Văn Minh',gender:'Nam',dob:'1990-05-15',city:'Hà Nội',shirtSize:'M',email:'minh@example.com',createdAt:'2026-01-15T08:00:00Z',totalRaces:3,totalPointsEver:185,lastActive:'2026-03-10T09:00:00Z'},
+    races:[
+      {id:'r1',rowIndex:2,timestamp:'2026-01-15T08:30:00Z',status:'approved',fullName:'Nguyễn Văn Minh',phone:'0912345678',distance:'5km',shirtSize:'M',bibNumber:'5K-001',checkedIn:'TRUE',checkedInTime:'2026-01-21T06:30:00Z'},
+      {id:'r2',rowIndex:5,timestamp:'2026-02-20T09:00:00Z',status:'approved',fullName:'Nguyễn Văn Minh',phone:'0912345678',distance:'5km',shirtSize:'M',bibNumber:'5K-047',checkedIn:'TRUE',checkedInTime:'2026-02-21T06:45:00Z'},
+      {id:'r3',rowIndex:12,timestamp:'2026-03-10T10:00:00Z',status:'pending',fullName:'Nguyễn Văn Minh',phone:'0912345678',distance:'10km',shirtSize:'M',bibNumber:'',checkedIn:'FALSE',checkedInTime:''},
+    ],
+    staff:[
+      {id:'s1',rowIndex:3,timestamp:'2026-01-10T09:00:00Z',status:'approved',roleId:'pacer',roleName:'Pacer',roleIcon:'🏃',totalPoints:80,eventsCount:1},
+      {id:'s2',rowIndex:7,timestamp:'2026-02-12T10:00:00Z',status:'approved',roleId:'tnv',roleName:'Tình nguyện viên',roleIcon:'👥',totalPoints:65,eventsCount:1},
+    ],
+    activity:[
+      {logId:'L1',phone:'0912345678',activityType:'race_register',raceId:'RACE-202601',raceName:'HLRace Tháng 1',detail:'5km · Nguyễn Văn Minh',points:0,timestamp:'2026-01-15T08:30:00Z'},
+      {logId:'L2',phone:'0912345678',activityType:'staff_register',raceId:'RACE-202601',raceName:'HLRace Tháng 1',detail:'Pacer · Nguyễn Văn Minh',points:10,timestamp:'2026-01-10T09:00:00Z'},
+      {logId:'L3',phone:'0912345678',activityType:'race_checkin',raceId:'RACE-202601',raceName:'HLRace Tháng 1',detail:'BIB: 5K-001',points:0,timestamp:'2026-01-21T06:30:00Z'},
+      {logId:'L4',phone:'0912345678',activityType:'points_added',raceId:'RACE-202601',raceName:'HLRace Tháng 1',detail:'Tham gia đủ ca pacer',points:70,timestamp:'2026-01-22T08:00:00Z'},
+      {logId:'L5',phone:'0912345678',activityType:'race_register',raceId:'RACE-202602',raceName:'HLRace Tháng 2',detail:'5km · Nguyễn Văn Minh',points:0,timestamp:'2026-02-20T09:00:00Z'},
+      {logId:'L6',phone:'0912345678',activityType:'race_checkin',raceId:'RACE-202602',raceName:'HLRace Tháng 2',detail:'BIB: 5K-047',points:0,timestamp:'2026-02-21T06:45:00Z'},
+      {logId:'L7',phone:'0912345678',activityType:'points_added',raceId:'RACE-202602',raceName:'HLRace Tháng 2',detail:'Tình nguyện viên xuất sắc',points:65,timestamp:'2026-02-22T09:00:00Z'},
+      {logId:'L8',phone:'0912345678',activityType:'race_register',raceId:'RACE-202603',raceName:'HLRace Tháng 3',detail:'10km · Nguyễn Văn Minh',points:0,timestamp:'2026-03-10T10:00:00Z'},
+    ]
+  };
+  userData = DEMO;
+  renderProfile(DEMO);
+  document.getElementById("lookupScreen").style.display = "none";
+  document.getElementById("profileScreen").style.display = "block";
+}
+
+// AUTO-FILL phone from last session
+window.addEventListener('DOMContentLoaded', () => {
+  const saved = localStorage.getItem('vrace_last_phone');
+  if (saved) document.getElementById('phoneInput').value = saved;
+});
+</script>
+</body>
+</html>

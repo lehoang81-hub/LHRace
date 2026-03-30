@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HLRace — i18n + TTS Demo</title>
+<script src="hlrace-i18n.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#08090D;--s1:#0F1015;--s2:#161820;
+  --ink:#F2F0FF;--ink2:#9896B8;--muted:#4A4860;
+  --v:#7C5CFF;--gold:#FFD060;--ember:#FF5C35;--green:#00CC7A;
+  --br:rgba(124,92,255,.12);
+}
+body{background:var(--bg);color:var(--ink);font-family:'DM Sans',sans-serif;min-height:100vh;padding:0 0 120px}
+
+/* ── HEADER ── */
+.hdr{padding:28px 24px 0;max-width:680px;margin:0 auto}
+.eyebrow{font-family:'DM Mono';font-size:9px;letter-spacing:3px;text-transform:uppercase;color:var(--v);margin-bottom:10px}
+.hdr-h{font-family:'Syne';font-size:clamp(32px,7vw,56px);font-weight:800;line-height:.95;letter-spacing:-1px;margin-bottom:10px;
+  background:linear-gradient(135deg,var(--gold),var(--ember));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.hdr-sub{font-size:13px;color:var(--ink2);line-height:1.7;max-width:480px;margin-bottom:24px}
+
+/* ── SECTION ── */
+.wrap{max-width:680px;margin:0 auto;padding:0 24px}
+.sec{margin:32px 0}
+.sec-tag{font-family:'DM Mono';font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:8px;
+  display:flex;align-items:center;gap:8px}
+.sec-tag::after{content:'';flex:1;height:1px;background:rgba(255,255,255,.05)}
+.sec-h{font-family:'Syne';font-size:18px;font-weight:800;margin-bottom:4px}
+.sec-sub{font-size:12px;color:var(--ink2);margin-bottom:16px;line-height:1.6}
+
+/* ── CARDS ── */
+.card{background:var(--s1);border:1px solid var(--br);border-radius:14px;padding:20px;margin-bottom:12px}
+.card-title{font-weight:700;font-size:14px;margin-bottom:4px}
+.card-body{font-size:13px;color:var(--ink2);line-height:1.7}
+
+/* ── FORM ── */
+.field{margin-bottom:14px}
+.field label{display:block;font-size:11px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:var(--ink2);margin-bottom:6px}
+.field input,.field select{width:100%;padding:11px 14px;background:var(--s2);border:1.5px solid rgba(255,255,255,.08);
+  border-radius:10px;color:var(--ink);font-size:14px;font-family:inherit;outline:none;transition:border-color .2s}
+.field input:focus,.field select:focus{border-color:var(--v)}
+.field select option{background:var(--s2)}
+
+/* ── BUTTONS ── */
+.btn-row{display:flex;gap:10px;flex-wrap:wrap;margin-top:6px}
+.btn{padding:11px 20px;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;
+  border:none;transition:all .2s;letter-spacing:.3px}
+.btn-primary{background:var(--v);color:#fff}
+.btn-primary:hover{background:#9070FF;transform:translateY(-1px)}
+.btn-outline{background:transparent;border:1.5px solid rgba(255,255,255,.15);color:var(--ink2)}
+.btn-outline:hover{border-color:var(--v);color:var(--v)}
+
+/* ── MERIT ── */
+.merit-row{display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid rgba(255,255,255,.04)}
+.merit-row:last-child{border:none}
+.merit-icon{font-size:22px;width:40px;text-align:center;flex-shrink:0}
+.merit-info{flex:1}
+.merit-label{font-size:13px;font-weight:600;margin-bottom:2px}
+.merit-note{font-size:11px;color:var(--muted)}
+.merit-pts{font-family:'DM Mono';font-size:13px;font-weight:700;color:var(--green)}
+
+/* ── LANG DEMO ── */
+.lang-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:8px}
+.lang-card{background:var(--s2);border:1.5px solid var(--br);border-radius:10px;padding:12px 14px;
+  cursor:pointer;transition:all .2s;text-align:center}
+.lang-card:hover{border-color:var(--v);background:rgba(124,92,255,.06)}
+.lang-card .flag{font-size:24px;margin-bottom:4px}
+.lang-card .name{font-size:11px;font-weight:600;color:var(--ink2)}
+.lang-card .native{font-size:10px;color:var(--muted)}
+
+/* ── TTS DEMO ── */
+.tts-demo{background:var(--s1);border:1.5px solid rgba(0,204,122,.15);border-radius:14px;padding:20px}
+.tts-feature{display:flex;align-items:flex-start;gap:14px;padding:12px 0;border-bottom:1px solid rgba(255,255,255,.04)}
+.tts-feature:last-child{border:none}
+.tf-icon{font-size:24px;width:36px;flex-shrink:0;padding-top:2px}
+.tf-info{flex:1}
+.tf-title{font-size:13px;font-weight:700;margin-bottom:3px}
+.tf-desc{font-size:12px;color:var(--muted);line-height:1.6}
+
+/* ── STATUS INDICATOR ── */
+.status-bar{display:flex;align-items:center;gap:8px;padding:10px 14px;background:rgba(0,204,122,.06);
+  border:1px solid rgba(0,204,122,.2);border-radius:10px;font-size:12px;margin-bottom:20px}
+.status-dot{width:8px;height:8px;border-radius:50%;background:var(--green);flex-shrink:0;
+  animation:pulse-green 2s ease-in-out infinite}
+@keyframes pulse-green{0%,100%{opacity:1}50%{opacity:.4}}
+
+/* ── RUNNER CARD ── */
+.runner-card{background:var(--s1);border:1px solid var(--br);border-radius:14px;padding:16px;
+  display:flex;gap:14px;align-items:flex-start}
+.rc-avatar{width:44px;height:44px;border-radius:50%;background:linear-gradient(135deg,var(--v),var(--ember));
+  display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
+.rc-name{font-size:14px;font-weight:700;margin-bottom:2px}
+.rc-sub{font-size:11px;color:var(--muted)}
+.rc-tags{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+.tag{padding:3px 9px;border-radius:20px;font-size:10px;font-weight:600;
+  background:rgba(124,92,255,.12);border:1px solid rgba(124,92,255,.2);color:var(--v)}
+
+/* ── ACCESSIBILITY NOTICE ── */
+.a11y-notice{background:rgba(255,208,96,.06);border:1px solid rgba(255,208,96,.2);
+  border-radius:12px;padding:16px;font-size:12px;line-height:1.7;color:var(--ink2);margin-top:24px}
+.a11y-notice strong{color:var(--gold)}
+</style>
+</head>
+<body>
+
+<div class="hdr">
+  <div class="eyebrow">HLRace · i18n + TTS · Demo</div>
+  <h1 class="hdr-h" data-tts data-tts-text="HLRace - Ngôn ngữ và Giọng đọc">
+    Language<br>& Voice
+  </h1>
+  <p class="hdr-sub" data-tts data-i18n="app.tagline">
+    Hạ tầng kết nối cộng đồng chạy bộ Việt Nam
+  </p>
+</div>
+
+<div class="wrap">
+
+  <!-- Status -->
+  <div class="status-bar">
+    <div class="status-dot"></div>
+    <span id="tts-status">Web Speech API: <strong>Sẵn sàng</strong> · Không cần cài thêm gì</span>
+  </div>
+
+  <!-- SECTION 1: Chọn ngôn ngữ -->
+  <div class="sec">
+    <div class="sec-tag">01 · Đa ngôn ngữ</div>
+    <h2 class="sec-h" data-tts data-i18n="lang.select">Chọn ngôn ngữ</h2>
+    <p class="sec-sub">Nhấn vào một ngôn ngữ bên dưới — toàn bộ trang sẽ đổi ngay lập tức, không tải lại. Lần sau vào lại sẽ nhớ lựa chọn của bạn.</p>
+
+    <div class="lang-grid">
+      <div class="lang-card" onclick="HLi18n.setLang('vi')">
+        <div class="flag">🇻🇳</div>
+        <div class="name">Tiếng Việt</div>
+        <div class="native">Vietnamese</div>
+      </div>
+      <div class="lang-card" onclick="HLi18n.setLang('en')">
+        <div class="flag">🇬🇧</div>
+        <div class="name">English</div>
+        <div class="native">International</div>
+      </div>
+      <div class="lang-card" onclick="HLi18n.setLang('ja')">
+        <div class="flag">🇯🇵</div>
+        <div class="name">日本語</div>
+        <div class="native">Japanese</div>
+      </div>
+      <div class="lang-card" onclick="HLi18n.setLang('ko')">
+        <div class="flag">🇰🇷</div>
+        <div class="name">한국어</div>
+        <div class="native">Korean</div>
+      </div>
+      <div class="lang-card" onclick="HLi18n.setLang('zh')">
+        <div class="flag">🇨🇳</div>
+        <div class="name">中文</div>
+        <div class="native">Chinese</div>
+      </div>
+      <div class="lang-card" onclick="HLi18n.setLang('th_vn')">
+        <div class="flag">🇹🇭</div>
+        <div class="name">ภาษาไทย</div>
+        <div class="native">Thai / Tây Bắc</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SECTION 2: Form đăng ký (dynamic text) -->
+  <div class="sec">
+    <div class="sec-tag">02 · Đăng ký Race</div>
+    <h2 class="sec-h" data-tts data-i18n="reg.title">Đăng Ký Giải Chạy</h2>
+    <p class="sec-sub">Tất cả nhãn và placeholder đổi ngôn ngữ cùng lúc.</p>
+
+    <div style="background:var(--s1);border:1px solid var(--br);border-radius:14px;padding:20px">
+      <div class="field">
+        <label data-i18n="reg.name">Họ và tên</label>
+        <input type="text" data-i18n-placeholder="reg.name" placeholder="Họ và tên">
+      </div>
+      <div class="field">
+        <label data-i18n="reg.phone">Số điện thoại</label>
+        <input type="tel" data-i18n-placeholder="reg.phone" placeholder="Số điện thoại">
+      </div>
+      <div class="field">
+        <label data-i18n="reg.gender">Giới tính</label>
+        <select>
+          <option data-i18n="reg.gender.male">Nam</option>
+          <option data-i18n="reg.gender.female">Nữ</option>
+        </select>
+      </div>
+      <div class="field">
+        <label data-i18n="reg.distance">Cự ly</label>
+        <select>
+          <option>25K — 800.000đ</option>
+          <option>50K — 1.200.000đ</option>
+          <option>100K — 1.800.000đ</option>
+        </select>
+      </div>
+      <div class="btn-row">
+        <button class="btn btn-primary" data-tts data-i18n="reg.submit">Đăng ký ngay</button>
+        <button class="btn btn-outline" data-i18n="btn.cancel">Huỷ</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- SECTION 3: TTS Demo -->
+  <div class="sec">
+    <div class="sec-tag">03 · Text-to-Speech</div>
+    <h2 class="sec-h">Nghe nội dung</h2>
+    <p class="sec-sub">Nhấn nút 🔊 cạnh mỗi đoạn văn để nghe. Double-click vào văn bản cũng kích hoạt. Nút <strong>🔊 ở góc phải dưới</strong> đọc toàn bộ trang.</p>
+
+    <div class="tts-demo">
+      <div class="tts-feature">
+        <div class="tf-icon">👆</div>
+        <div class="tf-info">
+          <div class="tf-title" data-tts data-tts-text="Nhấn nút loa cạnh văn bản để nghe">Click nút 🔊 cạnh văn bản</div>
+          <div class="tf-desc" data-tts>Mỗi đoạn văn quan trọng có nút loa nhỏ ở cuối. Nhấn để nghe giọng đọc bằng ngôn ngữ hiện tại.</div>
+        </div>
+      </div>
+      <div class="tts-feature">
+        <div class="tf-icon">✌️</div>
+        <div class="tf-info">
+          <div class="tf-title" data-tts data-tts-text="Double click để nghe nhanh">Double-click để nghe</div>
+          <div class="tf-desc" data-tts>Nhấn đúp vào bất kỳ đoạn văn có thể nghe để kích hoạt giọng đọc — không cần tìm nút bấm.</div>
+        </div>
+      </div>
+      <div class="tts-feature">
+        <div class="tf-icon">🌐</div>
+        <div class="tf-info">
+          <div class="tf-title" data-tts data-tts-text="Giọng đọc tự động đổi theo ngôn ngữ">Giọng đổi theo ngôn ngữ</div>
+          <div class="tf-desc" data-tts>Khi bạn chuyển sang tiếng Anh, Nhật, Hàn... giọng đọc sẽ tự động dùng đúng ngữ âm. Không đọc sai tiếng.</div>
+        </div>
+      </div>
+      <div class="tts-feature">
+        <div class="tf-icon">📱</div>
+        <div class="tf-info">
+          <div class="tf-title" data-tts data-tts-text="Không cần internet thêm, không cần cài app">Zero dependency</div>
+          <div class="tf-desc" data-tts>Web Speech API là tính năng sẵn có trên trình duyệt — không cần server, không cần API key, không tốn thêm chi phí.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SECTION 4: Runner card (nội dung dynamic) -->
+  <div class="sec">
+    <div class="sec-tag">04 · Kết nối Runner</div>
+    <h2 class="sec-h" data-tts data-i18n="connect.title">Kết nối Runner</h2>
+
+    <div class="runner-card" style="margin-bottom:10px">
+      <div class="rc-avatar">🏃‍♀️</div>
+      <div style="flex:1">
+        <div class="rc-name" data-tts>Nguyễn Minh Khoa</div>
+        <div class="rc-sub" data-tts>Tây Hồ, Hà Nội · 5:20/km · Trail</div>
+        <div class="rc-tags">
+          <span class="tag" data-tts data-i18n="connect.carpool">Đi chung xe</span>
+          <span class="tag" data-tts data-i18n="connect.gear_lend">Mượn/cho mượn gear</span>
+        </div>
+      </div>
+      <button class="btn btn-primary" style="font-size:12px;padding:8px 14px;align-self:center" data-i18n="connect.match">Kết nối</button>
+    </div>
+
+    <div class="runner-card">
+      <div class="rc-avatar">🏃</div>
+      <div style="flex:1">
+        <div class="rc-name" data-tts>Phạm Đức Long</div>
+        <div class="rc-sub" data-tts>Hoàn Kiếm, Hà Nội · 5:00/km · Trail + TNV</div>
+        <div class="rc-tags">
+          <span class="tag" data-tts data-i18n="connect.carpool">Đi chung xe</span>
+          <span class="tag" data-tts data-i18n="connect.roomshare">Ở chung phòng</span>
+        </div>
+      </div>
+      <button class="btn btn-outline" style="font-size:12px;padding:8px 14px;align-self:center" data-i18n="connect.match">Kết nối</button>
+    </div>
+  </div>
+
+  <!-- SECTION 5: Điểm công đức -->
+  <div class="sec">
+    <div class="sec-tag">05 · Merit Points</div>
+    <h2 class="sec-h" data-tts data-i18n="merit.title">Điểm Công Đức</h2>
+
+    <div class="card">
+      <div class="merit-row">
+        <div class="merit-icon">🏆</div>
+        <div class="merit-info">
+          <div class="merit-label" data-tts data-i18n="merit.action.race">Hoàn thành race</div>
+          <div class="merit-note" data-tts>Sapa 100K · 26/05/2025</div>
+        </div>
+        <div class="merit-pts">+50 <span data-i18n="merit.points">điểm</span></div>
+      </div>
+      <div class="merit-row">
+        <div class="merit-icon">🤝</div>
+        <div class="merit-info">
+          <div class="merit-label" data-tts data-i18n="merit.action.lend">Cho mượn gear</div>
+          <div class="merit-note" data-tts>Poles Black Diamond</div>
+        </div>
+        <div class="merit-pts">+30 <span data-i18n="merit.points">điểm</span></div>
+      </div>
+      <div class="merit-row">
+        <div class="merit-icon">💙</div>
+        <div class="merit-info">
+          <div class="merit-label" data-tts data-i18n="merit.action.charity">Tặng BIB từ thiện</div>
+          <div class="merit-note" data-tts>BIB 25K Sapa → HLRace Charity</div>
+        </div>
+        <div class="merit-pts">+55 <span data-i18n="merit.points">điểm</span></div>
+      </div>
+      <div style="margin-top:14px">
+        <button class="btn btn-primary" data-tts data-i18n="merit.donate">Quy đổi từ thiện</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Accessibility notice -->
+  <div class="a11y-notice" data-tts data-tts-text="HLRace hỗ trợ đầy đủ cho người dùng quốc tế, người khiếm thị, và người không biết chữ">
+    <strong>♿ Accessibility</strong> — Tính năng này hỗ trợ:<br>
+    • Người dùng quốc tế (7 ngôn ngữ, tự nhận diện trình duyệt)<br>
+    • Người khiếm thị / mắt kém (Web Speech API, không cần cài thêm)<br>
+    • Người không biết chữ / dân tộc thiểu số (đọc to giao diện theo tiếng bản địa)<br>
+    • Lưu lựa chọn ngôn ngữ — không cần chọn lại mỗi lần
+  </div>
+
+  <!-- Dev notes -->
+  <div style="margin-top:32px;padding:16px;background:var(--s2);border-radius:12px;font-family:'DM Mono';font-size:11px;color:var(--muted)">
+    <div style="color:var(--v);margin-bottom:8px">// Cách tích hợp vào file HTML bất kỳ</div>
+    <div>&lt;script src="hlrace-i18n.js"&gt;&lt;/script&gt;</div>
+    <div style="margin-top:6px;color:var(--muted)">// Đánh dấu text cần dịch:</div>
+    <div>&lt;span <span style="color:var(--gold)">data-i18n</span>="reg.title"&gt;Đăng ký&lt;/span&gt;</div>
+    <div style="margin-top:6px;color:var(--muted)">// Đánh dấu text cần có nút loa:</div>
+    <div>&lt;p <span style="color:var(--gold)">data-tts</span>&gt;Nội dung muốn đọc to&lt;/p&gt;</div>
+    <div style="margin-top:6px;color:var(--muted)">// Đổi ngôn ngữ bằng JS:</div>
+    <div>HLi18n.setLang(<span style="color:var(--ember)">'en'</span>);</div>
+    <div style="margin-top:6px;color:var(--muted)">// Đọc to một đoạn text:</div>
+    <div>HLi18n.speak(<span style="color:var(--ember)">'Chào mừng đến với HLRace'</span>);</div>
+  </div>
+
+</div>
+
+<script>
+// Kiểm tra TTS support
+if (!('speechSynthesis' in window)) {
+  document.getElementById('tts-status').innerHTML =
+    'Web Speech API: <strong style="color:#FF5C35">Trình duyệt này không hỗ trợ TTS</strong> · Khuyến nghị dùng Chrome/Edge/Safari';
+}
+
+// Khi ngôn ngữ thay đổi → cập nhật UI lang cards
+window.addEventListener('hlrace:langchange', (e) => {
+  const lang = e.detail.lang;
+  // Có thể hook thêm logic tại đây
+  console.log('[HLRace] Language changed to:', lang);
+});
+</script>
+
+</body>
+</html>

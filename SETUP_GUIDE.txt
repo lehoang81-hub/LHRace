@@ -1,0 +1,416 @@
+================================================================================
+  HUONG DAN SETUP HOAN CHINH -- HLRace Platform v17
+  Google Sheets + Google Drive + Netlify + Claude API
+  Cap nhat: Thang 3/2026
+  Lien he: lehoang81@gmail.com | 0904 028 281
+================================================================================
+
+================================================================================
+TONG QUAN HE THONG
+================================================================================
+
+27 file HTML | Backend: Google Sheets + Apps Script
+AI: Claude API | Hosting: Netlify (mien phi)
+
+PHAN NHOM FILE:
+--------------------------------------------------------------------------------
+CORE RACE MANAGEMENT (dung hang ngay):
+  index.html              Form dang ky VDV (chay bo chuan)
+  index-extended.html     Form dang ky MO RONG:
+                            Run 5K/10K/21K + Duathlon + Triathlon
+                            Relay 3 mon + Kid Run
+                            Goi anh + BIB mau + NAG vi tri
+  admin.html              Dashboard BTC: quan ly VDV, duyet,
+                            cai dat, Claude AI assistant
+  checkin.html            Phat BIB ngay race
+  staff.html              Dang ky nhan su / TNV
+  leaderboard.html        Bang xep hang TNV
+  public.html             Danh sach VDV cong khai
+
+COMMUNITY FEATURES:
+  runner-connect.html     Ket noi runner, carpool, gear muon
+  marketplace.html        Marketplace gear
+  community-good.html     Diem cong duc + tu thien
+  my-profile.html         Ho so VDV + anh sau race + certificate
+  race-ocean.html         Kho gear + Claude AI tu van
+  group-fund.html         Quy nhom: chi tieu, quyet toan STK,
+                            nhat ky ky uc, bao cao AI
+  blind-bag.html          Boc tui mu: Pity system, Golden Hour
+  legacy-run.html         Legacy Run KOL campaign
+  race-infographic.html   Generator infographic ky uc sau race
+
+TRAIL SYSTEM:
+  trail-keeper.html       Form Trail Keeper tao trail 5 buoc
+                            Route -> Mua -> Khoanh khac ->
+                            Bi mat local -> Dinh gia + TEP Score
+  trail-experience.html   Trang nguoi mua: timeline cau chuyen,
+                            review cam xuc, tip cho keeper,
+                            wish list cai thien trail
+
+B2G / DOI TAC:
+  local-partner-form.html Dang ky doi tac dia phuong 4 buoc
+                            (GPS + anh cho metaverse)
+  gov-partnership.html    Hop tac chinh quyen: bang nhiem vu,
+                            6 kich ban nhan su, 3 tinh pilot
+  partner-portal.html     Cong doi tac / nha tai tro
+  acceptance.html         Nghiem thu hop dong
+
+DASHBOARD / BAO CAO:
+  city-dashboard.html     Dashboard lanh dao tinh / So DL
+  running-tourism.html    Running Tourism platform
+  platform-map.html       Ban do he sinh thai
+  data-architecture.html  So do kien truc du lieu
+  i18n-demo.html          Demo 7 ngon ngu + TTS
+
+DATA FILES:
+  mock-data-v3.js         29 entities, UUID v4, schema day du (v3.3)
+  hlrace-i18n.js          Engine da ngon ngu (tu viet)
+  race-config.js          Config engine tu Google Sheets
+
+================================================================================
+PHAN 1 -- GOOGLE SHEETS (lam truoc, quan trong nhat)
+================================================================================
+
+BUOC 1: Tao Google Sheet
+  1. Vao https://sheets.google.com -> Tao bang tinh moi
+  2. Dat ten: "HLRace Platform 2026"
+  3. Tao cac tab sau (nhan + goc duoi trai):
+
+  -- CORE --
+  Tab 01: DANG_KY          dang ky VDV (tat ca mon)
+  Tab 02: NHAN_SU          nhan su / TNV
+  Tab 03: CONFIG           cau hinh race
+  Tab 04: USERS            ho so trung tam (UUID)
+  Tab 05: ACTIVITY_LOG     lich su toan bo hanh dong
+
+  -- KET QUA (trong tai nhap tay) --
+  Tab 06: KET_QUA_RUN      ket qua chay bo
+  Tab 07: KET_QUA_MULTI    Duathlon / Triathlon
+  Tab 08: KET_QUA_RELAY    Relay team
+
+  -- ECONOMY --
+  Tab 09: MERIT_LEDGER     diem cong duc (append-only)
+  Tab 10: BIBS             BIB registry + mau + goi anh
+  Tab 11: GEAR_ITEMS       marketplace gear
+  Tab 12: REVIEWS          reviews da chieu
+
+  -- TRAIL SYSTEM --
+  Tab 13: TRAILS           trail entities + TEP score
+  Tab 14: RUN_EXPERIENCES  cam xuc runner sau khi chay
+  Tab 15: TRAIL_WISHES     de xuat cai thien trail
+  Tab 16: TIP_TRANSACTIONS tip cho Trail Keeper
+
+  -- PARTNER --
+  Tab 17: LOCAL_ENTITIES   doi tac dia phuong + GPS
+  Tab 18: VOUCHER_VAULT    kho voucher (admin duyet)
+  Tab 19: REFERRALS        gioi thieu thanh vien
+
+  -- MEDIA (ANH VDV) --
+  Tab 20: PHOTO_REGISTRY   dang ky goi anh + BIB mau
+  Tab 21: PHOTO_LOG        log upload anh tu cameraman
+  Tab 22: NAG_POSITIONS    NAG dang ky vi tri chup
+
+  LUU Y: Ten tab viet hoa, khong dau, dung chinh xac
+  LUU Y: Apps Script tu tao headers -- KHONG dien thu cong
+
+BUOC 2: Tao Apps Script
+  1. Trong Google Sheet -> Extensions -> Apps Script
+  2. Tab moi mo ra voi file Code.gs
+  3. Xoa het code cu (Ctrl+A -> Delete)
+  4. Dan toan bo CODE o PHAN CODE ben duoi vao
+  5. Nhan Save (Ctrl+S) -> dat ten project: "HLRace API" -> OK
+
+BUOC 3: Deploy
+  1. Nhan "Deploy" -> "New deployment"
+  2. Type: Web app
+     Execute as: Me
+     Who has access: Anyone   (BAT BUOC)
+  3. Nhan Deploy -> Authorize:
+     Chon Gmail -> "Advanced" -> "Go to HLRace API (unsafe)" -> Allow
+  4. Copy URL dang:
+     https://script.google.com/macros/s/AKfycb.../exec
+     Luu lai, dung o Buoc 6
+
+================================================================================
+PHAN 2 -- CAU HINH GOOGLE DRIVE
+================================================================================
+
+Tao cau truc thu muc sau tren Google Drive:
+
+  HLRace 2026/
+  +-- Chung Tu/              hop dong, bien ban
+  +-- Anh VDV/               ANH VDV (MOI v17)
+  |   +-- PREMIUM/           BIB mau VANG
+  |   |   +-- BIB_A001/      moi VDV 1 thu muc rieng
+  |   |   +-- BIB_A002/
+  |   +-- STANDARD/          BIB mau XANH
+  |   |   +-- BIB_B001/
+  |   +-- BASIC/             BIB mau TRANG (watermark)
+  |       +-- BIB_C001/
+  +-- GPX Trails/            file GPX Trail Keeper upload
+  +-- Trail Photos/          anh minh hoa trail
+  +-- Voucher Contracts/     hop dong doi tac voucher
+
+LAY FOLDER ID:
+  Mo thu muc -> URL: .../folders/[FOLDER_ID]
+  Copy FOLDER_ID -> dan vao Script Properties
+
+SCRIPT PROPERTIES CAN THIET:
+  DRIVE_FOLDER_CHUNGTU    ID thu muc Chung Tu
+  DRIVE_FOLDER_ANH_VDV    ID thu muc Anh VDV (QUAN TRONG)
+  DRIVE_FOLDER_PREMIUM    ID thu muc PREMIUM
+  DRIVE_FOLDER_STANDARD   ID thu muc STANDARD
+  DRIVE_FOLDER_BASIC      ID thu muc BASIC
+  DRIVE_FOLDER_GPX        ID thu muc GPX Trails
+  CLAUDE_API_KEY          Key tu console.anthropic.com
+
+================================================================================
+PHAN 3 -- HE THONG ANH VDV (MOI v17)
+================================================================================
+
+QUY TRINH TOAN BO:
+
+  [VDV dang ky chon goi]
+         |
+  [BIB duoc gan mau theo goi]
+  BIB VANG  = Premium  (599k)
+  BIB XANH  = Standard (299k)
+  BIB TRANG = Co ban   (mien phi, watermark)
+         |
+  [In BIB gui nha in IT NHAT 10 NGAY truoc race]
+  -> Admin xuat danh sach tu admin.html
+  -> File CSV: BIB_SO, BIB_MAU, HO_TEN, EVENT
+         |
+  [Ngay race: Cameraman nhan dang BIB mau]
+  BIB VANG  -> NAG theo sat, uu tien tuyet doi
+  BIB XANH  -> Cameraman uu tien chup
+  BIB TRANG -> Chup tu do, khong uu tien
+         |
+  [Sau race: Hau ky anh]
+  1. Them logo BTC + watermark theo goi
+  2. Dat ten file: [BIB_SO]_[STT].jpg
+     Vi du: A001_01.jpg, A001_02.jpg
+  3. Upload dung thu muc:
+     Premium  -> Drive/Anh VDV/PREMIUM/BIB_A001/
+     Standard -> Drive/Anh VDV/STANDARD/BIB_B001/
+     Basic    -> Drive/Anh VDV/BASIC/BIB_C001/
+         |
+  [Apps Script tu dong chay moi 30 phut]
+  -> Scan thu muc moi -> Doc BIB tu ten file
+  -> Match voi PHOTO_REGISTRY -> Update PHOTO_LOG
+  -> Gui thong bao VDV: "Anh cua ban da co!"
+         |
+  [VDV xem anh trong my-profile.html]
+  Premium/Standard -> Xem full HD + Tai ve
+  Basic            -> Xem nho + watermark
+         |
+  [VDV Basic muon nang cap sau race]
+  Gia nang cap = Gia goi x 125% (dat hon 25%)
+  -> Thanh toan -> Drive folder cap nhat quyen
+
+HEADERS CHO SHEET PHOTO_REGISTRY:
+  BIB_SO | HO_TEN | EMAIL | PHONE | EVENT | PHOTO_PKG
+  BIB_COLOR | DRIVE_FOLDER_URL | UPGRADE_STATUS
+  REGISTERED_AT | PAID | PAYMENT_METHOD
+
+HEADERS CHO SHEET PHOTO_LOG:
+  LOG_ID | BIB_SO | FILE_NAME | DRIVE_FILE_ID
+  UPLOADED_BY | UPLOAD_AT | NOTIFIED | NOTIFIED_AT
+
+HEADERS CHO SHEET NAG_POSITIONS:
+  NAG_NAME | NAG_PHONE | POSITION_KM | POSITION_NAME
+  ASSIGNED_RACE | STATUS | FEE_PAID | MERIT_POINTS
+
+================================================================================
+PHAN 4 -- SHEET KET QUA (TRONG TAI NHAP TAY)
+================================================================================
+
+Tab KET_QUA_RUN -- Chay bo:
+  BIB | GIO_XUAT_PHAT | GIO_VE_DICH | THANH_TICH
+  XEP_HANG_CHUNG | XEP_HANG_GT | XEP_HANG_NHOM_TUOI | GHI_CHU
+
+Tab KET_QUA_MULTI -- Duathlon / Triathlon:
+  BIB | EVENT | T1_BOI | T_CHUYEN_1 | T2_DAP
+  T_CHUYEN_2 | T3_CHAY | TONG_TGIAN | XEP_HANG | GHI_CHU
+
+Tab KET_QUA_RELAY -- Relay team:
+  BIB_NHOM | TEN_DOI | VDV1_TEN | VDV1_MON | T1
+  VDV2_TEN | VDV2_MON | T2 | VDV3_TEN | VDV3_MON | T3
+  TONG_TGIAN | XEP_HANG | GHI_CHU
+
+CACH SU DUNG:
+  1. Mo file tren Google Sheets
+  2. Chia se voi trong tai: "Editor" quyen
+  3. Trong tai nhap real-time trong ngay thi
+  4. Apps Script doc moi 30 giay -> push len leaderboard.html
+  5. VDV nhan thong bao khi ket qua duoc cap nhat
+
+================================================================================
+PHAN 5 -- GOI ANH + BIB MAU (HUONG DAN NHANH)
+================================================================================
+
+3 GOI ANH:
+  [CO BAN]   0d      BIB TRANG  Anh nho + watermark, xem dc, khong tai
+  [STANDARD] 299kd   BIB XANH   Full HD, tai ve, cameraman uu tien
+  [PREMIUM]  599kd   BIB VANG   Full HD + RAW, NAG theo sat, video 60s
+
+SAU RACE MUA THEM: x1.25 (dat hon 25%)
+  Standard: 374,000d  |  Premium: 749,000d
+
+NAG DANG KY VI TRI:
+  -> Mo index-extended.html -> Topbar -> "NAG / Vi tri chup"
+  -> Moi vi tri chi 1 NAG duoc dang ky (doc quyen)
+  -> Sau race upload anh vao dung thu muc BIB theo goi
+
+================================================================================
+PHAN 6 -- MULTI-SPORT (MOI v17)
+================================================================================
+
+CAC EVENT:
+  run_5k      Chay 5K     Thu 7 07:00-10:00   150,000d
+  run_10k     Chay 10K    Thu 7 06:30-11:00   200,000d
+  run_21k     Chay 21K    Thu 7 05:30-12:00   350,000d
+  duathlon    Dap+Chay    CN    07:00-12:00   500,000d
+  triathlon   Boi+Dap+Chay CN   06:00-13:00   900,000d
+  relay       Relay 3 mon  CN    07:00-14:00 1,200,000d/nhom
+  kid_run     Kid Run      CN    15:00-17:00   100,000d
+
+1 VDV CO THE DANG KY NHIEU EVENT:
+  Vi du hop le: run_21k (Thu 7) + kid_run (CN 15h) = OK
+  Vi du loi:    run_5k (Thu 7 7h-10h) + run_10k (Thu 7 6:30-11h) = XUNG DOT
+
+RELAY TEAM:
+  - 3 thanh vien, moi nguoi 1 BIB rieng
+  - Dien ten + SĐT tung thanh vien khi dang ky
+  - BIB nhom: B001, B002, B003 (ung voi chang 1/2/3)
+
+TRONG TAI NHAP TREN SHEET KET_QUA_RELAY:
+  BIB_NHOM | TEN_DOI | VDV1 | T_BOI | VDV2 | T_DAP | VDV3 | T_CHAY | TONG | XH
+
+================================================================================
+PHAN 7 -- TRAIL KEEPER (MOI v17)
+================================================================================
+
+Trail Keeper la nguoi dan dia phuong tao va ban
+"Trail Experience Product" -- khong chi file GPX ma
+gom 5 lop:
+  Lop 1: Route       (GPX -- tinh, copy duoc)
+  Lop 2: Conditions  (mua, thoi tiet -- nguoi dia phuong biet)
+  Lop 3: Moments     (khoanh khac -- vuon dao thang 2, suong mu 5h30)
+  Lop 4: Knowledge   (bi mat ban dia -- nha chi A cho tru mua)
+  Lop 5: Freshness   (live layer -- dieu kien tuan nay)
+
+TEP SCORE = Route x Conditions x Moments x Knowledge x Freshness
+Score cao hon -> xep hang cao hon -> doanh thu cao hon
+
+PHAN DOANH THU:
+  Trail Keeper: 60%  |  HLRace: 40%
+  Tip tu runner: 100% ve tay keeper (HLRace khong lay)
+
+CHONG COPY:
+  - File GPX nhung watermark an: userId + timestamp mua
+  - Gia tri that o live layer -- ban copy khong co
+  - Tuong lai: NFT trail ownership tren Viction
+
+================================================================================
+PHAN 8 -- MEMBERSHIP & ECONOMY (MOI v17)
+================================================================================
+
+3 LOAI DIEM TACH BIET HOAN TOAN:
+  Diem thuong   Kiem tu hanh dong, dung blind bag + BIB discount
+  Diem cong duc Kiem tu dong gop, giam phi membership + tu thien
+  Credits       MUA bang tien that, dung blind bag premium
+
+MEMBERSHIP:
+  free_trial    4 thang mien phi (tat ca tinh nang co ban)
+  member        30,400d/thang (cam hung tu ngay 30/4)
+  member+       60,800d/thang (tat ca tinh nang)
+
+GIAM GIA MEMBERSHIP BANG DIEM CONG DUC:
+  0-99 diem    0% giam    30,400d
+  100-299      10%        27,360d
+  300-599      20%        24,320d
+  600-999      35%        19,760d
+  1000+        50% (max)  15,200d
+
+================================================================================
+PHAN 9 -- NETLIFY HOSTING
+================================================================================
+
+BUOC DEPLOY:
+  1. https://netlify.com -> Dang ky mien phi bang Gmail
+  2. Keo tha TOAN BO thu muc hlrace-v17 vao vung deploy
+  3. Netlify tao link: https://random-name.netlify.app
+  4. Doi ten: Site Settings -> Domain Management -> Edit site name
+     De xuat: hlrace2026.netlify.app
+
+BUOC CAU HINH:
+  1. Mo admin.html -> mat khau: admin2026 (DOI NGAY)
+  2. Tab Cai dat:
+     Dan Apps Script URL
+     Dan cac Drive Folder ID (xem Phan 2)
+     Nhap Claude API Key
+     Cai dat thong tin race (ten, ngay, dia diem)
+
+================================================================================
+PHAN 10 -- CHECKLIST TRUOC NGAY RACE
+================================================================================
+
+10+ NGAY TRUOC RACE:
+  [ ] Xuat danh sach BIB tu admin.html
+      Gom: BIB_SO, BIB_MAU, HO_TEN, EVENT, PHOTO_PKG
+  [ ] Gui file CSV cho nha in voi quy cach mau:
+      VANG = #F5A623  |  XANH = #2980B9  |  TRANG = #FFFFFF
+  [ ] Xac nhan so luong BIB tung mau voi nha in
+  [ ] Phan cong NAG va gan vi tri chup (NAG_POSITIONS)
+  [ ] Tao thu muc BIB rieng tren Drive cho tung VDV
+
+3 NGAY TRUOC:
+  [ ] Test toan bo Apps Script endpoints
+  [ ] Test check-in tren checkin.html voi BIB mau
+  [ ] Chia se Sheet KET_QUA voi trong tai (Editor access)
+  [ ] Brief cameraman ve he thong mau BIB
+
+NGAY RACE:
+  [ ] checkin.html -> phat BIB dung mau goi
+  [ ] Trong tai nhap real-time vao KET_QUA sheets
+  [ ] Monitor leaderboard.html de check du lieu
+
+SAU RACE:
+  [ ] Cameraman hau ky -> dat ten file theo BIB_SO
+  [ ] Upload dung thu muc PREMIUM / STANDARD / BASIC
+  [ ] Chay trigger Apps Script de push thong bao
+  [ ] Kiem tra my-profile.html hien thi dung anh
+  [ ] Xuat bao cao tu city-dashboard.html gui So DL
+
+================================================================================
+PHAN 11 -- METAVERSE READINESS (v17)
+================================================================================
+
+Data HLRace da san sang de ket noi Viction + Neji:
+
+  HLRace cung cap           Viction/Neji dung de
+  GPX trail (chuan)         Render dia hinh 3D
+  Review.aiMemory JSON      NPC dialogue + visual design
+  BIB NFT metadata          In-game collectible
+  Merit actions webhook     In-game rewards
+  User.walletAddress        NFT ownership verify
+
+KHI SAN SANG KET NOI VICTION:
+  1. Lien he Long Vuong team de lay Viction API endpoint
+  2. Them wallet field vao form dang ky (index.html)
+  3. Apps Script goi Viction API khi BIB duoc phat
+  4. Badge NFT mint tu dong sau khi VDV finish
+  5. Trail NFT mint cho Trail Keeper khi trail duoc approve
+
+================================================================================
+LIEN HE & HO TRO
+================================================================================
+
+  Founder:  Le Hoang
+  Email:    lehoang81@gmail.com
+  SDT:      0904 028 281
+  Platform: HLRace (formerly VRace)
+  Triet ly: "Du la 1 pixel cung da hien dien"
+
+================================================================================

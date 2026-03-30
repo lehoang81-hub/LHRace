@@ -1,0 +1,504 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HLRace — Đăng ký Đối tác Địa phương</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,600;0,700;1,600&family=Geist:wght@300;400;500;600&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#F9F7F3;--card:#FFFFFF;--s1:#F2EEE6;--s2:#E8E2D8;
+  --ink:#1C1A16;--ink2:#6B6050;--muted:#A89880;
+  --green:#2A5C3F;--green2:#3D8A5C;--amber:#8A5C00;
+  --red:#8A2A2A;--blue:#1A4A7A;
+  --br:rgba(28,26,22,.07);--br2:rgba(28,26,22,.13);
+  --r:14px;--r-sm:8px;
+}
+body{background:var(--bg);color:var(--ink);font-family:'Geist',sans-serif;font-size:14px;min-height:100vh}
+
+/* HEADER */
+.hdr{background:var(--green);padding:32px 24px 28px;position:relative;overflow:hidden}
+.hdr::after{content:'';position:absolute;bottom:-1px;left:0;right:0;height:24px;background:var(--bg);border-radius:24px 24px 0 0}
+.hdr-eyebrow{font-family:'Geist Mono';font-size:9px;letter-spacing:2.5px;text-transform:uppercase;color:rgba(255,255,255,.5);margin-bottom:10px}
+.hdr-title{font-family:'Fraunces';font-size:clamp(22px,5vw,32px);font-weight:700;color:#fff;line-height:1.15;margin-bottom:8px}
+.hdr-sub{font-size:13px;color:rgba(255,255,255,.7);line-height:1.6;max-width:480px}
+
+/* PROGRESS */
+.progress-wrap{padding:20px 20px 0;max-width:640px;margin:0 auto}
+.progress-steps{display:flex;align-items:center;gap:0;margin-bottom:6px}
+.step{display:flex;align-items:center;gap:0;flex:1}
+.step-dot{width:28px;height:28px;border-radius:50%;border:2px solid var(--br2);background:var(--card);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;color:var(--muted);flex-shrink:0;transition:all .2s;font-family:'Geist Mono'}
+.step-dot.done{background:var(--green);border-color:var(--green);color:#fff}
+.step-dot.active{background:var(--card);border-color:var(--green);color:var(--green)}
+.step-line{flex:1;height:2px;background:var(--br2)}
+.step-line.done{background:var(--green)}
+.step-labels{display:flex;justify-content:space-between;font-size:10px;color:var(--muted);padding:0 4px}
+.step-label{flex:1;text-align:center}
+.step-label:first-child{text-align:left}
+.step-label:last-child{text-align:right}
+
+/* WRAP */
+.wrap{max-width:640px;margin:0 auto;padding:20px 16px 60px}
+.form-section{background:var(--card);border:1px solid var(--br);border-radius:var(--r);padding:22px;margin-bottom:16px;display:none}
+.form-section.active{display:block}
+.fs-header{display:flex;align-items:center;gap:12px;margin-bottom:18px;padding-bottom:14px;border-bottom:1px solid var(--br)}
+.fs-icon{width:44px;height:44px;border-radius:var(--r-sm);background:var(--s1);display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0;border:1px solid var(--br)}
+.fs-title{font-family:'Fraunces';font-size:17px;font-weight:600;margin-bottom:2px}
+.fs-sub{font-size:12px;color:var(--muted);line-height:1.5}
+
+/* FIELDS */
+.field{margin-bottom:14px}
+.field label{display:flex;align-items:center;gap:6px;font-size:11px;font-weight:500;text-transform:uppercase;letter-spacing:.4px;color:var(--muted);margin-bottom:5px}
+.req{color:var(--red);font-size:12px}
+.field input,.field select,.field textarea{width:100%;padding:10px 12px;border:1px solid var(--br2);border-radius:var(--r-sm);font-size:13px;background:var(--card);color:var(--ink);font-family:'Geist',sans-serif;outline:none;transition:border-color .15s}
+.field input:focus,.field select:focus,.field textarea:focus{border-color:var(--green)}
+.field textarea{resize:vertical;min-height:80px;line-height:1.6}
+.field-hint{font-size:11px;color:var(--muted);margin-top:4px;line-height:1.5}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
+
+/* TYPE SELECTOR */
+.type-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-bottom:14px}
+@media(min-width:480px){.type-grid{grid-template-columns:repeat(4,1fr)}}
+.type-card{border:1.5px solid var(--br2);border-radius:var(--r-sm);padding:12px 10px;cursor:pointer;text-align:center;transition:all .15s;background:var(--card)}
+.type-card:hover{border-color:var(--green);background:var(--s1)}
+.type-card.on{border-color:var(--green);background:rgba(42,92,63,.06)}
+.type-card input{display:none}
+.type-icon{font-size:24px;margin-bottom:6px}
+.type-name{font-size:11px;font-weight:500;color:var(--ink2)}
+
+/* AMENITIES CHECKBOXES */
+.check-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:6px}
+@media(min-width:480px){.check-grid{grid-template-columns:repeat(3,1fr)}}
+.check-item{display:flex;align-items:center;gap:8px;padding:8px 10px;border:1px solid var(--br);border-radius:var(--r-sm);cursor:pointer;font-size:12px;transition:all .15s}
+.check-item:hover{border-color:var(--green);background:var(--s1)}
+.check-item input[type=checkbox]{accent-color:var(--green)}
+.check-icon{font-size:14px;width:18px;text-align:center}
+
+/* PHOTO UPLOAD PREVIEW */
+.photo-slots{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:8px}
+.photo-slot{aspect-ratio:4/3;border:1.5px dashed var(--br2);border-radius:var(--r-sm);display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:11px;color:var(--muted);flex-direction:column;gap:4px;transition:all .15s;background:var(--s1)}
+.photo-slot:hover{border-color:var(--green);background:rgba(42,92,63,.04)}
+.photo-slot .ps-icon{font-size:20px}
+
+/* RATING STARS */
+.stars{display:flex;gap:4px}
+.star{font-size:22px;cursor:pointer;color:var(--br2);transition:color .1s}
+.star.on{color:#D4A017}
+
+/* NAVIGATION */
+.nav-btns{display:flex;justify-content:space-between;align-items:center;margin-top:20px}
+.btn{padding:11px 22px;border-radius:var(--r-sm);font-size:13px;font-weight:500;cursor:pointer;border:none;font-family:'Geist',sans-serif;display:inline-flex;align-items:center;gap:7px;transition:all .15s;text-decoration:none}
+.btn-primary{background:var(--green);color:#fff}
+.btn-primary:hover{background:var(--green2)}
+.btn-outline{background:transparent;border:1.5px solid var(--br2);color:var(--ink2)}
+.btn-outline:hover{background:var(--s1)}
+.btn-ghost{background:transparent;color:var(--muted);font-size:12px}
+
+/* METAVERSE INFO BOX */
+.meta-box{background:rgba(26,74,122,.06);border:1px solid rgba(26,74,122,.15);border-radius:var(--r-sm);padding:12px 14px;margin-top:10px;font-size:12px;color:var(--blue);line-height:1.7}
+.meta-box strong{font-weight:600}
+
+/* SUCCESS */
+.success-screen{display:none;text-align:center;padding:40px 20px}
+.success-icon{font-size:56px;margin-bottom:16px}
+.success-title{font-family:'Fraunces';font-size:24px;font-weight:700;margin-bottom:8px;color:var(--green)}
+.success-sub{font-size:13px;color:var(--muted);line-height:1.7;max-width:400px;margin:0 auto 24px}
+.success-card{background:var(--card);border:1px solid var(--br);border-radius:var(--r);padding:20px;text-align:left;margin-bottom:16px;max-width:400px;margin-left:auto;margin-right:auto}
+.sc-row{display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--br);font-size:13px}
+.sc-row:last-child{border:none}
+.sc-label{color:var(--muted)}
+.sc-val{font-weight:500;text-align:right}
+
+/* SECTION LABEL */
+.sec-label{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin-bottom:10px;display:flex;align-items:center;gap:8px}
+.sec-label::after{content:'';flex:1;height:1px;background:var(--br)}
+</style>
+</head>
+<body>
+
+<div class="hdr">
+  <div class="hdr-eyebrow">HLRace · Đối tác địa phương</div>
+  <div class="hdr-title">Đăng ký vào<br>hệ sinh thái HLRace</div>
+  <div class="hdr-sub">Dữ liệu của bạn sẽ được sử dụng để kết nối với hàng nghìn runner — và là nền tảng cho bản đồ metaverse về địa phương Việt Nam.</div>
+</div>
+
+<div class="progress-wrap">
+  <div class="progress-steps">
+    <div class="step"><div class="step-dot active" id="dot-1">1</div><div class="step-line" id="line-1"></div></div>
+    <div class="step"><div class="step-dot" id="dot-2">2</div><div class="step-line" id="line-2"></div></div>
+    <div class="step"><div class="step-dot" id="dot-3">3</div><div class="step-line" id="line-3"></div></div>
+    <div class="step"><div class="step-dot" id="dot-4">4</div></div>
+  </div>
+  <div class="step-labels">
+    <span class="step-label">Cơ bản</span>
+    <span class="step-label">Dịch vụ</span>
+    <span class="step-label">Vị trí</span>
+    <span class="step-label">Xác nhận</span>
+  </div>
+</div>
+
+<div class="wrap">
+
+<!-- STEP 1: THÔNG TIN CƠ BẢN -->
+<div class="form-section active" id="step-1">
+  <div class="fs-header">
+    <div class="fs-icon">🏪</div>
+    <div>
+      <div class="fs-title">Thông tin cơ bản</div>
+      <div class="fs-sub">Tên, liên hệ, và loại dịch vụ của bạn</div>
+    </div>
+  </div>
+
+  <div class="sec-label">Loại hình dịch vụ</div>
+  <div class="type-grid">
+    <label class="type-card on"><input type="radio" name="type" value="hotel" checked>
+      <div class="type-icon">🏨</div><div class="type-name">Khách sạn / Homestay</div>
+    </label>
+    <label class="type-card"><input type="radio" name="type" value="restaurant">
+      <div class="type-icon">🍜</div><div class="type-name">Nhà hàng / Quán ăn</div>
+    </label>
+    <label class="type-card"><input type="radio" name="type" value="transport">
+      <div class="type-icon">🚗</div><div class="type-name">Vận chuyển / Xe đưa đón</div>
+    </label>
+    <label class="type-card"><input type="radio" name="type" value="craft">
+      <div class="type-icon">🎨</div><div class="type-name">Làng nghề / Đặc sản</div>
+    </label>
+    <label class="type-card"><input type="radio" name="type" value="activity">
+      <div class="type-icon">🧗</div><div class="type-name">Hoạt động / Tour</div>
+    </label>
+    <label class="type-card"><input type="radio" name="type" value="medical">
+      <div class="type-icon">💊</div><div class="type-name">Y tế / Phục hồi</div>
+    </label>
+    <label class="type-card"><input type="radio" name="type" value="gear">
+      <div class="type-icon">🎒</div><div class="type-name">Gear / Thiết bị</div>
+    </label>
+    <label class="type-card"><input type="radio" name="type" value="other">
+      <div class="type-icon">📦</div><div class="type-name">Dịch vụ khác</div>
+    </label>
+  </div>
+
+  <div class="sec-label">Thông tin cơ sở</div>
+  <div class="field">
+    <label>Tên cơ sở <span class="req">*</span></label>
+    <input id="f-name" placeholder="VD: Homestay Mây Sapa">
+  </div>
+  <div class="row2">
+    <div class="field">
+      <label>Tỉnh / Thành phố <span class="req">*</span></label>
+      <select id="f-province">
+        <option value="">— Chọn tỉnh —</option>
+        <option>Hải Phòng</option><option>Cao Bằng</option><option>Ninh Bình</option>
+        <option>Lào Cai</option><option>Hà Nội</option><option>Đà Nẵng</option>
+        <option>TP. Hồ Chí Minh</option><option>Bình Thuận</option>
+        <option>Thừa Thiên Huế</option><option>Khác</option>
+      </select>
+    </div>
+    <div class="field">
+      <label>Huyện / Thị xã</label>
+      <input id="f-district" placeholder="VD: Sa Pa">
+    </div>
+  </div>
+  <div class="field">
+    <label>Địa chỉ cụ thể <span class="req">*</span></label>
+    <input id="f-address" placeholder="Số nhà, đường, thôn/bản...">
+  </div>
+
+  <div class="sec-label">Người đại diện & Liên hệ</div>
+  <div class="row2">
+    <div class="field">
+      <label>Họ tên người đại diện <span class="req">*</span></label>
+      <input id="f-contact-name" placeholder="Nguyễn Văn A">
+    </div>
+    <div class="field">
+      <label>Số điện thoại <span class="req">*</span></label>
+      <input id="f-phone" type="tel" placeholder="0912 345 678">
+    </div>
+  </div>
+  <div class="row2">
+    <div class="field">
+      <label>Email (nếu có)</label>
+      <input id="f-email" type="email" placeholder="contact@example.com">
+    </div>
+    <div class="field">
+      <label>Zalo / Facebook</label>
+      <input id="f-social" placeholder="Link hoặc số Zalo">
+    </div>
+  </div>
+
+  <div class="meta-box">
+    <strong>Dữ liệu này sẽ được dùng cho:</strong><br>
+    Kết nối với runner trước race · Báo cáo gửi Sở Du lịch · Bản đồ metaverse địa phương (sau này)
+  </div>
+
+  <div class="nav-btns">
+    <div></div>
+    <button class="btn btn-primary" onclick="goStep(2)">Tiếp theo →</button>
+  </div>
+</div>
+
+<!-- STEP 2: CHI TIẾT DỊCH VỤ -->
+<div class="form-section" id="step-2">
+  <div class="fs-header">
+    <div class="fs-icon">📋</div>
+    <div>
+      <div class="fs-title">Chi tiết dịch vụ</div>
+      <div class="fs-sub">Thông tin này giúp AI kết nối đúng runner với bạn</div>
+    </div>
+  </div>
+
+  <div class="field">
+    <label>Mô tả ngắn <span class="req">*</span></label>
+    <textarea id="f-desc" placeholder="Mô tả cơ sở, điểm nổi bật, lý do runner nên chọn bạn..."></textarea>
+    <div class="field-hint">VD: Homestay view ruộng bậc thang, cách điểm xuất phát Sapa 100K 500m, có phòng tập kết đồ miễn phí cho VĐV</div>
+  </div>
+
+  <div class="row2">
+    <div class="field">
+      <label>Mức giá phổ biến nhất</label>
+      <input id="f-price" placeholder="VD: 150.000 - 400.000đ/đêm">
+    </div>
+    <div class="field">
+      <label>Sức chứa / Quy mô</label>
+      <input id="f-capacity" placeholder="VD: 10 phòng, 30 khách">
+    </div>
+  </div>
+
+  <div class="sec-label">Tiện ích & Đặc điểm phục vụ runner</div>
+  <div class="check-grid" id="amenities-grid">
+    <label class="check-item"><input type="checkbox" value="runner_discount"><span class="check-icon">🏃</span>Giảm giá cho VĐV</label>
+    <label class="check-item"><input type="checkbox" value="gear_storage"><span class="check-icon">🎒</span>Giữ đồ / hành lý</label>
+    <label class="check-item"><input type="checkbox" value="early_breakfast"><span class="check-icon">🌅</span>Ăn sáng sớm từ 4h</label>
+    <label class="check-item"><input type="checkbox" value="shuttle"><span class="check-icon">🚌</span>Đưa đón start/finish</label>
+    <label class="check-item"><input type="checkbox" value="drying_room"><span class="check-icon">👕</span>Phòng sấy đồ</label>
+    <label class="check-item"><input type="checkbox" value="massage"><span class="check-icon">💆</span>Massage phục hồi</label>
+    <label class="check-item"><input type="checkbox" value="medical_kit"><span class="check-icon">🩹</span>Sơ cứu cơ bản</label>
+    <label class="check-item"><input type="checkbox" value="local_food"><span class="check-icon">🍲</span>Đặc sản địa phương</label>
+    <label class="check-item"><input type="checkbox" value="group_rate"><span class="check-icon">👥</span>Giá nhóm (5+ người)</label>
+    <label class="check-item"><input type="checkbox" value="wifi"><span class="check-icon">📶</span>WiFi ổn định</label>
+    <label class="check-item"><input type="checkbox" value="parking"><span class="check-icon">🅿️</span>Bãi đỗ xe</label>
+    <label class="check-item"><input type="checkbox" value="open24h"><span class="check-icon">⏰</span>Phục vụ 24/7</label>
+  </div>
+
+  <div class="field" style="margin-top:14px">
+    <label>Điểm đặc biệt riêng (nếu có)</label>
+    <input id="f-special" placeholder="VD: Sở hữu bản đồ trail địa phương, nói được tiếng Anh, có kinh nghiệm phục vụ giải VPBank...">
+  </div>
+
+  <div class="field">
+    <label>Đã từng phục vụ giải chạy nào?</label>
+    <input id="f-past-races" placeholder="VD: Sapa 100K 2024, VMM 2023, Mù Cang Chải 2025...">
+  </div>
+
+  <div class="sec-label">Đánh giá từ khách runner</div>
+  <div style="margin-bottom:4px;font-size:12px;color:var(--muted)">Tự đánh giá mức độ thân thiện với runner</div>
+  <div class="stars" id="stars">
+    <span class="star" onclick="setStar(1)">★</span>
+    <span class="star" onclick="setStar(2)">★</span>
+    <span class="star" onclick="setStar(3)">★</span>
+    <span class="star" onclick="setStar(4)">★</span>
+    <span class="star" onclick="setStar(5)">★</span>
+  </div>
+
+  <div class="nav-btns">
+    <button class="btn btn-outline" onclick="goStep(1)">← Quay lại</button>
+    <button class="btn btn-primary" onclick="goStep(3)">Tiếp theo →</button>
+  </div>
+</div>
+
+<!-- STEP 3: VỊ TRÍ & METAVERSE DATA -->
+<div class="form-section" id="step-3">
+  <div class="fs-header">
+    <div class="fs-icon">📍</div>
+    <div>
+      <div class="fs-title">Vị trí & Dữ liệu không gian</div>
+      <div class="fs-sub">Tọa độ GPS và hình ảnh — nền tảng cho metaverse</div>
+    </div>
+  </div>
+
+  <div class="row2">
+    <div class="field">
+      <label>Vĩ độ (Latitude) <span class="req">*</span></label>
+      <input id="f-lat" type="number" step="any" placeholder="22.3361">
+      <div class="field-hint">Mở Google Maps → nhấn giữ vị trí → copy số đầu tiên</div>
+    </div>
+    <div class="field">
+      <label>Kinh độ (Longitude) <span class="req">*</span></label>
+      <input id="f-lng" type="number" step="any" placeholder="103.8438">
+    </div>
+  </div>
+
+  <div class="field">
+    <label>Khoảng cách đến điểm xuất phát race gần nhất</label>
+    <select id="f-dist-race">
+      <option>Dưới 500m (đi bộ được)</option>
+      <option>500m - 2km</option>
+      <option>2km - 5km</option>
+      <option>5km - 15km</option>
+      <option>Trên 15km</option>
+      <option>Chưa rõ</option>
+    </select>
+  </div>
+
+  <div class="sec-label">Hình ảnh thực tế</div>
+  <div class="field-hint" style="margin-bottom:8px">Tối thiểu 3 ảnh · Định dạng JPG/PNG · Dùng cho metaverse map và hồ sơ đối tác</div>
+  <div class="photo-slots">
+    <div class="photo-slot" onclick="fakeUpload(this,'Ảnh mặt tiền')">
+      <div class="ps-icon">📷</div>
+      <div>Mặt tiền</div>
+    </div>
+    <div class="photo-slot" onclick="fakeUpload(this,'Ảnh phòng / khu vực chính')">
+      <div class="ps-icon">📷</div>
+      <div>Bên trong</div>
+    </div>
+    <div class="photo-slot" onclick="fakeUpload(this,'Ảnh view / cảnh xung quanh')">
+      <div class="ps-icon">📷</div>
+      <div>View / Cảnh</div>
+    </div>
+  </div>
+
+  <div class="field" style="margin-top:16px">
+    <label>Mô tả cảnh quan xung quanh</label>
+    <textarea id="f-scenery" placeholder="VD: Nhìn ra ruộng bậc thang, sương mù buổi sáng, tiếng suối chảy... Đây là dữ liệu quan trọng để dựng cảnh metaverse chính xác."></textarea>
+    <div class="field-hint">Chi tiết càng nhiều càng tốt — màu sắc nổi bật, mùa nào đẹp nhất, âm thanh đặc trưng...</div>
+  </div>
+
+  <div class="meta-box">
+    <strong>Metaverse note:</strong> Tọa độ GPS + hình ảnh + mô tả cảnh quan sẽ được dùng để dựng điểm địa phương này trong bản đồ HLRace Metaverse (via Viction). Khi VĐV "chạy" qua đây trong game, họ sẽ thấy đúng cơ sở của bạn.
+  </div>
+
+  <div class="nav-btns">
+    <button class="btn btn-outline" onclick="goStep(2)">← Quay lại</button>
+    <button class="btn btn-primary" onclick="goStep(4)">Xem xét & Gửi →</button>
+  </div>
+</div>
+
+<!-- STEP 4: XÁC NHẬN -->
+<div class="form-section" id="step-4">
+  <div class="fs-header">
+    <div class="fs-icon">✅</div>
+    <div>
+      <div class="fs-title">Xem lại & Xác nhận</div>
+      <div class="fs-sub">Kiểm tra thông tin trước khi gửi cho HLRace duyệt</div>
+    </div>
+  </div>
+
+  <div id="review-summary"></div>
+
+  <div class="field" style="margin-top:16px">
+    <label>Cam kết</label>
+    <div style="display:flex;flex-direction:column;gap:8px">
+      <label class="check-item"><input type="checkbox" id="commit-1"> Thông tin tôi cung cấp là trung thực và chính xác</label>
+      <label class="check-item"><input type="checkbox" id="commit-2"> Tôi đồng ý HLRace sử dụng data để kết nối VĐV và xây dựng bản đồ metaverse (ẩn danh hóa thông tin cá nhân)</label>
+      <label class="check-item"><input type="checkbox" id="commit-3"> Tôi sẽ cập nhật thông tin khi có thay đổi về giá/dịch vụ</label>
+    </div>
+  </div>
+
+  <div style="background:rgba(42,92,63,.06);border:1px solid rgba(42,92,63,.15);border-radius:var(--r-sm);padding:12px 14px;margin-top:14px;font-size:12px;color:var(--green);line-height:1.7">
+    Sau khi gửi, HLRace sẽ xem xét trong <strong>3-5 ngày làm việc</strong> và liên hệ qua số điện thoại bạn đã cung cấp. Cơ sở được duyệt sẽ nhận <strong>huy hiệu đối tác HLRace</strong> và được hiển thị trong hệ thống kết nối runner.
+  </div>
+
+  <div class="nav-btns">
+    <button class="btn btn-outline" onclick="goStep(3)">← Quay lại</button>
+    <button class="btn btn-primary" onclick="submitForm()">📤 Gửi đăng ký</button>
+  </div>
+</div>
+
+<!-- SUCCESS -->
+<div class="success-screen" id="success">
+  <div class="success-icon">🎉</div>
+  <div class="success-title">Đăng ký thành công!</div>
+  <div class="success-sub">HLRace đã nhận được thông tin của bạn. Chúng tôi sẽ liên hệ trong 3-5 ngày làm việc để xác nhận và hướng dẫn các bước tiếp theo.</div>
+
+  <div class="success-card" id="success-summary"></div>
+
+  <div style="background:rgba(26,74,122,.06);border:1px solid rgba(26,74,122,.15);border-radius:var(--r-sm);padding:14px;max-width:400px;margin:0 auto 20px;font-size:12px;color:var(--blue);line-height:1.8">
+    <strong>Bước tiếp theo:</strong><br>
+    HLRace sẽ gọi điện xác nhận → Ký cam kết đối tác → Nhận huy hiệu → Lên hệ thống
+  </div>
+
+  <button class="btn btn-outline" onclick="window.location.reload()">Đăng ký thêm cơ sở khác</button>
+</div>
+
+</div>
+
+<script>
+let currentStep=1, starRating=0;
+
+function goStep(n){
+  if(n>currentStep && !validateStep(currentStep)) return;
+  document.getElementById('step-'+currentStep).classList.remove('active');
+  document.getElementById('step-'+n).classList.add('active');
+  [1,2,3,4].forEach(i=>{
+    const dot=document.getElementById('dot-'+i);
+    dot.classList.toggle('done', i<n);
+    dot.classList.toggle('active', i===n);
+    if(i<4) document.getElementById('line-'+i).classList.toggle('done',i<n);
+  });
+  currentStep=n;
+  if(n===4) buildReview();
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+function validateStep(s){
+  if(s===1){
+    if(!document.getElementById('f-name').value.trim()){alert('Vui lòng nhập tên cơ sở');return false;}
+    if(!document.getElementById('f-province').value){alert('Vui lòng chọn tỉnh/thành phố');return false;}
+    if(!document.getElementById('f-address').value.trim()){alert('Vui lòng nhập địa chỉ');return false;}
+    if(!document.getElementById('f-contact-name').value.trim()||!document.getElementById('f-phone').value.trim()){alert('Vui lòng nhập thông tin liên hệ');return false;}
+  }
+  if(s===2){
+    if(!document.getElementById('f-desc').value.trim()){alert('Vui lòng mô tả cơ sở của bạn');return false;}
+  }
+  if(s===3){
+    if(!document.getElementById('f-lat').value||!document.getElementById('f-lng').value){alert('Vui lòng nhập tọa độ GPS (bắt buộc cho metaverse)');return false;}
+  }
+  return true;
+}
+
+function setStar(n){
+  starRating=n;
+  document.querySelectorAll('.star').forEach((s,i)=>s.classList.toggle('on',i<n));
+}
+
+function fakeUpload(el,label){
+  el.innerHTML=`<div class="ps-icon">✅</div><div style="font-size:10px;color:var(--green)">${label}<br>Đã chọn</div>`;
+  el.style.borderColor='var(--green)';el.style.background='rgba(42,92,63,.04)';
+}
+
+function buildReview(){
+  const type=document.querySelector('input[name=type]:checked')?.value||'hotel';
+  const typeNames={hotel:'Khách sạn / Homestay',restaurant:'Nhà hàng',transport:'Vận chuyển',craft:'Làng nghề',activity:'Hoạt động / Tour',medical:'Y tế',gear:'Gear',other:'Khác'};
+  const amenities=[...document.querySelectorAll('#amenities-grid input:checked')].map(i=>i.value).join(', ')||'Chưa chọn';
+  document.getElementById('review-summary').innerHTML=`
+    <div style="display:flex;flex-direction:column;gap:6px;margin-bottom:16px">
+      ${row('Loại hình',typeNames[type])}
+      ${row('Tên cơ sở',document.getElementById('f-name').value)}
+      ${row('Địa chỉ',document.getElementById('f-province').value+' · '+document.getElementById('f-address').value)}
+      ${row('Liên hệ',document.getElementById('f-contact-name').value+' · '+document.getElementById('f-phone').value)}
+      ${row('Mức giá',document.getElementById('f-price').value||'Chưa điền')}
+      ${row('Tọa độ GPS',document.getElementById('f-lat').value+', '+document.getElementById('f-lng').value)}
+      ${row('Đánh giá',starRating+'★')}
+      ${row('Tiện ích',amenities.substring(0,80)+(amenities.length>80?'...':''))}
+    </div>`;
+}
+function row(l,v){return `<div class="sc-row"><span class="sc-label">${l}</span><span class="sc-val">${v||'—'}</span></div>`;}
+
+function submitForm(){
+  if(!document.getElementById('commit-1').checked||!document.getElementById('commit-2').checked||!document.getElementById('commit-3').checked){
+    alert('Vui lòng xác nhận các cam kết bên trên');return;
+  }
+  document.getElementById('step-4').classList.remove('active');
+  document.getElementById('success').style.display='block';
+  document.getElementById('success-summary').innerHTML=`
+    ${row('Tên cơ sở',document.getElementById('f-name').value)}
+    ${row('Tỉnh',document.getElementById('f-province').value)}
+    ${row('Liên hệ',document.getElementById('f-phone').value)}
+    ${row('Mã đăng ký','HLP-'+Date.now().toString(36).toUpperCase().slice(-6))}
+    ${row('Trạng thái','Chờ duyệt (3-5 ngày)')}`;
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+</script>
+</body>
+</html>

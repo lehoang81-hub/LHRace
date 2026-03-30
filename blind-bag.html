@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HLRace — Blind Bag</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800;900&family=DM+Sans:wght@400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#07080C;--s1:#0D0E14;--s2:#13141C;--s3:#1A1B26;
+  --ink:#F0EEF8;--ink2:#9896B8;--muted:#4A4860;
+  --gold:#FFD060;--amber:#FF9520;--violet:#8B6FFF;--teal:#00DDB4;
+  --legendary:#FFD060;--epic:#C084FC;--rare:#60A5FA;--common:#6EE7B7;
+  --br:rgba(139,111,255,.12);
+}
+body{background:var(--bg);color:var(--ink);font-family:'DM Sans',sans-serif;min-height:100vh;overflow-x:hidden}
+#feed-ticker{position:fixed;top:0;left:0;right:0;z-index:100;background:rgba(7,8,12,.9);backdrop-filter:blur(8px);border-bottom:1px solid var(--br);padding:8px 16px;font-size:11px;font-family:'DM Mono';color:var(--muted);display:flex;align-items:center;gap:8px;overflow:hidden}
+.feed-dot{width:6px;height:6px;border-radius:50%;background:var(--teal);flex-shrink:0;animation:blink 1.5s infinite}
+#feed-text{flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.feed-name{color:var(--gold)}.feed-item{color:var(--ink2)}
+.hero{padding:56px 20px 20px;max-width:480px;margin:0 auto;text-align:center}
+.user-arc{position:relative;width:120px;height:120px;margin:0 auto 16px}
+.user-ring{position:absolute;inset:0;border-radius:50%;border:3px solid var(--s3)}
+.user-ring-fill{position:absolute;inset:0;border-radius:50%;background:conic-gradient(var(--violet) 259.2deg, var(--s3) 0deg)}
+.user-avatar{position:absolute;inset:6px;border-radius:50%;background:var(--s2);display:flex;align-items:center;justify-content:center;font-size:36px}
+.user-name{font-family:'Syne';font-size:20px;font-weight:800;margin-bottom:4px}
+.user-pts{font-family:'DM Mono';font-size:13px;color:var(--gold)}
+.stat-row{display:flex;justify-content:center;gap:24px;margin:16px 0 24px}
+.stat{text-align:center}
+.stat-val{font-family:'Syne';font-size:18px;font-weight:700}
+.stat-label{font-size:10px;color:var(--muted);letter-spacing:.5px;text-transform:uppercase}
+.golden-banner{margin:0 20px 16px;background:linear-gradient(135deg,rgba(255,149,32,.1),rgba(255,208,96,.08));border:1px solid rgba(255,149,32,.3);border-radius:12px;padding:12px 16px;display:flex;align-items:center;gap:10px;font-size:12px}
+.gh-icon{font-size:20px;animation:spin 3s linear infinite}
+.gh-text{flex:1;line-height:1.5;color:var(--ink2)}
+.gh-timer{font-family:'DM Mono';font-size:14px;color:var(--amber);font-weight:500;flex-shrink:0}
+.bag-section{max-width:480px;margin:0 auto;padding:0 20px 120px}
+.section-label{font-size:10px;font-family:'DM Mono';letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:12px;display:flex;align-items:center;gap:8px}
+.section-label::after{content:'';flex:1;height:1px;background:rgba(255,255,255,.04)}
+.bags-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:24px}
+.bag{border-radius:14px;aspect-ratio:1;cursor:pointer;position:relative;overflow:hidden;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:4px;border:1.5px solid rgba(255,255,255,.06);background:var(--s1);transition:transform .2s,border-color .2s}
+.bag:hover{transform:translateY(-3px);border-color:rgba(255,255,255,.15)}
+.bag.empty{opacity:.35;cursor:not-allowed;pointer-events:none}
+.bag-icon{font-size:32px;transition:transform .3s}
+.bag:hover .bag-icon{transform:scale(1.1)}
+.bag-rarity{font-size:9px;font-family:'DM Mono';letter-spacing:1px;text-transform:uppercase;font-weight:500}
+.bag-cost{font-size:10px;color:var(--muted)}
+.bag-count{position:absolute;top:6px;right:8px;font-size:9px;font-family:'DM Mono';color:var(--muted)}
+.rarity-legendary .bag-rarity{color:var(--legendary)}
+.rarity-epic .bag-rarity{color:var(--epic)}
+.rarity-rare .bag-rarity{color:var(--rare)}
+.rarity-common .bag-rarity{color:var(--common)}
+.rarity-legendary{border-color:rgba(255,208,96,.25);background:linear-gradient(135deg,rgba(255,208,96,.06),rgba(255,149,32,.04))}
+.rarity-epic{border-color:rgba(192,132,252,.2);background:rgba(192,132,252,.04)}
+.rarity-rare{border-color:rgba(96,165,250,.2);background:rgba(96,165,250,.04)}
+.pity-bar-wrap{margin-bottom:20px;background:var(--s1);border:1px solid var(--br);border-radius:10px;padding:12px 14px}
+.pity-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}
+.pity-label{font-size:11px;color:var(--muted)}
+.pity-count{font-size:11px;font-family:'DM Mono';color:var(--ink2)}
+.pity-bar{height:4px;background:rgba(255,255,255,.06);border-radius:2px;overflow:hidden}
+.pity-fill{height:100%;border-radius:2px;background:linear-gradient(90deg,var(--violet),var(--amber));transition:width .5s}
+#overlay{position:fixed;inset:0;z-index:200;display:none;align-items:center;justify-content:center;background:rgba(7,8,12,.95);backdrop-filter:blur(4px)}
+#overlay.show{display:flex}
+.open-stage{text-align:center;padding:24px;width:100%;max-width:400px}
+.open-bag{font-size:96px;display:block;margin:0 auto 24px;animation:bagFloat 1s ease-in-out infinite alternate}
+@keyframes bagFloat{from{transform:translateY(0) rotate(-3deg)}to{transform:translateY(-12px) rotate(3deg)}}
+.open-bag.shaking{animation:bagShake .1s linear infinite}
+@keyframes bagShake{0%,100%{transform:translateX(0)}25%{transform:translateX(-6px) rotate(-4deg)}75%{transform:translateX(6px) rotate(4deg)}}
+.open-bag.exploding{animation:bagExplode .4s ease-out forwards}
+@keyframes bagExplode{0%{transform:scale(1)}50%{transform:scale(1.3)}100%{transform:scale(0);opacity:0}}
+.open-label{font-size:13px;color:var(--muted);margin-bottom:8px;font-family:'DM Mono'}
+.open-result{display:none;animation:resultReveal .5s ease-out}
+@keyframes resultReveal{from{opacity:0;transform:scale(.8) translateY(20px)}to{opacity:1;transform:scale(1) translateY(0)}}
+.result-prize{font-size:56px;margin-bottom:12px;display:block}
+.result-tier{font-size:10px;font-family:'DM Mono';letter-spacing:2px;text-transform:uppercase;margin-bottom:6px}
+.result-name{font-family:'Syne';font-size:22px;font-weight:800;margin-bottom:8px}
+.result-ai-quote{font-size:13px;color:var(--ink2);line-height:1.7;max-width:320px;margin:0 auto 20px;font-style:italic;border-left:2px solid var(--violet);padding-left:12px;text-align:left}
+.particles{position:fixed;inset:0;pointer-events:none;z-index:201}
+.particle{position:absolute;width:6px;height:6px;border-radius:50%;animation:particleFly 1.5s ease-out forwards}
+@keyframes particleFly{0%{transform:translate(0,0) scale(1);opacity:1}100%{transform:translate(var(--tx),var(--ty)) scale(0);opacity:0}}
+.cert-card{background:linear-gradient(135deg,var(--s2),var(--s3));border:1px solid var(--br);border-radius:16px;padding:20px;margin:16px 0;position:relative;overflow:hidden}
+.cert-badge{display:inline-block;font-size:9px;font-family:'DM Mono';letter-spacing:2px;text-transform:uppercase;padding:4px 10px;border-radius:20px;margin-bottom:12px;background:rgba(139,111,255,.15);color:var(--violet);border:1px solid rgba(139,111,255,.2)}
+.cert-title{font-family:'Syne';font-size:11px;font-weight:700;color:var(--muted);letter-spacing:1px;text-transform:uppercase;margin-bottom:4px}
+.cert-prize-name{font-family:'Syne';font-size:20px;font-weight:800;margin-bottom:4px}
+.cert-meta{font-size:11px;color:var(--muted);margin-bottom:12px;line-height:1.7}
+.cert-qr{width:52px;height:52px;background:var(--ink);border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:28px;float:right;margin-left:12px}
+.cert-footer{font-size:10px;font-family:'DM Mono';color:var(--muted);border-top:1px solid rgba(255,255,255,.04);padding-top:10px;margin-top:12px;display:flex;justify-content:space-between}
+.log-item{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid rgba(255,255,255,.04)}
+.log-item:last-child{border:none}
+.log-icon{font-size:20px;width:32px;text-align:center;flex-shrink:0}
+.log-info{flex:1}
+.log-prize{font-size:12px;font-weight:600}
+.log-meta{font-size:10px;color:var(--muted)}
+.log-pts{font-size:11px;font-family:'DM Mono';color:var(--muted)}
+#sheet{position:fixed;bottom:0;left:0;right:0;z-index:150;background:var(--s1);border-top:1px solid var(--br);border-radius:20px 20px 0 0;padding:20px;transform:translateY(100%);transition:transform .3s cubic-bezier(.4,0,.2,1)}
+#sheet.open{transform:translateY(0)}
+.sheet-handle{width:36px;height:4px;border-radius:2px;background:var(--muted);margin:0 auto 16px}
+.share-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px}
+.share-btn{padding:12px;border-radius:12px;border:1px solid rgba(255,255,255,.08);background:var(--s2);font-size:13px;font-weight:600;cursor:pointer;color:var(--ink);display:flex;align-items:center;justify-content:center;gap:8px;transition:all .2s}
+.share-btn:hover{border-color:rgba(255,255,255,.2)}
+.share-btn.fb{border-color:rgba(59,130,246,.3);color:#60A5FA}
+.share-btn.cp{border-color:rgba(0,221,180,.3);color:var(--teal)}
+.bottom-nav{position:fixed;bottom:0;left:0;right:0;background:rgba(7,8,12,.95);backdrop-filter:blur(12px);border-top:1px solid var(--br);display:flex;padding:8px 0}
+.nav-item{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;padding:6px;cursor:pointer;color:var(--muted);font-size:9px;font-family:'DM Mono';letter-spacing:.5px;text-transform:uppercase;transition:color .2s;border:none;background:none}
+.nav-item.on,.nav-item:hover{color:var(--violet)}
+.nav-icon{font-size:18px}
+.page{display:none}.page.on{display:block}
+.page-inner{max-width:480px;margin:0 auto;padding:56px 20px 80px}
+.btn-main{width:100%;padding:14px;border-radius:12px;border:none;background:linear-gradient(135deg,var(--violet),#6B4FFF);color:#fff;font-size:14px;font-weight:700;cursor:pointer;font-family:'DM Sans';transition:all .2s;letter-spacing:.3px}
+.btn-main:hover{opacity:.9;transform:translateY(-1px)}
+.btn-main:disabled{opacity:.4;cursor:not-allowed;transform:none}
+.btn-outline{width:100%;padding:12px;border-radius:12px;border:1px solid rgba(255,255,255,.12);background:transparent;color:var(--ink2);font-size:13px;font-weight:600;cursor:pointer;font-family:'DM Sans';margin-top:8px}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
+@keyframes spin{to{transform:rotate(360deg)}}
+</style>
+</head>
+<body>
+
+<div id="feed-ticker">
+  <div class="feed-dot"></div>
+  <div id="feed-text">Đang tải...</div>
+</div>
+
+<div id="page-main" class="page on">
+  <div class="hero">
+    <div class="user-arc">
+      <div class="user-ring"></div>
+      <div class="user-ring-fill"></div>
+      <div class="user-avatar">🏃</div>
+    </div>
+    <div class="user-name">Nguyễn Minh Khoa</div>
+    <div class="user-pts" id="pts-display">340 điểm thưởng · 85 điểm công đức</div>
+    <div class="stat-row">
+      <div class="stat"><div class="stat-val" id="stat-km">385</div><div class="stat-label">Km tháng này</div></div>
+      <div class="stat"><div class="stat-val" id="stat-bags">12</div><div class="stat-label">Túi đã mở</div></div>
+      <div class="stat"><div class="stat-val" id="stat-wins">3</div><div class="stat-label">Quà đã trúng</div></div>
+    </div>
+  </div>
+
+  <div class="golden-banner">
+    <div class="gh-icon">⭐</div>
+    <div class="gh-text"><strong style="color:var(--amber)">Giờ vàng đang bật!</strong><br>Tỷ lệ Legendary x3 · Do KOL Đặng Văn Sơn kích hoạt</div>
+    <div class="gh-timer" id="gh-timer">00:47:23</div>
+  </div>
+
+  <div class="bag-section">
+    <div class="pity-bar-wrap">
+      <div class="pity-row">
+        <div class="pity-label">Bảo hiểm tích lũy (Pity)</div>
+        <div class="pity-count" id="pity-count">Trượt 4 lần · +20% xác suất</div>
+      </div>
+      <div class="pity-bar"><div class="pity-fill" id="pity-fill" style="width:40%"></div></div>
+      <div style="font-size:10px;color:var(--muted);margin-top:5px">Sau 10 lần không trúng → xác suất tăng 5%/lần. Hiện tại: +20%</div>
+    </div>
+
+    <div class="section-label">Legendary · KOL Special</div>
+    <div class="bags-grid">
+      <div class="bag rarity-legendary" onclick="openBag('legendary','🏆','Voucher Salomon 2,000,000đ','Đôi chân này xứng đáng một hành trình hoàn toàn mới. Huyền thoại.',2)">
+        <div class="bag-icon">🎁</div><div class="bag-rarity">Legendary</div>
+        <div class="bag-cost">2 điểm</div><div class="bag-count">còn 3</div>
+      </div>
+      <div class="bag rarity-legendary" onclick="openBag('legendary','🥇','BIB Free Race Sapa 2027','Bạn đã kiếm được quyền chứng kiến bình minh trên đỉnh Sapa một lần nữa.',2)">
+        <div class="bag-icon">🎁</div><div class="bag-rarity">Legendary</div>
+        <div class="bag-cost">2 điểm</div><div class="bag-count">còn 1</div>
+      </div>
+      <div class="bag rarity-legendary empty">
+        <div class="bag-icon">🔒</div><div class="bag-rarity">Hết quà</div><div class="bag-cost">—</div>
+      </div>
+    </div>
+
+    <div class="section-label">Epic · Nhà tài trợ</div>
+    <div class="bags-grid">
+      <div class="bag rarity-epic" onclick="openBag('epic','👟','Voucher giày 500,000đ','Mỗi bước chạy đều xứng đáng một đôi xứng tầm.',2)">
+        <div class="bag-icon">🎁</div><div class="bag-rarity">Epic</div>
+        <div class="bag-cost">2 điểm</div><div class="bag-count">còn 8</div>
+      </div>
+      <div class="bag rarity-epic" onclick="openBag('epic','🎽','Áo race limited edition','Không phải ai cũng có — chỉ những người thật sự đã chạy.',2)">
+        <div class="bag-icon">🎁</div><div class="bag-rarity">Epic</div>
+        <div class="bag-cost">2 điểm</div><div class="bag-count">còn 5</div>
+      </div>
+      <div class="bag rarity-epic" onclick="openBag('epic','⌚','Voucher Garmin 300,000đ','Đồng hồ biết bạn đã nỗ lực thế nào.',2)">
+        <div class="bag-icon">🎁</div><div class="bag-rarity">Epic</div>
+        <div class="bag-cost">2 điểm</div><div class="bag-count">còn 12</div>
+      </div>
+    </div>
+
+    <div class="section-label">Rare & Common</div>
+    <div class="bags-grid">
+      <div class="bag rarity-rare" onclick="openBag('rare','🧴','Gel GU x6 gói','Nhiên liệu cho những km tiếp theo.',2)">
+        <div class="bag-icon">🎁</div><div class="bag-rarity">Rare</div>
+        <div class="bag-cost">2 điểm</div><div class="bag-count">còn 20</div>
+      </div>
+      <div class="bag rarity-rare" onclick="openBag('rare','☕','Voucher cà phê 100k','Phần thưởng cho buổi sáng 5h dậy chạy.',2)">
+        <div class="bag-icon">🎁</div><div class="bag-rarity">Rare</div>
+        <div class="bag-cost">2 điểm</div><div class="bag-count">còn 15</div>
+      </div>
+      <div class="bag" onclick="openBag('common','⭐','+50 điểm thưởng bonus','Điểm này sẽ giúp bạn gần hơn với lần tiếp theo.',2)">
+        <div class="bag-icon">🎁</div><div class="bag-rarity" style="color:var(--common)">Common</div>
+        <div class="bag-cost">2 điểm</div><div class="bag-count">∞</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="page-history" class="page">
+  <div class="page-inner">
+    <div style="font-size:18px;font-weight:500;margin-bottom:4px">Lịch sử quay</div>
+    <div style="font-size:13px;color:var(--muted);margin-bottom:20px">Ghi lại on-chain — không thể chỉnh sửa</div>
+    <div id="history-list"><div style="color:var(--muted);font-size:13px;text-align:center;padding:2rem">Mở túi đầu tiên để xem lịch sử</div></div>
+  </div>
+</div>
+
+<div id="page-verify" class="page">
+  <div class="page-inner">
+    <div style="font-size:18px;font-weight:500;margin-bottom:4px">Xác minh km</div>
+    <div style="font-size:13px;color:var(--muted);margin-bottom:20px">Chỉ km hợp lệ mới đổi được điểm</div>
+    <div style="background:var(--s1);border:1px solid rgba(0,221,180,.2);border-radius:14px;padding:20px;margin-bottom:12px">
+      <div style="font-size:12px;color:var(--teal);font-family:'DM Mono';letter-spacing:1px;margin-bottom:12px">HỢP LỆ</div>
+      <div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid rgba(255,255,255,.04);font-size:12px">
+        <div style="color:var(--teal)">✓</div><div style="flex:1">25/05 05:34 · 22.4km · 5:25/km · Garmin</div><div style="color:var(--teal);font-family:'DM Mono'">+22 điểm</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:10px;padding:8px 0;font-size:12px">
+        <div style="color:var(--teal)">✓</div><div style="flex:1">24/05 06:10 · 15.1km · 5:48/km · Strava</div><div style="color:var(--teal);font-family:'DM Mono'">+15 điểm</div>
+      </div>
+    </div>
+    <div style="background:var(--s1);border:1px solid rgba(239,68,68,.2);border-radius:14px;padding:20px">
+      <div style="font-size:12px;color:#F87171;font-family:'DM Mono';letter-spacing:1px;margin-bottom:12px">BỊ GẮN CỜ</div>
+      <div style="display:flex;align-items:flex-start;gap:10px;padding:8px 0;font-size:12px">
+        <div style="color:#F87171;margin-top:1px">⚑</div>
+        <div><div>21/05 08:15 · 45.0km · 1:12/km · Manual upload</div><div style="color:#F87171;margin-top:2px">Pace quá nhanh — có thể dùng phương tiện. Km không được tính.</div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="overlay">
+  <div class="particles" id="particles"></div>
+  <div class="open-stage">
+    <div id="open-phase1">
+      <span class="open-bag" id="open-bag-icon">🎁</span>
+      <div class="open-label" id="open-label">Chạm để mở túi mù...</div>
+      <button class="btn-main" style="max-width:280px;margin:20px auto 0;display:block" id="open-btn" onclick="startReveal()">Mở túi ngay ✨</button>
+    </div>
+    <div class="open-result" id="open-result" style="display:none">
+      <div class="result-prize" id="res-prize">🏆</div>
+      <div class="result-tier" id="res-tier">LEGENDARY</div>
+      <div class="result-name" id="res-name">Voucher Salomon</div>
+      <div class="result-ai-quote" id="res-quote">Đôi chân này xứng đáng một hành trình mới.</div>
+      <div class="cert-card" style="max-width:340px;margin:16px auto;text-align:left">
+        <div style="float:right"><div class="cert-qr">🔲</div></div>
+        <span class="cert-badge">HLRace · Chứng nhận nhân phẩm</span>
+        <div class="cert-title">Phần thưởng</div>
+        <div class="cert-prize-name" id="cert-prize-name">Voucher Salomon</div>
+        <div class="cert-meta" id="cert-meta">Trao cho Nguyễn Minh Khoa<br>Sau 385km trong tháng 5/2026</div>
+        <div style="clear:both"></div>
+        <div class="cert-footer">
+          <span>HLRace #<span id="cert-id">BB-2026-04721</span></span>
+          <span id="cert-ts">25/05/2026</span>
+        </div>
+      </div>
+      <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap">
+        <button class="btn-main" id="share-btn" style="max-width:200px" onclick="shareResult()">Chia sẻ nhận quà 📤</button>
+        <button class="btn-outline" style="max-width:200px;margin-top:0" onclick="closeOverlay()">Xem thêm túi</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="sheet">
+  <div class="sheet-handle"></div>
+  <div style="font-size:15px;font-weight:500;margin-bottom:4px">Chia sẻ phần thưởng</div>
+  <div style="font-size:12px;color:var(--muted)">Chia sẻ = +5 điểm công đức</div>
+  <div class="share-grid">
+    <button class="share-btn fb" onclick="shareFB()">Facebook</button>
+    <button class="share-btn" onclick="shareTag()">Tag KOL</button>
+    <button class="share-btn cp" onclick="copyText()">Copy text</button>
+    <button class="share-btn" onclick="document.getElementById('sheet').classList.remove('open')">Đóng</button>
+  </div>
+</div>
+
+<div class="bottom-nav">
+  <button class="nav-item on" onclick="showPage('main',this)"><div class="nav-icon">🎁</div>Túi mù</button>
+  <button class="nav-item" onclick="showPage('history',this)"><div class="nav-icon">📋</div>Lịch sử</button>
+  <button class="nav-item" onclick="showPage('verify',this)"><div class="nav-icon">✓</div>Xác minh</button>
+</div>
+
+<script>
+let userPts=340, pityCount=4, currentPrize=null, pendingBag=null, ghSec=47*60+23;
+const PITY_MAX=10, PITY_BOOST=5;
+
+const FEEDS=[
+  {n:'Trần Minh Anh',i:'Voucher giày 500k',b:'Salomon'},
+  {n:'Ngô Thu Hà',i:'BIB Free Race Sapa',b:'HLRace'},
+  {n:'Lê Văn Tuấn',i:'Gel GU x6',b:'GU Energy'},
+  {n:'Phạm Thanh Linh',i:'+50 điểm bonus',b:'HLRace'},
+  {n:'Hoàng Đức Minh',i:'Áo race limited',b:'Coolmate'},
+];
+let fi=0;
+function rotateFeed(){const e=FEEDS[fi%FEEDS.length];document.getElementById('feed-text').innerHTML=`🎉 <span class="feed-name">${e.n}</span> vừa trúng <span class="feed-item">${e.i}</span> từ ${e.b}`;fi++;}
+rotateFeed();setInterval(rotateFeed,4000);
+
+setInterval(()=>{if(ghSec<=0)return;ghSec--;const m=Math.floor(ghSec/60),s=ghSec%60;document.getElementById('gh-timer').textContent=`${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;},1000);
+
+function roll(rarity){
+  const base={legendary:.03,epic:.10,rare:.25,common:1}[rarity]||.25;
+  let r=base;
+  if(ghSec>0)r=Math.min(r*3,.95);
+  r=Math.min(r+Math.max(0,pityCount)*PITY_BOOST/100,.95);
+  return Math.random()<r;
+}
+
+function openBag(rarity,prize,name,quote,cost){
+  if(userPts<cost){alert(`Cần ${cost} điểm. Bạn có ${userPts}.`);return;}
+  pendingBag={rarity,prize,name,quote,cost};
+  document.getElementById('open-bag-icon').textContent='🎁';
+  document.getElementById('open-bag-icon').className='open-bag';
+  document.getElementById('open-phase1').style.display='block';
+  document.getElementById('open-result').style.display='none';
+  document.getElementById('open-label').textContent=`Túi ${rarity.toUpperCase()} · Tốn ${cost} điểm`;
+  document.getElementById('open-btn').disabled=false;
+  document.getElementById('overlay').classList.add('show');
+}
+
+function startReveal(){
+  if(!pendingBag)return;
+  const bag=pendingBag;
+  userPts-=bag.cost;
+  document.getElementById('pts-display').textContent=`${userPts} điểm thưởng · 85 điểm công đức`;
+  const icon=document.getElementById('open-bag-icon');
+  icon.className='open-bag shaking';
+  document.getElementById('open-label').textContent='Đang lắc...';
+  document.getElementById('open-btn').disabled=true;
+  setTimeout(()=>{icon.className='open-bag exploding';},1200);
+  setTimeout(()=>showResult(roll(bag.rarity),bag),1800);
+}
+
+function showResult(won,bag){
+  document.getElementById('open-phase1').style.display='none';
+  const res=document.getElementById('open-result');
+  res.style.display='block';
+  if(won){
+    pityCount=0;currentPrize=bag;
+    document.getElementById('res-prize').textContent=bag.prize;
+    document.getElementById('res-tier').textContent=bag.rarity.toUpperCase();
+    document.getElementById('res-tier').style.color=`var(--${bag.rarity})`;
+    document.getElementById('res-name').textContent=bag.name;
+    document.getElementById('res-quote').textContent=bag.quote;
+    document.getElementById('cert-prize-name').textContent=bag.name;
+    const now=new Date();
+    document.getElementById('cert-ts').textContent=now.toLocaleDateString('vi');
+    document.getElementById('cert-id').textContent='BB-2026-0'+Math.floor(Math.random()*9000+1000);
+    document.getElementById('cert-meta').innerHTML=`Trao cho Nguyễn Minh Khoa<br>Lúc ${now.getHours()}:${String(now.getMinutes()).padStart(2,'0')} · Sau 385km tháng 5/2026`;
+    document.getElementById('share-btn').style.display='';
+    spawnParticles(bag.rarity);
+    addHist(true,bag);
+    document.getElementById('stat-wins').textContent=parseInt(document.getElementById('stat-wins').textContent)+1;
+  } else {
+    pityCount++;
+    const pct=Math.min(pityCount/PITY_MAX*100,100);
+    document.getElementById('pity-fill').style.width=pct+'%';
+    document.getElementById('pity-count').textContent=`Trượt ${pityCount} lần · +${Math.min(pityCount*PITY_BOOST,50)}% xác suất`;
+    document.getElementById('res-prize').textContent='💨';
+    document.getElementById('res-tier').textContent='TRƯỢT';
+    document.getElementById('res-tier').style.color='var(--muted)';
+    document.getElementById('res-name').textContent='Chưa trúng lần này';
+    document.getElementById('res-quote').textContent=`Bảo hiểm +${Math.min(pityCount*PITY_BOOST,50)}% tích lũy. Tiếp tục chạy để kiếm thêm điểm!`;
+    document.getElementById('share-btn').style.display='none';
+    addHist(false,bag);
+  }
+  document.getElementById('stat-bags').textContent=parseInt(document.getElementById('stat-bags').textContent)+1;
+  res.style.animation='none';
+  requestAnimationFrame(()=>{res.style.animation='resultReveal .5s ease-out';});
+}
+
+function spawnParticles(r){
+  const cols={legendary:'#FFD060',epic:'#C084FC',rare:'#60A5FA',common:'#6EE7B7'};
+  const c=cols[r]||'#fff';
+  const p=document.getElementById('particles');p.innerHTML='';
+  for(let i=0;i<20;i++){
+    const d=document.createElement('div');d.className='particle';
+    const a=(i/20)*360,dist=80+Math.random()*100;
+    d.style.cssText=`left:50%;top:45%;background:${c};--tx:${Math.cos(a*Math.PI/180)*dist}px;--ty:${Math.sin(a*Math.PI/180)*dist-60}px;animation-delay:${Math.random()*.3}s`;
+    p.appendChild(d);
+  }
+  setTimeout(()=>p.innerHTML='',2000);
+}
+
+function closeOverlay(){document.getElementById('overlay').classList.remove('show');pendingBag=null;}
+
+let histLog=[];
+function addHist(won,bag){
+  histLog.unshift({won,prize:won?bag.name:'Trượt',icon:won?bag.prize:'💨',pts:bag.cost,ts:new Date().toLocaleTimeString('vi',{hour:'2-digit',minute:'2-digit'}),rarity:bag.rarity});
+  const el=document.getElementById('history-list');
+  el.innerHTML=histLog.map(h=>`<div class="log-item"><div class="log-icon">${h.icon}</div><div class="log-info"><div class="log-prize" style="color:${h.won?'var(--gold)':'var(--muted)'}">${h.prize}</div><div class="log-meta">${h.ts} · ${h.rarity}</div></div><div class="log-pts">-${h.pts}pt</div></div>`).join('');
+}
+
+function shareResult(){document.getElementById('sheet').classList.add('open');}
+function shareFB(){const t=encodeURIComponent(`🏃 Tôi vừa trúng ${currentPrize?.name||'quà'} từ HLRace!\n385km tháng này. #HLRace #LegacyRun`);window.open(`https://www.facebook.com/sharer/sharer.php?quote=${t}`);}
+function shareTag(){navigator.clipboard?.writeText(`🏃 Tôi vừa trúng ${currentPrize?.name||'quà'} từ HLRace!\n#HLRace #ChạyĐểHiệnDiện`).then(()=>alert('Đã copy! Dán vào bài đăng.'));}
+function copyText(){navigator.clipboard?.writeText(`🏃 ${currentPrize?.name||'HLRace'} · Mã: ${document.getElementById('cert-id').textContent}\nVerify: hlrace.vn/verify\n#HLRace`).then(()=>{alert('Đã copy!');document.getElementById('sheet').classList.remove('open');});}
+
+function showPage(p,btn){
+  document.querySelectorAll('.page').forEach(x=>x.classList.remove('on'));
+  document.querySelectorAll('.nav-item').forEach(x=>x.classList.remove('on'));
+  document.getElementById('page-'+p).classList.add('on');
+  btn.classList.add('on');
+}
+</script>
+</body>
+</html>

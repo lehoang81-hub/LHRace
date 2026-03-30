@@ -1,0 +1,529 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Phát BIB — Giải Chạy 2026</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Be+Vietnam+Pro:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --red:#D72B2B;--gold:#F5A623;--green:#27AE60;--dark:#0D0D0D;
+  --dark2:#161616;--dark3:#202020;--light:#F0EDE8;--muted:#666;--border:rgba(255,255,255,0.08)
+}
+body{background:var(--dark);color:var(--light);font-family:'Be Vietnam Pro',sans-serif;min-height:100vh;overflow-x:hidden}
+
+/* ── LOGIN ── */
+.login-screen{position:fixed;inset:0;background:var(--dark);display:flex;align-items:center;justify-content:center;z-index:999;padding:20px}
+.login-box{background:var(--dark2);border:1px solid var(--border);border-radius:14px;padding:32px 28px;width:100%;max-width:380px;text-align:center;position:relative;overflow:hidden}
+.login-box::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--red),var(--gold))}
+.login-icon{font-size:40px;margin-bottom:12px}
+.login-title{font-family:'Bebas Neue',sans-serif;font-size:26px;letter-spacing:2px;margin-bottom:4px}
+.login-sub{font-size:11px;color:var(--muted);margin-bottom:20px;line-height:1.5}
+
+/* Chọn bàn */
+.desk-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px}
+.desk-btn{padding:14px 10px;border:1.5px solid var(--border);border-radius:8px;background:var(--dark3);cursor:pointer;text-align:center;transition:all .2s;font-family:'Be Vietnam Pro',sans-serif}
+.desk-btn:hover{border-color:rgba(215,43,43,.5)}
+.desk-btn.sel{border-color:var(--red);background:rgba(215,43,43,.08)}
+.desk-btn .dk{font-family:'Bebas Neue',sans-serif;font-size:26px;line-height:1;margin-bottom:3px}
+.desk-btn .dl{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:1.5px}
+.desk-btn.sel .dk{color:var(--red)}
+
+.pw-input{width:100%;background:var(--dark3);border:1.5px solid var(--border);border-radius:7px;color:var(--light);font-family:'Be Vietnam Pro',sans-serif;font-size:14px;padding:11px 14px;outline:none;text-align:center;letter-spacing:3px;margin-bottom:10px;transition:border-color .2s}
+.pw-input:focus{border-color:var(--red)}
+.login-btn{width:100%;padding:13px;background:var(--red);color:#fff;border:none;border-radius:7px;font-family:'Be Vietnam Pro',sans-serif;font-size:11px;font-weight:800;letter-spacing:2px;text-transform:uppercase;cursor:pointer;transition:opacity .2s}
+.login-btn:hover{opacity:.85}
+.login-err{color:#e57373;font-size:12px;margin-top:8px;display:none}
+
+/* ── MAIN APP ── */
+.app{display:none}
+
+/* TOPBAR */
+.topbar{background:var(--dark2);border-bottom:2px solid var(--red);padding:10px 16px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100}
+.tb-info{display:flex;align-items:center;gap:10px}
+.desk-tag{font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:2px;padding:4px 12px;border-radius:4px;line-height:1}
+.desk-15{background:rgba(245,166,35,.15);color:var(--gold)}
+.desk-3{background:rgba(215,43,43,.15);color:var(--red)}
+.desk-5{background:rgba(39,174,96,.15);color:var(--green)}
+.tb-stats{font-size:11px;color:var(--muted)}
+.tb-stats strong{color:var(--light)}
+.logout-btn{background:none;border:1px solid var(--border);color:var(--muted);padding:5px 12px;border-radius:4px;font-family:'Be Vietnam Pro',sans-serif;font-size:10px;font-weight:700;cursor:pointer;transition:all .2s}
+.logout-btn:hover{border-color:var(--red);color:var(--red)}
+
+/* SEARCH AREA */
+.search-area{padding:16px;background:var(--dark2);border-bottom:1px solid var(--border)}
+.search-wrap{position:relative;margin-bottom:0}
+.search-input{width:100%;background:var(--dark3);border:2px solid var(--border);border-radius:10px;color:var(--light);font-family:'Be Vietnam Pro',sans-serif;font-size:16px;padding:14px 50px 14px 16px;outline:none;transition:border-color .2s}
+.search-input:focus{border-color:var(--red)}
+.search-icon{position:absolute;right:14px;top:50%;transform:translateY(-50%);font-size:20px;cursor:pointer;background:none;border:none;color:var(--muted)}
+.search-hint{font-size:10px;color:var(--muted);margin-top:7px;letter-spacing:.5px}
+
+/* RESULT AREA */
+.result-area{padding:14px 16px;min-height:60vh}
+
+/* RESULT CARD */
+.result-card{border-radius:12px;padding:20px;margin-bottom:12px;position:relative;overflow:hidden;animation:pop .25s ease}
+@keyframes pop{from{opacity:0;transform:scale(.97)}to{opacity:1;transform:scale(1)}}
+.rc-approved{background:var(--dark2);border:1.5px solid var(--border)}
+.rc-checkedin{background:rgba(39,174,96,.06);border:1.5px solid rgba(39,174,96,.3)}
+.rc-pending{background:rgba(245,166,35,.05);border:1.5px solid rgba(245,166,35,.25)}
+.rc-notfound{background:rgba(215,43,43,.05);border:1.5px solid rgba(215,43,43,.2);text-align:center;padding:28px 20px}
+
+.rc-header{display:flex;align-items:flex-start;gap:14px;margin-bottom:14px}
+.bib-badge{width:64px;height:64px;border-radius:8px;display:flex;flex-direction:column;align-items:center;justify-content:center;flex-shrink:0;font-family:'Bebas Neue',sans-serif;line-height:1}
+.bib-num{font-size:22px;letter-spacing:1px}
+.bib-dist{font-size:10px;letter-spacing:2px;opacity:.8}
+.bib-15{background:rgba(245,166,35,.15);color:var(--gold)}
+.bib-3{background:rgba(215,43,43,.15);color:var(--red)}
+.bib-5{background:rgba(39,174,96,.15);color:var(--green)}
+
+.rc-name{font-size:20px;font-weight:800;margin-bottom:4px}
+.rc-meta{display:flex;gap:8px;flex-wrap:wrap;font-size:12px;color:var(--muted)}
+.rc-meta span{display:flex;align-items:center;gap:3px}
+
+.info-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px}
+.info-item{background:var(--dark3);border-radius:6px;padding:10px 12px}
+.info-item .il{font-size:9px;color:var(--muted);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:3px}
+.info-item .iv{font-size:13px;font-weight:700}
+
+/* STATUS BADGES */
+.status-badge{display:inline-flex;align-items:center;gap:5px;padding:5px 12px;border-radius:20px;font-size:11px;font-weight:700;margin-bottom:12px}
+.sb-ok{background:rgba(39,174,96,.15);color:var(--green);border:1px solid rgba(39,174,96,.3)}
+.sb-wait{background:rgba(245,166,35,.15);color:var(--gold);border:1px solid rgba(245,166,35,.3)}
+.sb-checkedin{background:rgba(39,174,96,.2);color:var(--green);border:1px solid rgba(39,174,96,.4)}
+
+/* ACTION BUTTONS */
+.action-row{display:grid;grid-template-columns:1fr;gap:8px}
+.action-btn{padding:14px;border-radius:8px;font-family:'Be Vietnam Pro',sans-serif;font-size:13px;font-weight:800;letter-spacing:1px;cursor:pointer;border:none;transition:all .2s;width:100%}
+.btn-checkin{background:var(--green);color:#fff;font-size:14px}
+.btn-checkin:hover{opacity:.88}
+.btn-checkin:disabled{opacity:.4;cursor:not-allowed}
+.btn-ghost{background:transparent;border:1.5px solid var(--border);color:var(--muted)}
+.btn-ghost:hover{border-color:var(--muted);color:var(--light)}
+
+/* ALREADY CHECKED IN */
+.already-box{background:rgba(39,174,96,.08);border:1.5px solid rgba(39,174,96,.3);border-radius:8px;padding:14px;text-align:center;margin-bottom:10px}
+.already-box .ai{font-size:28px;margin-bottom:4px}
+.already-box .at{font-size:14px;font-weight:700;color:var(--green)}
+.already-box .as{font-size:11px;color:var(--muted);margin-top:3px}
+
+/* WRONG DESK WARNING */
+.wrong-desk{background:rgba(245,166,35,.08);border:1.5px solid rgba(245,166,35,.3);border-radius:8px;padding:12px 14px;margin-bottom:10px;font-size:12px;color:var(--gold);line-height:1.5}
+
+/* EMPTY / LOADING */
+.state-box{text-align:center;padding:48px 20px;color:var(--muted)}
+.state-icon{font-size:48px;margin-bottom:12px}
+.state-text{font-size:14px;line-height:1.6}
+
+/* RECENT LIST */
+.recent-section{padding:0 16px 16px}
+.recent-title{font-size:9px;color:var(--muted);letter-spacing:2px;text-transform:uppercase;margin-bottom:10px;display:flex;align-items:center;gap:8px}
+.recent-title::after{content:'';flex:1;height:1px;background:var(--border)}
+.recent-item{display:flex;align-items:center;gap:10px;padding:9px 12px;background:var(--dark2);border-radius:6px;margin-bottom:6px;font-size:12px}
+.ri-bib{font-family:'Bebas Neue',sans-serif;font-size:14px;width:52px;flex-shrink:0;color:var(--green)}
+.ri-name{flex:1;font-weight:600}
+.ri-time{font-size:10px;color:var(--muted);white-space:nowrap}
+
+/* SPIN */
+.spin{display:inline-block;width:18px;height:18px;border:2px solid rgba(255,255,255,.15);border-top-color:var(--red);border-radius:50%;animation:sp .7s linear infinite}
+@keyframes sp{to{transform:rotate(360deg)}}
+
+/* TOAST */
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(80px);background:var(--green);color:#fff;padding:12px 24px;border-radius:8px;font-size:13px;font-weight:700;z-index:9999;transition:transform .3s;white-space:nowrap;box-shadow:0 4px 20px rgba(0,0,0,.4)}
+.toast.show{transform:translateX(-50%) translateY(0)}
+.toast.err{background:var(--red)}
+</style>
+
+<script src="hlrace-i18n.js"></script>
+</head>
+<body>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<!-- ── LOGIN SCREEN ── -->
+<div class="login-screen" id="loginScreen">
+  <div class="login-box">
+    <div class="login-icon">🏷️</div>
+    <div class="login-title" id="checkinRaceName">Bàn Phát BIB</div>
+    <div class="login-sub">Chọn bàn phụ trách và nhập mật khẩu để bắt đầu</div>
+
+    <div class="desk-grid" id="deskGrid">
+      <div class="desk-btn" onclick="selDesk('1.5KM',this)">
+        <div class="dk" style="color:var(--gold)">1.5</div>
+        <div class="dl">KM · Gia đình</div>
+      </div>
+      <div class="desk-btn" onclick="selDesk('3KM',this)">
+        <div class="dk" style="color:var(--red)">3</div>
+        <div class="dl">KM</div>
+      </div>
+      <div class="desk-btn" onclick="selDesk('5KM',this)">
+        <div class="dk" style="color:var(--green)">5</div>
+        <div class="dl">KM</div>
+      </div>
+      <div class="desk-btn" onclick="selDesk('ALL',this)">
+        <div class="dk" style="color:var(--muted)">ALL</div>
+        <div class="dl">Tất cả</div>
+      </div>
+    </div>
+
+    <input type="password" class="pw-input" id="pwInput" placeholder="Mật khẩu" onkeydown="if(event.key==='Enter')doLogin()">
+    <button class="login-btn" onclick="doLogin()">Vào bàn phát BIB →</button>
+    <div class="login-err" id="loginErr">❌ Mật khẩu không đúng</div>
+  </div>
+</div>
+
+<!-- ── MAIN APP ── -->
+<div class="app" id="app">
+
+  <!-- TOPBAR -->
+  <div class="topbar">
+    <div class="tb-info">
+      <div class="desk-tag" id="deskTag">3KM</div>
+      <div class="tb-stats">
+        Đã phát: <strong id="statDone">0</strong> /
+        Tổng: <strong id="statTotal">0</strong>
+      </div>
+    </div>
+    <button class="logout-btn" onclick="logout()">Đổi bàn</button>
+  </div>
+
+  <!-- SEARCH -->
+  <div class="search-area">
+    <div class="search-wrap">
+      <input type="text" class="search-input" id="searchInput"
+        placeholder="Nhập số CCCD/CMND..."
+        inputmode="numeric"
+        oninput="onSearch()"
+        autocomplete="off" autocorrect="off" spellcheck="false">
+      <button class="search-icon" onclick="clearSearch()">✕</button>
+    </div>
+    <div class="search-hint">🪪 Yêu cầu VĐV đưa CCCD → nhập số vào ô trên để tra cứu</div>
+  </div>
+
+  <!-- RESULT -->
+  <div class="result-area" id="resultArea">
+    <div class="state-box">
+      <div class="state-icon">🔍</div>
+      <div class="state-text">Nhập số CCCD/CMND<br>để tìm kiếm vận động viên</div>
+    </div>
+  </div>
+
+  <!-- RECENT CHECK-INS -->
+  <div class="recent-section" id="recentSection" style="display:none">
+    <div class="recent-title">Vừa phát BIB</div>
+    <div id="recentList"></div>
+  </div>
+</div>
+
+<script src="race-config.js"></script>
+<script>
+// ── CONFIG ────────────────────────────────────────────
+const ADMIN_PW = localStorage.getItem('race_admin_pw') || 'admin2026';
+const SHEET_URL = localStorage.getItem('race_sheet_url') || '';
+
+document.addEventListener('DOMContentLoaded', () => applyConfigToCheckin());
+
+// ── STATE ─────────────────────────────────────────────
+let currentDesk = '';
+let allRunners = [];
+let recentCheckins = [];
+let searchTimeout = null;
+let selectedDesk = '';
+
+// ── BIB COUNTER (per distance) ────────────────────────
+// Lưu counter BIB vào localStorage để nhiều thiết bị không trùng
+// Thực tế nên dùng server-side counter, nhưng với quy mô nhỏ localStorage là đủ
+function getBibCounter(dist){
+  return parseInt(localStorage.getItem('bib_counter_'+dist)||'0');
+}
+function nextBib(dist){
+  const n = getBibCounter(dist) + 1;
+  localStorage.setItem('bib_counter_'+dist, n);
+  const prefix = dist.replace('KM','K').replace('.','');
+  return prefix+'-'+String(n).padStart(3,'0');
+}
+
+// ── LOGIN ─────────────────────────────────────────────
+function selDesk(d, el){
+  selectedDesk = d;
+  document.querySelectorAll('.desk-btn').forEach(b=>b.classList.remove('sel'));
+  el.classList.add('sel');
+}
+
+function doLogin(){
+  if(!selectedDesk){ showToast('Vui lòng chọn bàn phụ trách!','err'); return; }
+  const pw = document.getElementById('pwInput').value;
+  if(pw !== ADMIN_PW){
+    document.getElementById('loginErr').style.display='block';
+    document.getElementById('pwInput').value='';
+    setTimeout(()=>document.getElementById('loginErr').style.display='none', 2500);
+    return;
+  }
+  currentDesk = selectedDesk;
+  document.getElementById('loginScreen').style.display='none';
+  document.getElementById('app').style.display='block';
+
+  // Setup desk tag
+  const tag = document.getElementById('deskTag');
+  tag.textContent = 'BÀN ' + currentDesk;
+  tag.className = 'desk-tag';
+  if(currentDesk==='1.5KM') tag.classList.add('desk-15');
+  else if(currentDesk==='3KM') tag.classList.add('desk-3');
+  else if(currentDesk==='5KM') tag.classList.add('desk-5');
+  else tag.style.cssText='background:rgba(255,255,255,.06);color:var(--muted)';
+
+  loadData();
+  document.getElementById('searchInput').focus();
+}
+
+function logout(){
+  document.getElementById('loginScreen').style.display='flex';
+  document.getElementById('app').style.display='none';
+  document.getElementById('pwInput').value='';
+  document.getElementById('searchInput').value='';
+  selectedDesk='';
+  document.querySelectorAll('.desk-btn').forEach(b=>b.classList.remove('sel'));
+  renderResult(null,'idle');
+}
+
+// ── LOAD DATA ─────────────────────────────────────────
+async function loadData(){
+  if(!SHEET_URL){
+    document.getElementById('resultArea').innerHTML=`
+      <div class="state-box">
+        <div class="state-icon">⚙️</div>
+        <div class="state-text">Chưa cấu hình Google Sheets URL.<br>Vào trang Admin → Cài đặt → Lưu URL trước.</div>
+      </div>`;
+    return;
+  }
+  try{
+    const res = await fetch(SHEET_URL+'?action=getAll&t='+Date.now());
+    const json = await res.json();
+    allRunners = (json.data||[]).filter(r=>r.status==='approved');
+
+    // Lọc theo bàn nếu không phải ALL
+    if(currentDesk !== 'ALL'){
+      const distKey = currentDesk.replace('KM','km'); // "3KM" → "3km"
+      allRunners = allRunners.filter(r=>(r.distance||r.teamDist||'')=== distKey);
+    }
+
+    // Gán BIB cho người chưa có
+    let changed = false;
+    allRunners.forEach(r=>{
+      if(!r.bibNumber){
+        const dist = (r.distance||r.teamDist||'3km').toUpperCase().replace('.','').replace('KM','KM');
+        r.bibNumber = nextBib(dist);
+        changed = true;
+      }
+    });
+
+    updateStats();
+  }catch(e){
+    document.getElementById('resultArea').innerHTML=`
+      <div class="state-box">
+        <div class="state-icon">⚠️</div>
+        <div class="state-text">Không tải được dữ liệu.<br><button onclick="loadData()" style="color:var(--gold);background:none;border:none;cursor:pointer;font-size:13px;text-decoration:underline">Thử lại</button></div>
+      </div>`;
+  }
+}
+
+function updateStats(){
+  const done = allRunners.filter(r=>r.checkedIn).length;
+  document.getElementById('statDone').textContent = done;
+  document.getElementById('statTotal').textContent = allRunners.length;
+}
+
+// ── SEARCH ────────────────────────────────────────────
+function onSearch(){
+  clearTimeout(searchTimeout);
+  const q = document.getElementById('searchInput').value.trim();
+  if(!q){ renderResult(null,'idle'); return; }
+  searchTimeout = setTimeout(()=>doSearch(q), 200);
+}
+
+function doSearch(q){
+  if(!allRunners.length){ renderResult(null,'loading'); return; }
+
+  // Tìm theo CCCD (ưu tiên) hoặc tên hoặc SĐT
+  const results = allRunners.filter(r=>
+    (r.idCard||'').replace(/\s/g,'').includes(q.replace(/\s/g,'')) ||
+    (r.fullName||'').toLowerCase().includes(q.toLowerCase()) ||
+    (r.phone||'').includes(q)
+  );
+
+  if(!results.length){ renderResult(null,'notfound',q); return; }
+  if(results.length===1){ renderResult(results[0],'found'); return; }
+  renderMultiple(results);
+}
+
+function clearSearch(){
+  document.getElementById('searchInput').value='';
+  renderResult(null,'idle');
+  document.getElementById('searchInput').focus();
+}
+
+// ── RENDER RESULT ─────────────────────────────────────
+function renderResult(runner, state, query=''){
+  const area = document.getElementById('resultArea');
+
+  if(state==='idle'){
+    area.innerHTML=`<div class="state-box"><div class="state-icon">🔍</div><div class="state-text">Nhập số CCCD/CMND<br>để tìm kiếm vận động viên</div></div>`;
+    return;
+  }
+  if(state==='loading'){
+    area.innerHTML=`<div class="state-box"><div class="spin"></div></div>`;
+    return;
+  }
+  if(state==='notfound'){
+    area.innerHTML=`<div class="result-card rc-notfound">
+      <div style="font-size:32px;margin-bottom:10px">❌</div>
+      <div style="font-size:16px;font-weight:700;margin-bottom:6px">Không tìm thấy</div>
+      <div style="font-size:12px;color:var(--muted)">Số CCCD "<strong style="color:var(--light)">${esc(query)}</strong>" không có trong danh sách.<br>Kiểm tra lại hoặc người này chưa được duyệt.</div>
+    </div>`;
+    return;
+  }
+  if(state==='found' && runner){
+    renderRunnerCard(runner);
+    return;
+  }
+}
+
+function renderMultiple(list){
+  const area = document.getElementById('resultArea');
+  area.innerHTML = `<div style="font-size:11px;color:var(--muted);margin-bottom:10px;letter-spacing:1px;text-transform:uppercase">Tìm thấy ${list.length} kết quả — chọn đúng người:</div>`
+    + list.map(r=>`
+      <div onclick="renderRunnerCard(allRunners.find(x=>x.rowIndex==='${r.rowIndex}'))" style="background:var(--dark2);border:1px solid var(--border);border-radius:8px;padding:12px 14px;margin-bottom:8px;cursor:pointer;display:flex;align-items:center;gap:10px;transition:border-color .2s" onmouseover="this.style.borderColor='rgba(215,43,43,.4)'" onmouseout="this.style.borderColor='var(--border)'">
+        <div style="font-family:'Bebas Neue',sans-serif;font-size:18px;color:var(--red);width:50px;flex-shrink:0">${r.bibNumber||'—'}</div>
+        <div><div style="font-weight:700">${esc(r.fullName||'—')}</div><div style="font-size:11px;color:var(--muted)">${r.phone||''} · CCCD: ${r.idCard||''}</div></div>
+      </div>`).join('');
+}
+
+function renderRunnerCard(runner){
+  if(!runner) return;
+  const area = document.getElementById('resultArea');
+  const dist = runner.distance || runner.teamDist || '';
+  const distUp = dist.toUpperCase().replace('.','');
+  const bibClass = distUp==='15KM'?'bib-15':distUp==='3KM'?'bib-3':'bib-5';
+  const bibColor = distUp==='15KM'?'var(--gold)':distUp==='3KM'?'var(--red)':'var(--green)';
+  const isWrongDesk = currentDesk!=='ALL' && distUp !== currentDesk.replace('.','');
+  const isCheckedIn = runner.checkedIn;
+
+  let statusHtml = '';
+  if(isCheckedIn){
+    statusHtml=`<div class="already-box"><div class="ai">✅</div><div class="at">Đã nhận BIB rồi!</div><div class="as">Lúc ${runner.checkedInTime||'—'}</div></div>`;
+  } else {
+    statusHtml=`<div class="status-badge sb-ok">✅ Đã xác nhận thanh toán</div>`;
+  }
+
+  let wrongDeskHtml = '';
+  if(isWrongDesk){
+    wrongDeskHtml=`<div class="wrong-desk">⚠️ <strong>Sai bàn!</strong> VĐV này đăng ký cự ly <strong>${dist}</strong> — vui lòng hướng họ đến đúng bàn phụ trách cự ly ${dist}.</div>`;
+  }
+
+  let actionHtml = '';
+  if(isCheckedIn){
+    actionHtml=`<button class="action-btn btn-ghost" onclick="clearSearch()">← Tìm người khác</button>`;
+  } else if(isWrongDesk){
+    actionHtml=`<button class="action-btn btn-ghost" onclick="clearSearch()">← Tìm người khác</button>`;
+  } else {
+    actionHtml=`
+      <button class="action-btn btn-checkin" onclick="doCheckin('${runner.rowIndex}')">
+        🏷️ Xác nhận phát BIB ${runner.bibNumber||''}
+      </button>
+      <button class="action-btn btn-ghost" onclick="clearSearch()">← Tìm người khác</button>`;
+  }
+
+  area.innerHTML=`<div class="result-card ${isCheckedIn?'rc-checkedin':'rc-approved'}">
+    <div class="rc-header">
+      <div class="bib-badge ${bibClass}">
+        <div class="bib-num">${(runner.bibNumber||'—').split('-').pop()}</div>
+        <div class="bib-dist">${distUp}</div>
+      </div>
+      <div style="flex:1">
+        <div class="rc-name">${esc(runner.fullName||runner.teamName||'—')}</div>
+        <div class="rc-meta">
+          <span>👤 ${runner.gender||'—'}</span>
+          ${runner.phone?`<span>📱 ${runner.phone}</span>`:''}
+          ${runner.teamCode?`<span style="color:#5dade2">👥 ${runner.teamCode}</span>`:''}
+        </div>
+      </div>
+    </div>
+
+    ${statusHtml}
+    ${wrongDeskHtml}
+
+    <div class="info-grid">
+      <div class="info-item"><div class="il">Số BIB</div><div class="iv" style="color:${bibColor};font-family:'Bebas Neue',sans-serif;font-size:20px">${runner.bibNumber||'—'}</div></div>
+      <div class="info-item"><div class="il">Cự ly</div><div class="iv">${dist||'—'}</div></div>
+      <div class="info-item"><div class="il">Size áo</div><div class="iv">${runner.shirtSize||'—'}</div></div>
+      <div class="info-item"><div class="il">CCCD</div><div class="iv" style="font-size:11px">${runner.idCard||'—'}</div></div>
+    </div>
+
+    <div class="action-row">${actionHtml}</div>
+  </div>`;
+}
+
+// ── CHECK-IN ──────────────────────────────────────────
+async function doCheckin(rowIndex){
+  const btn = document.querySelector('.btn-checkin');
+  if(btn){ btn.disabled=true; btn.innerHTML='<span class="spin" style="width:14px;height:14px;border-top-color:#fff"></span> Đang ghi nhận...'; }
+
+  const now = new Date().toLocaleTimeString('vi-VN', {hour:'2-digit',minute:'2-digit'});
+  const runner = allRunners.find(r=>r.rowIndex===rowIndex);
+  if(!runner) return;
+
+  // Ghi nhận local ngay lập tức
+  runner.checkedIn = true;
+  runner.checkedInTime = now;
+
+  // Gửi lên Sheets
+  if(SHEET_URL){
+    try{
+      await fetch(SHEET_URL, {method:'POST', mode:'no-cors',
+        headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({action:'checkin', rowIndex, bibNumber: runner.bibNumber, checkedInTime: now})
+      });
+    }catch(e){ console.warn('Sheets sync error:', e); }
+  }
+
+  // Thêm vào recent
+  recentCheckins.unshift({name: runner.fullName, bib: runner.bibNumber, time: now});
+  if(recentCheckins.length > 5) recentCheckins.pop();
+  renderRecent();
+
+  updateStats();
+  showToast(`✅ Đã phát BIB ${runner.bibNumber} cho ${runner.fullName}`);
+
+  // Re-render card
+  setTimeout(()=>{ renderRunnerCard(runner); }, 300);
+}
+
+// ── RECENT ────────────────────────────────────────────
+function renderRecent(){
+  if(!recentCheckins.length) return;
+  const sec = document.getElementById('recentSection');
+  sec.style.display='block';
+  document.getElementById('recentList').innerHTML = recentCheckins.map(r=>`
+    <div class="recent-item">
+      <div class="ri-bib">${r.bib||'—'}</div>
+      <div class="ri-name">${esc(r.name)}</div>
+      <div class="ri-time">${r.time}</div>
+    </div>`).join('');
+}
+
+// ── TOAST ─────────────────────────────────────────────
+function showToast(msg, type=''){
+  const t=document.getElementById('toast');
+  t.textContent=msg;
+  t.className='toast'+(type==='err'?' err':'');
+  setTimeout(()=>t.classList.add('show'),10);
+  setTimeout(()=>t.classList.remove('show'),3000);
+}
+
+function esc(s){return(s||'').toString().replace(/</g,'&lt;').replace(/>/g,'&gt;')}
+</script>
+
+</body>
+</html>

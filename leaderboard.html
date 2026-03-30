@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bảng Xếp Hạng TNV — Giải Chạy 2026</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Be+Vietnam+Pro:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--red:#D72B2B;--gold:#F5A623;--green:#27AE60;--blue:#2980B9;--dark:#0D0D0D;--dark2:#161616;--dark3:#202020;--light:#F0EDE8;--muted:#555;--border:rgba(255,255,255,0.07)}
+body{background:var(--dark);color:var(--light);font-family:'Be Vietnam Pro',sans-serif;min-height:100vh}
+
+/* ── HERO ── */
+.hero{text-align:center;padding:48px 20px 32px;position:relative;overflow:hidden;border-bottom:1px solid var(--border)}
+.hero::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 70% 50% at 50% 0%,rgba(245,166,35,.08),transparent)}
+.hero-eyebrow{font-size:9px;font-weight:800;letter-spacing:4px;text-transform:uppercase;color:var(--gold);margin-bottom:10px}
+.hero-title{font-family:'Bebas Neue',sans-serif;font-size:clamp(40px,9vw,80px);line-height:.9;letter-spacing:2px;margin-bottom:8px}
+.hero-title .hl{color:var(--gold)}
+.hero-sub{font-size:11px;color:var(--muted);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:24px}
+
+/* ── RANK LEGEND ── */
+.legend{display:flex;justify-content:center;gap:8px;flex-wrap:wrap;margin-bottom:8px}
+.lbadge{display:inline-flex;align-items:center;gap:6px;padding:5px 12px;border-radius:20px;font-size:10px;font-weight:800;border:1px solid}
+.lb-green{background:rgba(39,174,96,.1);color:#2ecc71;border-color:rgba(39,174,96,.2)}
+.lb-blue{background:rgba(41,128,185,.1);color:#5dade2;border-color:rgba(41,128,185,.2)}
+.lb-orange{background:rgba(230,126,34,.1);color:#e67e22;border-color:rgba(230,126,34,.2)}
+.lb-red{background:rgba(215,43,43,.1);color:#e74c3c;border-color:rgba(215,43,43,.2)}
+.lb-gold{background:rgba(245,166,35,.12);color:var(--gold);border-color:rgba(245,166,35,.3)}
+
+/* ── STATS ROW ── */
+.stats-wrap{max-width:900px;margin:0 auto;padding:20px 16px 0}
+.stats-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(90px,1fr));gap:10px;margin-bottom:20px}
+.sc{background:var(--dark2);border:1px solid var(--border);border-radius:8px;padding:12px 10px;text-align:center}
+.sc-num{font-family:'Bebas Neue',sans-serif;font-size:28px;line-height:1}
+.sc-lbl{font-size:8px;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);margin-top:3px}
+
+/* ── FILTERS ── */
+.filter-bar{display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-bottom:12px}
+.filter-lbl{font-size:9px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted)}
+.fb{padding:5px 12px;border-radius:4px;border:1px solid var(--border);background:none;color:var(--muted);font-family:'Be Vietnam Pro',sans-serif;font-size:10px;font-weight:700;cursor:pointer;transition:all .2s}
+.fb:hover{border-color:var(--muted);color:var(--light)}
+.fb.on{background:rgba(215,43,43,.1);border-color:var(--red);color:var(--red)}
+.search-box{position:relative;margin-bottom:14px}
+.search-box input{width:100%;background:var(--dark2);border:1.5px solid var(--border);border-radius:8px;color:var(--light);font-family:'Be Vietnam Pro',sans-serif;font-size:13px;padding:10px 12px 10px 36px;outline:none;transition:border-color .2s}
+.search-box input:focus{border-color:var(--red)}
+.search-box::before{content:'🔍';position:absolute;left:11px;top:50%;transform:translateY(-50%);font-size:13px}
+
+/* ── PODIUM TOP 3 ── */
+.podium{display:flex;align-items:flex-end;justify-content:center;gap:10px;margin-bottom:24px;padding:0 8px}
+.pod{flex:1;max-width:180px;text-align:center;position:relative}
+.pod-base{border-radius:10px 10px 0 0;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;padding:16px 10px 12px;position:relative;overflow:hidden}
+.pod-base::before{content:'';position:absolute;top:0;left:0;right:0;height:2px}
+.pod-1 .pod-base{background:linear-gradient(180deg,rgba(245,166,35,.12),rgba(245,166,35,.04));height:160px}
+.pod-1 .pod-base::before{background:linear-gradient(90deg,var(--gold),#fff8,var(--gold))}
+.pod-2 .pod-base{background:linear-gradient(180deg,rgba(255,255,255,.07),rgba(255,255,255,.02));height:120px}
+.pod-2 .pod-base::before{background:linear-gradient(90deg,#aaa,#fff5,#aaa)}
+.pod-3 .pod-base{background:linear-gradient(180deg,rgba(205,127,50,.1),rgba(205,127,50,.03));height:100px}
+.pod-3 .pod-base::before{background:linear-gradient(90deg,#cd7f32,#fff4,#cd7f32)}
+.pod-crown{font-size:28px;margin-bottom:4px}
+.pod-avatar{width:52px;height:52px;border-radius:50%;background:var(--dark3);border:3px solid;display:flex;align-items:center;justify-content:center;font-size:22px;margin:0 auto 8px}
+.pod-1 .pod-avatar{border-color:var(--gold)}
+.pod-2 .pod-avatar{border-color:#aaa}
+.pod-3 .pod-avatar{border-color:#cd7f32}
+.pod-name{font-size:11px;font-weight:800;margin-bottom:3px;line-height:1.2}
+.pod-role{font-size:9px;color:var(--muted);margin-bottom:6px}
+.pod-pts{font-family:'Bebas Neue',sans-serif;font-size:22px;line-height:1}
+.pod-1 .pod-pts{color:var(--gold)}
+.pod-2 .pod-pts{color:#bbb}
+.pod-3 .pod-pts{color:#cd7f32}
+.pod-rank-badge{font-size:8px;font-weight:800;padding:2px 7px;border-radius:3px;margin-top:4px;display:inline-block}
+.pod-footer{padding:6px 4px;font-size:9px;color:var(--muted)}
+
+/* ── LEADERBOARD TABLE ── */
+.lb-wrap{background:var(--dark2);border:1px solid var(--border);border-radius:10px;overflow:hidden;margin-bottom:16px}
+.lb-row{display:grid;grid-template-columns:44px 1fr auto;align-items:center;padding:12px 16px;border-bottom:1px solid var(--border);transition:background .2s;cursor:default;gap:12px}
+.lb-row:last-child{border-bottom:none}
+.lb-row:hover{background:rgba(255,255,255,.02)}
+.lb-row.top3{background:rgba(245,166,35,.03)}
+.lb-row.top3:hover{background:rgba(245,166,35,.06)}
+.lb-rank{font-family:'Bebas Neue',sans-serif;font-size:20px;color:var(--muted);text-align:center;line-height:1}
+.lb-rank.r1{color:var(--gold)}.lb-rank.r2{color:#bbb}.lb-rank.r3{color:#cd7f32}
+.lb-info{min-width:0}
+.lb-name{font-size:13px;font-weight:800;margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.lb-meta{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.lb-role{font-size:9px;padding:2px 7px;border-radius:3px;font-weight:700}
+.lb-events{font-size:9px;color:var(--muted)}
+.lb-right{text-align:right;flex-shrink:0}
+.lb-pts{font-family:'Bebas Neue',sans-serif;font-size:22px;line-height:1;color:var(--gold)}
+.lb-pts-lbl{font-size:8px;color:var(--muted);letter-spacing:1px;text-transform:uppercase}
+.lb-rank-badge{font-size:8px;font-weight:800;padding:2px 7px;border-radius:3px;margin-top:3px;display:inline-block;white-space:nowrap}
+
+/* ── PROGRESS BAR ── */
+.prog-bar{height:3px;background:rgba(255,255,255,.05);border-radius:2px;margin-top:5px;overflow:hidden}
+.prog-fill{height:100%;border-radius:2px;transition:width .5s ease}
+
+/* ── EMPTY / LOADING ── */
+.empty-state{text-align:center;padding:48px 20px;color:var(--muted)}
+.empty-icon{font-size:40px;margin-bottom:12px}
+.spin{display:inline-block;width:14px;height:14px;border:2px solid rgba(255,255,255,.15);border-top-color:var(--gold);border-radius:50%;animation:sp .7s linear infinite}
+@keyframes sp{to{transform:rotate(360deg)}}
+
+/* ── MEDIA QUERY ── */
+@media(max-width:500px){
+  .podium{gap:6px}
+  .pod-avatar{width:40px;height:40px;font-size:16px}
+  .pod-name{font-size:10px}
+  .pod-pts{font-size:18px}
+  .lb-row{grid-template-columns:32px 1fr auto;padding:10px 12px;gap:8px}
+  .lb-pts{font-size:18px}
+}
+
+/* ── QR SECTION ── */
+.qr-sec{background:var(--dark2);border:1px solid var(--border);border-radius:10px;padding:18px;margin-bottom:16px;text-align:center}
+.qr-title{font-family:'Bebas Neue',sans-serif;font-size:16px;letter-spacing:2px;margin-bottom:8px}
+.qr-sub{font-size:11px;color:var(--muted);margin-bottom:14px;line-height:1.6}
+.qr-box{display:inline-flex;flex-direction:column;align-items:center;gap:8px;padding:16px;background:var(--dark3);border-radius:8px;border:1px solid var(--border)}
+.qr-placeholder{width:120px;height:120px;background:rgba(255,255,255,.05);border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:36px}
+
+/* ── POINTS INFO ── */
+.pts-guide{background:var(--dark2);border:1px solid var(--border);border-radius:10px;padding:18px;margin-bottom:16px}
+.pts-title{font-family:'Bebas Neue',sans-serif;font-size:16px;letter-spacing:2px;margin-bottom:12px;display:flex;align-items:center;gap:8px}
+.pts-title::after{content:'';flex:1;height:1px;background:var(--border)}
+.pts-row{display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px solid var(--border);font-size:12px}
+.pts-row:last-child{border:none}
+.pts-act{color:var(--muted)}
+.pts-val{font-weight:800;color:var(--gold);font-family:'Bebas Neue',sans-serif;font-size:16px;letter-spacing:1px}
+</style>
+</head>
+<body>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-eyebrow">🏆 Hệ thống Điểm Cống Hiến</div>
+  <h1 class="hero-title">BẢNG XẾP HẠNG<br><span class="hl" id="heroTitle">TNV Giải Chạy</span></h1>
+  <p class="hero-sub" id="heroSub">Vinh danh những người đồng hành</p>
+
+  <!-- RANK LEGEND -->
+  <div class="legend">
+    <span class="lbadge lb-green">🌱 0–49đ · TNV Mới</span>
+    <span class="lbadge lb-blue">🔵 50–149đ · TNV Tích Cực</span>
+    <span class="lbadge lb-orange">🟠 150–299đ · TNV Nòng Cốt</span>
+    <span class="lbadge lb-red">🔴 300–499đ · TNV Xuất Sắc</span>
+    <span class="lbadge lb-gold">⭐ 500+đ · TNV Tiêu Biểu</span>
+  </div>
+</div>
+
+<div class="stats-wrap">
+
+  <!-- STATS -->
+  <div class="stats-row" id="statsRow">
+    <div class="sc"><div class="sc-num" style="color:var(--gold)">—</div><div class="sc-lbl">Tổng TNV</div></div>
+    <div class="sc"><div class="sc-num" style="color:var(--green)">—</div><div class="sc-lbl">Đã duyệt</div></div>
+    <div class="sc"><div class="sc-num" style="color:#e67e22">—</div><div class="sc-lbl">TNV Nòng Cốt+</div></div>
+    <div class="sc"><div class="sc-num" style="color:var(--gold)">—</div><div class="sc-lbl">Điểm cao nhất</div></div>
+    <div class="sc"><div class="sc-num" style="color:#5dade2">—</div><div class="sc-lbl">Vai trò</div></div>
+  </div>
+
+  <!-- FILTERS -->
+  <div class="filter-bar">
+    <span class="filter-lbl">Cấp bậc:</span>
+    <button class="fb on" onclick="setF('rank','all',this)">Tất cả</button>
+    <button class="fb" onclick="setF('rank','star',this)">⭐ Tiêu Biểu</button>
+    <button class="fb" onclick="setF('rank','red',this)">🔴 Xuất Sắc</button>
+    <button class="fb" onclick="setF('rank','orange',this)">🟠 Nòng Cốt</button>
+    <button class="fb" onclick="setF('rank','blue',this)">🔵 Tích Cực</button>
+    <button class="fb" onclick="setF('rank','green',this)">🌱 Mới</button>
+  </div>
+  <div class="filter-bar" id="roleFilterBar">
+    <span class="filter-lbl">Vai trò:</span>
+    <button class="fb on" onclick="setF('role','all',this)">Tất cả</button>
+  </div>
+  <div class="search-box">
+    <input type="text" id="searchBox" placeholder="Tìm tên TNV..." oninput="render()">
+  </div>
+
+  <!-- PODIUM TOP 3 -->
+  <div id="podiumWrap"></div>
+
+  <!-- LEADERBOARD -->
+  <div class="lb-wrap" id="lbWrap">
+    <div class="empty-state"><div class="spin"></div><p style="margin-top:10px">Đang tải...</p></div>
+  </div>
+
+  <!-- HOW TO EARN POINTS -->
+  <div class="pts-guide">
+    <div class="pts-title">🎯 Cách tích điểm</div>
+    <div class="pts-row"><span class="pts-act">✅ Đăng ký và được duyệt</span><span class="pts-val">+10đ</span></div>
+    <div class="pts-row"><span class="pts-act">🎽 Tham gia đủ ca sự kiện</span><span class="pts-val">+10đ</span></div>
+    <div class="pts-row"><span class="pts-act">⏰ Đến sớm hơn yêu cầu >30 phút</span><span class="pts-val">+5đ</span></div>
+    <div class="pts-row"><span class="pts-act">👑 Lead team hiệu quả (BTC xác nhận)</span><span class="pts-val">+20đ</span></div>
+    <div class="pts-row"><span class="pts-act">🌟 Xử lý tình huống phát sinh xuất sắc</span><span class="pts-val">+15đ</span></div>
+    <div class="pts-row"><span class="pts-act">⭐ Được VĐV / BTC đánh giá 5 sao</span><span class="pts-val">+10đ/lần</span></div>
+    <div class="pts-row"><span class="pts-act">🤝 Giới thiệu TNV mới tham gia</span><span class="pts-val">+8đ/người</span></div>
+    <div class="pts-row"><span class="pts-act">💡 Đóng góp sáng kiến được áp dụng</span><span class="pts-val">+25đ</span></div>
+    <div class="pts-row"><span class="pts-act">🔥 Streak: 3 sự kiện liên tiếp</span><span class="pts-val">+30đ</span></div>
+    <div class="pts-row"><span class="pts-act">🏅 Milestone: 5 sự kiện tích lũy</span><span class="pts-val">+50đ</span></div>
+  </div>
+
+  <!-- PHẦN THƯỞNG -->
+  <div class="pts-guide">
+    <div class="pts-title">🎁 Phần thưởng theo cấp bậc</div>
+    <div class="pts-row">
+      <span class="pts-act">🟠 <strong style="color:#e67e22">TNV Nòng Cốt</strong> (150đ+)</span>
+      <span style="font-size:11px;color:var(--muted)">Giấy chứng nhận TNV xuất sắc</span>
+    </div>
+    <div class="pts-row">
+      <span class="pts-act">🔴 <strong style="color:#e74c3c">TNV Xuất Sắc</strong> (300đ+)</span>
+      <span style="font-size:11px;color:var(--muted)">Bằng khen cấp Quận/Huyện</span>
+    </div>
+    <div class="pts-row">
+      <span class="pts-act">⭐ <strong style="color:var(--gold)">TNV Tiêu Biểu</strong> (500đ+)</span>
+      <span style="font-size:11px;color:var(--muted)">Bằng khen thành phố + Quà tài trợ</span>
+    </div>
+    <div class="pts-row">
+      <span class="pts-act">🏆 Top 3 toàn giải</span>
+      <span style="font-size:11px;color:var(--gold);font-weight:800">Vinh danh + Thưởng đặc biệt</span>
+    </div>
+  </div>
+
+  <!-- QR ĐÁNH GIÁ -->
+  <div class="qr-sec">
+    <div class="qr-title">⭐ Dành cho VĐV — Đánh giá TNV</div>
+    <p class="qr-sub">Quét QR để đánh giá TNV đã hỗ trợ bạn hôm nay.<br>Mỗi đánh giá 5⭐ tặng thêm <strong style="color:var(--gold)">+10 điểm</strong> cho TNV đó.</p>
+    <div class="qr-box">
+      <div class="qr-placeholder">⭐</div>
+      <div style="font-size:10px;color:var(--muted);letter-spacing:1px;text-transform:uppercase">Quét để đánh giá TNV</div>
+    </div>
+  </div>
+
+  <div style="text-align:center;padding:16px 0;display:flex;gap:8px;justify-content:center;flex-wrap:wrap">
+    <a href="staff.html" style="display:inline-flex;align-items:center;gap:6px;padding:10px 20px;background:rgba(215,43,43,.1);border:1.5px solid rgba(215,43,43,.3);color:var(--red);border-radius:6px;font-family:'Be Vietnam Pro',sans-serif;font-size:10px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;text-decoration:none;transition:all .2s" onmouseover="this.style.background='rgba(215,43,43,.2)'" onmouseout="this.style.background='rgba(215,43,43,.1)'">👥 Đăng ký nhân sự</a>
+    <a href="index.html" style="display:inline-flex;align-items:center;gap:6px;padding:10px 20px;background:none;border:1.5px solid rgba(255,255,255,.08);color:var(--muted);border-radius:6px;font-family:'Be Vietnam Pro',sans-serif;font-size:10px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;text-decoration:none">← Trang chính</a>
+  </div>
+
+</div>
+
+<script src="race-config.js"></script>
+<script>
+// ── CONFIG ────────────────────────────────────────────────
+const RANKS = [
+  { key:'star',   min:500, label:'⭐ TNV Tiêu Biểu', short:'Tiêu Biểu', color:'#F5A623', bg:'rgba(245,166,35,.12)', border:'rgba(245,166,35,.3)' },
+  { key:'red',    min:300, label:'🔴 TNV Xuất Sắc',  short:'Xuất Sắc',  color:'#e74c3c', bg:'rgba(231,76,60,.1)',   border:'rgba(231,76,60,.2)'  },
+  { key:'orange', min:150, label:'🟠 TNV Nòng Cốt',  short:'Nòng Cốt',  color:'#e67e22', bg:'rgba(230,126,34,.1)',  border:'rgba(230,126,34,.2)' },
+  { key:'blue',   min:50,  label:'🔵 TNV Tích Cực',  short:'Tích Cực',  color:'#5dade2', bg:'rgba(41,128,185,.1)',  border:'rgba(41,128,185,.2)' },
+  { key:'green',  min:0,   label:'🌱 TNV Mới',       short:'TNV Mới',   color:'#2ecc71', bg:'rgba(39,174,96,.1)',   border:'rgba(39,174,96,.2)'  },
+];
+
+function getRank(pts) {
+  pts = Number(pts)||0;
+  return RANKS.find(r => pts >= r.min) || RANKS[4];
+}
+function getNextRank(pts) {
+  pts = Number(pts)||0;
+  const idx = RANKS.findIndex(r => pts >= r.min);
+  return idx > 0 ? RANKS[idx-1] : null;
+}
+function getProgress(pts) {
+  pts = Number(pts)||0;
+  const r = getRank(pts);
+  const next = getNextRank(pts);
+  if (!next) return 100;
+  const range = next.min - r.min;
+  const done  = pts - r.min;
+  return Math.round((done/range)*100);
+}
+
+// ── STATE ─────────────────────────────────────────────────
+let allStaff = [];
+let fRank = 'all', fRole = 'all';
+
+// ── INIT ──────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', async () => {
+  const c = await loadRaceConfig();
+  const root = document.documentElement;
+  if(c.colorPrimary) root.style.setProperty('--red', c.colorPrimary);
+  if(c.colorAccent)  root.style.setProperty('--gold', c.colorAccent);
+  document.getElementById('heroTitle').textContent = 'TNV ' + (c.raceName||'Giải Chạy');
+  if(c.raceDate) document.getElementById('heroSub').textContent =
+    'Vinh danh những người đồng hành · ' + c.raceDate;
+  document.title = 'Bảng xếp hạng TNV — ' + (c.raceName||'Giải Chạy');
+
+  const url = localStorage.getItem('race_sheet_url')||'';
+  if(url) await loadData(url);
+  else {
+    allStaff = DEMO_DATA;
+    buildRoleFilters();
+    render();
+  }
+});
+
+async function loadData(url) {
+  try {
+    const res = await fetch(url + '?action=getStaff&t=' + Date.now());
+    const data = await res.json();
+    allStaff = (data.data||[]).filter(s => s.status === 'approved');
+    if (!allStaff.length) allStaff = DEMO_DATA;
+  } catch(e) {
+    allStaff = DEMO_DATA;
+  }
+  buildRoleFilters();
+  render();
+}
+
+// ── DEMO DATA (hiển thị khi chưa có dữ liệu thực) ────────
+const DEMO_DATA = [
+  { fullName:'Nguyễn Thanh Hà',   roleName:'TNV',    totalPoints:520, eventsCount:6, roleIcon:'💚', status:'approved' },
+  { fullName:'Trần Minh Tuấn',    roleName:'Pacer',  totalPoints:380, eventsCount:4, roleIcon:'🏃', status:'approved' },
+  { fullName:'Lê Thị Thu',        roleName:'Y tế',   totalPoints:310, eventsCount:4, roleIcon:'🏥', status:'approved' },
+  { fullName:'Phạm Văn Đức',      roleName:'NAG',    totalPoints:245, eventsCount:3, roleIcon:'📸', status:'approved' },
+  { fullName:'Hoàng Anh Khoa',    roleName:'TNV',    totalPoints:180, eventsCount:2, roleIcon:'💚', status:'approved' },
+  { fullName:'Võ Thị Lan',        roleName:'Cheering',totalPoints:145, eventsCount:2, roleIcon:'📣', status:'approved' },
+  { fullName:'Đặng Quốc Hùng',    roleName:'An ninh',totalPoints:95,  eventsCount:1, roleIcon:'🛡️', status:'approved' },
+  { fullName:'Bùi Thị Nga',       roleName:'TNV',    totalPoints:60,  eventsCount:1, roleIcon:'💚', status:'approved' },
+  { fullName:'Cao Minh Phúc',     roleName:'Pacer',  totalPoints:40,  eventsCount:1, roleIcon:'🏃', status:'approved' },
+  { fullName:'Đinh Thị Hương',    roleName:'TNV',    totalPoints:10,  eventsCount:1, roleIcon:'💚', status:'approved' },
+];
+
+// ── FILTERS ───────────────────────────────────────────────
+function buildRoleFilters() {
+  const roles = [...new Set(allStaff.map(s=>s.roleName).filter(Boolean))];
+  const bar = document.getElementById('roleFilterBar');
+  bar.querySelectorAll('.fb').forEach(b=>b.remove());
+  const allBtn = document.createElement('button');
+  allBtn.className='fb on'; allBtn.textContent='Tất cả';
+  allBtn.onclick=()=>setF('role','all',allBtn);
+  bar.appendChild(allBtn);
+  roles.forEach(role=>{
+    const b=document.createElement('button');
+    b.className='fb'; b.textContent=role;
+    b.onclick=()=>setF('role',role,b);
+    bar.appendChild(b);
+  });
+}
+
+function setF(type, val, btn) {
+  if(type==='rank') fRank=val; else fRole=val;
+  const sel = type==='rank'?'.filter-bar:nth-of-type(1) .fb':'.filter-bar:nth-of-type(2) .fb';
+  // simpler: all .fb in same parent
+  btn.closest('.filter-bar').querySelectorAll('.fb').forEach(b=>b.classList.remove('on'));
+  btn.classList.add('on');
+  render();
+}
+
+function filtered() {
+  const q = (document.getElementById('searchBox').value||'').toLowerCase();
+  return allStaff
+    .map(s=>({...s, totalPoints:Number(s.totalPoints)||0}))
+    .sort((a,b)=>b.totalPoints-a.totalPoints)
+    .filter(s=>{
+      if(fRole!=='all'&&s.roleName!==fRole) return false;
+      if(fRank!=='all'){const r=getRank(s.totalPoints);if(r.key!==fRank)return false;}
+      if(q&&!(s.fullName||'').toLowerCase().includes(q)) return false;
+      return true;
+    });
+}
+
+// ── RENDER ────────────────────────────────────────────────
+function render() {
+  const list = filtered();
+  const all  = allStaff.map(s=>({...s,totalPoints:Number(s.totalPoints)||0})).sort((a,b)=>b.totalPoints-a.totalPoints);
+
+  // Stats
+  const roles = new Set(allStaff.map(s=>s.roleName).filter(Boolean));
+  const coreUp = allStaff.filter(s=>Number(s.totalPoints||0)>=150).length;
+  const maxPts = all[0]?.totalPoints||0;
+  document.getElementById('statsRow').innerHTML=`
+    <div class="sc"><div class="sc-num" style="color:var(--gold)">${allStaff.length}</div><div class="sc-lbl">Tổng TNV</div></div>
+    <div class="sc"><div class="sc-num" style="color:var(--green)">${allStaff.filter(s=>s.status==='approved').length}</div><div class="sc-lbl">Đã duyệt</div></div>
+    <div class="sc"><div class="sc-num" style="color:#e67e22">${coreUp}</div><div class="sc-lbl">Nòng Cốt+</div></div>
+    <div class="sc"><div class="sc-num" style="color:var(--gold)">${maxPts}</div><div class="sc-lbl">Điểm cao nhất</div></div>
+    <div class="sc"><div class="sc-num" style="color:#5dade2">${roles.size}</div><div class="sc-lbl">Vai trò</div></div>`;
+
+  // Podium top 3 (only when showing all)
+  const showPodium = fRank==='all'&&fRole==='all'&&!document.getElementById('searchBox').value;
+  const podWrap = document.getElementById('podiumWrap');
+  if(showPodium && all.length>=1){
+    const order=[1,0,2]; // 2nd, 1st, 3rd for visual podium
+    const crowns=['🥈','🥇','🥉'];
+    const podClass=['pod-2','pod-1','pod-3'];
+    const podNums=['2','1','3'];
+    const entries=order.map(i=>all[i]).filter(Boolean);
+    if(entries.length){
+      podWrap.innerHTML=`<div class="podium">${
+        entries.map((s,vi)=>{
+          const r=getRank(s.totalPoints);
+          const initials=(s.fullName||'?').split(' ').map(w=>w[0]).slice(-2).join('').toUpperCase();
+          return `<div class="pod ${podClass[vi]}">
+            <div class="pod-base">
+              <div class="pod-crown">${crowns[vi]}</div>
+              <div class="pod-avatar">${s.roleIcon||initials}</div>
+              <div class="pod-name">${esc(s.fullName||'—')}</div>
+              <div class="pod-role">${esc(s.roleName||'')}</div>
+              <div class="pod-pts">${s.totalPoints}<span style="font-size:12px;font-weight:700"> đ</span></div>
+              <div class="pod-rank-badge" style="background:${r.bg};color:${r.color};border:1px solid ${r.border}">${r.short}</div>
+            </div>
+            <div class="pod-footer">${s.eventsCount||1} sự kiện</div>
+          </div>`;
+        }).join('')
+      }</div>`;
+    }
+  } else podWrap.innerHTML='';
+
+  // List
+  if(!list.length){
+    document.getElementById('lbWrap').innerHTML=`<div class="empty-state">
+      <div class="empty-icon">🔍</div><p>Không tìm thấy kết quả</p></div>`;
+    return;
+  }
+
+  const startRank = fRank==='all'&&fRole==='all'&&!document.getElementById('searchBox').value;
+
+  document.getElementById('lbWrap').innerHTML = list.map((s,i)=>{
+    const globalRank = startRank ? i+1 : all.findIndex(a=>a.fullName===s.fullName)+1;
+    const r = getRank(s.totalPoints);
+    const next = getNextRank(s.totalPoints);
+    const pct = getProgress(s.totalPoints);
+    const initials=(s.fullName||'?').split(' ').map(w=>w[0]).slice(-2).join('').toUpperCase();
+    const rankCls = globalRank===1?'r1':globalRank===2?'r2':globalRank===3?'r3':'';
+    const topCls  = globalRank<=3?'top3':'';
+    const ptsToNext = next ? `${next.min - s.totalPoints}đ nữa → ${next.short}` : '🏆 Cấp cao nhất!';
+
+    return `<div class="lb-row ${topCls}">
+      <div class="lb-rank ${rankCls}">${globalRank<=3?['🥇','🥈','🥉'][globalRank-1]:globalRank}</div>
+      <div class="lb-info">
+        <div class="lb-name">${esc(s.fullName||'—')}</div>
+        <div class="lb-meta">
+          <span class="lb-role" style="background:${r.bg};color:${r.color}">${s.roleIcon||'👤'} ${esc(s.roleName||'')}</span>
+          <span class="lb-events">📅 ${s.eventsCount||1} sự kiện</span>
+        </div>
+        <div class="prog-bar" title="${ptsToNext}">
+          <div class="prog-fill" style="width:${pct}%;background:${r.color}"></div>
+        </div>
+      </div>
+      <div class="lb-right">
+        <div class="lb-pts">${s.totalPoints}</div>
+        <div class="lb-pts-lbl">điểm</div>
+        <div class="lb-rank-badge" style="background:${r.bg};color:${r.color};border:1px solid ${r.border}">${r.short}</div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function esc(s){return(s||'').toString().replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+</script>
+</body>
+</html>

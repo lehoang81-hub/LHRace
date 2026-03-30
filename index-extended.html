@@ -1,0 +1,729 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Đăng Ký Giải — HLRace 2026</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Be+Vietnam+Pro:wght@300;400;500;600;700;800&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --red:#D72B2B;--gold:#F5A623;--green:#27AE60;--blue:#2980B9;
+  --dark:#0D0D0D;--dark2:#161616;--dark3:#202020;--dark4:#1C1C1C;
+  --light:#F0EDE8;--muted:#777;--border:rgba(255,255,255,.07);--border2:rgba(255,255,255,.13);
+}
+body{background:var(--dark);color:var(--light);font-family:'Be Vietnam Pro',sans-serif;min-height:100vh;overflow-x:hidden}
+
+/* ── TOP BAR ── */
+.topbar{display:flex;background:var(--dark2);border-bottom:1px solid var(--border);padding:0 16px;gap:2px;overflow-x:auto;scrollbar-width:none}
+.topbar::-webkit-scrollbar{display:none}
+.tb-btn{padding:12px 14px;font-size:10px;font-weight:700;letter-spacing:1.2px;text-transform:uppercase;color:var(--muted);text-decoration:none;border-bottom:2px solid transparent;transition:all .2s;white-space:nowrap;border:none;background:none;cursor:pointer}
+.tb-btn.active{color:var(--red);border-bottom-color:var(--red)}
+
+/* ── HERO ── */
+.hero{background:var(--dark2);padding:36px 20px 28px;text-align:center;border-bottom:3px solid var(--red);position:relative;overflow:hidden}
+.hero::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 70% 50% at 50% 0%,rgba(215,43,43,.2),transparent 70%);pointer-events:none}
+.race-name{font-family:'Bebas Neue';font-size:clamp(36px,9vw,80px);line-height:.9;color:#fff;margin-bottom:6px}
+.race-name span{color:var(--gold)}
+.race-sub{font-size:10px;color:var(--muted);letter-spacing:2px;text-transform:uppercase;margin-bottom:20px}
+.event-pills{display:flex;justify-content:center;gap:8px;flex-wrap:wrap}
+.epill{display:inline-flex;align-items:center;gap:6px;padding:6px 12px;border-radius:20px;font-size:11px;font-weight:600;border:1px solid}
+.ep-run{background:rgba(215,43,43,.1);border-color:rgba(215,43,43,.3);color:#F08080}
+.ep-duo{background:rgba(245,166,35,.1);border-color:rgba(245,166,35,.3);color:#F5A623}
+.ep-tri{background:rgba(41,128,185,.1);border-color:rgba(41,128,185,.3);color:#5DADE2}
+.ep-relay{background:rgba(39,174,96,.1);border-color:rgba(39,174,96,.3);color:#52BE80}
+.ep-kid{background:rgba(155,89,182,.1);border-color:rgba(155,89,182,.3);color:#BB8FCE}
+
+/* ── STEPS ── */
+.steps{display:flex;align-items:center;padding:16px 20px;background:var(--dark2);border-bottom:1px solid var(--border);max-width:100%;overflow-x:auto;scrollbar-width:none}
+.st{display:flex;align-items:center;gap:5px;flex-shrink:0}
+.st-dot{width:22px;height:22px;border-radius:50%;border:2px solid var(--border2);display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:800;color:var(--muted);flex-shrink:0;transition:all .3s;font-family:'DM Mono'}
+.st.done .st-dot{background:var(--green);border-color:var(--green);color:#fff}
+.st.active .st-dot{border-color:var(--gold);color:var(--gold)}
+.st-lbl{font-size:9px;color:var(--muted);font-weight:700;letter-spacing:.3px;white-space:nowrap}
+.st.active .st-lbl{color:var(--light)}
+.st-line{width:20px;height:1px;background:var(--border);flex-shrink:0}
+.st-line.done{background:var(--green)}
+
+/* ── WRAP ── */
+.wrap{max-width:680px;margin:0 auto;padding:20px 16px 100px}
+.sec{background:var(--dark2);border:1px solid var(--border);border-radius:10px;padding:20px;margin-bottom:14px;position:relative;overflow:hidden}
+.sec::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--red),var(--gold))}
+.sec-title{font-size:12px;font-weight:800;letter-spacing:2px;text-transform:uppercase;color:var(--gold);margin-bottom:14px;display:flex;align-items:center;gap:8px}
+.sec-icon{font-size:16px}
+.panel{display:none}.panel.on{display:block}
+
+/* ── FIELDS ── */
+.field{margin-bottom:12px}
+.field label{display:block;font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--muted);margin-bottom:5px}
+.field input,.field select,.field textarea{width:100%;padding:10px 12px;background:var(--dark3);border:1px solid var(--border2);border-radius:7px;color:var(--light);font-family:'Be Vietnam Pro',sans-serif;font-size:13px;outline:none;transition:border-color .15s}
+.field input:focus,.field select:focus,.field textarea:focus{border-color:var(--gold)}
+.field select option{background:var(--dark3)}
+.field textarea{resize:vertical;min-height:70px;line-height:1.6}
+.field-hint{font-size:10px;color:var(--muted);margin-top:4px;line-height:1.5}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
+
+/* ── EVENT SELECTOR ── */
+.event-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px}
+@media(min-width:480px){.event-grid{grid-template-columns:repeat(3,1fr)}}
+.ev-card{border:1.5px solid var(--border2);border-radius:8px;padding:14px 10px;cursor:pointer;text-align:center;transition:all .15s;background:var(--dark3);position:relative}
+.ev-card:hover{border-color:var(--gold)}
+.ev-card.on{border-color:var(--gold);background:rgba(245,166,35,.06)}
+.ev-card.added{border-color:var(--green);background:rgba(39,174,96,.06)}
+.ev-badge{position:absolute;top:6px;right:6px;font-size:8px;font-weight:700;padding:2px 6px;border-radius:20px}
+.ev-icon{font-size:24px;margin-bottom:6px}
+.ev-name{font-size:11px;font-weight:700;color:var(--light);margin-bottom:3px}
+.ev-detail{font-size:9px;color:var(--muted)}
+.ev-price{font-family:'DM Mono';font-size:12px;font-weight:500;color:var(--gold);margin-top:5px}
+
+/* ── MEDIA PACKAGE ── */
+.media-grid{display:grid;grid-template-columns:1fr;gap:8px;margin-bottom:4px}
+@media(min-width:480px){.media-grid{grid-template-columns:repeat(3,1fr)}}
+.media-card{border:1.5px solid var(--border2);border-radius:8px;padding:14px;cursor:pointer;transition:all .15s;background:var(--dark3);position:relative}
+.media-card:hover{border-color:rgba(245,166,35,.4)}
+.media-card.sel{border-width:2px}
+.mc-basic.sel{border-color:#777;background:rgba(119,119,119,.06)}
+.mc-standard.sel{border-color:var(--blue);background:rgba(41,128,185,.06)}
+.mc-premium.sel{border-color:var(--gold);background:rgba(245,166,35,.06)}
+.mc-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px}
+.mc-name{font-size:12px;font-weight:800;text-transform:uppercase;letter-spacing:.5px}
+.mc-price{font-family:'DM Mono';font-size:14px;font-weight:500;color:var(--gold)}
+.mc-bib{display:inline-flex;align-items:center;gap:5px;padding:4px 10px;border-radius:4px;font-size:10px;font-weight:700;margin-bottom:8px}
+.bib-free{background:#333;color:#888}
+.bib-blue{background:rgba(41,128,185,.2);color:#5DADE2;border:1px solid rgba(41,128,185,.3)}
+.bib-gold{background:rgba(245,166,35,.15);color:var(--gold);border:1px solid rgba(245,166,35,.3)}
+.mc-features{list-style:none;display:flex;flex-direction:column;gap:4px}
+.mc-features li{font-size:11px;color:var(--muted);display:flex;align-items:center;gap:5px}
+.mc-features li::before{content:'·';color:var(--gold)}
+.mc-features li.yes{color:rgba(255,255,255,.7)}
+.mc-late{font-size:10px;color:var(--red);margin-top:6px;padding:4px 8px;background:rgba(215,43,43,.1);border-radius:4px}
+
+/* ── BIB COLOR INDICATOR ── */
+.bib-preview{display:flex;gap:8px;align-items:center;padding:10px 14px;background:var(--dark3);border-radius:7px;border:1px solid var(--border2);margin-top:8px}
+.bib-sample{width:44px;height:28px;border-radius:4px;display:flex;align-items:center;justify-content:center;font-family:'Bebas Neue';font-size:14px;font-weight:700;flex-shrink:0}
+.bib-info{font-size:11px;color:var(--muted);line-height:1.5}
+
+/* ── RELAY TEAM ── */
+.relay-member{background:var(--dark3);border:1px solid var(--border2);border-radius:7px;padding:14px;margin-bottom:8px;position:relative}
+.rm-header{display:flex;align-items:center;gap:8px;margin-bottom:10px}
+.rm-num{width:28px;height:28px;border-radius:50%;background:var(--red);color:#fff;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;flex-shrink:0}
+.rm-label{font-size:12px;font-weight:700}
+.rm-sport{font-size:10px;color:var(--gold);font-family:'DM Mono'}
+
+/* ── CART SUMMARY ── */
+.cart{background:var(--dark3);border:1px solid var(--border2);border-radius:8px;padding:16px;margin-bottom:14px}
+.cart-row{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--border)}
+.cart-row:last-child{border:none;font-weight:700;font-size:14px}
+.cart-label{font-size:12px;color:rgba(255,255,255,.7)}
+.cart-val{font-family:'DM Mono';font-size:12px;color:var(--gold)}
+.cart-total-val{font-family:'DM Mono';font-size:16px;color:var(--gold)}
+.early-badge{background:rgba(39,174,96,.15);border:1px solid rgba(39,174,96,.3);color:#52BE80;font-size:9px;font-weight:700;padding:2px 6px;border-radius:3px;margin-left:6px;letter-spacing:.5px}
+
+/* ── BUTTONS ── */
+.btn{padding:11px 22px;border-radius:7px;font-size:13px;font-weight:700;cursor:pointer;border:none;font-family:'Be Vietnam Pro',sans-serif;display:inline-flex;align-items:center;gap:7px;transition:all .15s;letter-spacing:.3px}
+.btn-red{background:var(--red);color:#fff}
+.btn-red:hover{background:#C42020}
+.btn-gold{background:var(--gold);color:#0D0D0D}
+.btn-gold:hover{background:#E09B1F}
+.btn-outline{background:transparent;border:1.5px solid var(--border2);color:rgba(255,255,255,.7)}
+.btn-outline:hover{border-color:var(--gold);color:var(--gold)}
+.btn-green{background:var(--green);color:#fff}
+.nav-row{display:flex;justify-content:space-between;align-items:center;margin-top:16px;gap:10px}
+.nav-row .btn{flex:1;justify-content:center}
+
+/* ── SUCCESS ── */
+.success{display:none;text-align:center;padding:40px 20px}
+.success-icon{font-size:52px;margin-bottom:14px}
+.success-title{font-family:'Bebas Neue';font-size:36px;color:var(--gold);margin-bottom:8px;letter-spacing:1px}
+.success-events{display:flex;flex-direction:column;gap:8px;max-width:400px;margin:16px auto}
+.sev{background:var(--dark2);border:1px solid var(--border2);border-radius:7px;padding:12px 14px;display:flex;align-items:center;gap:12px;text-align:left}
+.sev-bib{width:50px;height:32px;border-radius:4px;display:flex;align-items:center;justify-content:center;font-family:'Bebas Neue';font-size:16px;flex-shrink:0}
+.sev-info{flex:1}
+.sev-name{font-size:12px;font-weight:700}
+.sev-detail{font-size:10px;color:var(--muted);margin-top:2px;font-family:'DM Mono'}
+
+/* ── REFEREE SHEET ── */
+.sheet-preview{background:var(--dark3);border:1px solid rgba(39,174,96,.3);border-radius:8px;padding:16px;margin-bottom:14px;font-family:'DM Mono';font-size:11px}
+.sp-title{font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--green);margin-bottom:10px}
+.sp-table{width:100%;border-collapse:collapse}
+.sp-table th{text-align:left;padding:5px 8px;font-size:9px;letter-spacing:.5px;color:var(--muted);border-bottom:1px solid var(--border);background:var(--dark)}
+.sp-table td{padding:6px 8px;font-size:10px;border-bottom:1px solid var(--border);color:rgba(255,255,255,.8)}
+.sp-table tr:last-child td{border:none}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <button class="tb-btn active">Đăng ký</button>
+  <button class="tb-btn" onclick="alert('Xem danh sách VĐV đã đăng ký')">Danh sách VĐV</button>
+  <button class="tb-btn" onclick="showRefereeSheet()">📋 Sheet trọng tài</button>
+  <button class="tb-btn" onclick="showNAGPanel()">📷 NAG / Vị trí chụp</button>
+</div>
+
+<div class="hero">
+  <div class="race-name">HLRACE <span>2026</span></div>
+  <div class="race-sub">Hải Phòng · 14-15/06/2026</div>
+  <div class="event-pills">
+    <span class="epill ep-run">🏃 Run 5K/10K/21K</span>
+    <span class="epill ep-duo">🚴🏃 Duathlon</span>
+    <span class="epill ep-tri">🏊🚴🏃 Triathlon</span>
+    <span class="epill ep-relay">🔄 Relay 3 môn</span>
+    <span class="epill ep-kid">👦 Kid Run</span>
+  </div>
+</div>
+
+<!-- STEPS -->
+<div class="steps" id="steps-bar">
+  <div class="st active" id="st1"><div class="st-dot">1</div><span class="st-lbl">Cá nhân</span></div>
+  <div class="st-line" id="sl1"></div>
+  <div class="st" id="st2"><div class="st-dot">2</div><span class="st-lbl">Chọn event</span></div>
+  <div class="st-line" id="sl2"></div>
+  <div class="st" id="st3"><div class="st-dot">3</div><span class="st-lbl">Gói ảnh</span></div>
+  <div class="st-line" id="sl3"></div>
+  <div class="st" id="st4"><div class="st-dot">4</div><span class="st-lbl">Xác nhận</span></div>
+</div>
+
+<div class="wrap">
+
+<!-- ══ STEP 1: THÔNG TIN CÁ NHÂN ══ -->
+<div class="panel on" id="p1">
+  <div class="sec">
+    <div class="sec-title"><span class="sec-icon">👤</span> Thông tin VĐV</div>
+    <div class="row2">
+      <div class="field"><label>Họ và tên <span style="color:var(--red)">*</span></label><input id="f-name" placeholder="NGUYỄN VĂN A"></div>
+      <div class="field"><label>Ngày sinh <span style="color:var(--red)">*</span></label><input id="f-dob" type="date"></div>
+    </div>
+    <div class="row2">
+      <div class="field"><label>Số điện thoại <span style="color:var(--red)">*</span></label><input id="f-phone" type="tel" placeholder="0912 345 678"></div>
+      <div class="field"><label>Email <span style="color:var(--red)">*</span></label><input id="f-email" type="email" placeholder="email@example.com"></div>
+    </div>
+    <div class="row3">
+      <div class="field"><label>Giới tính</label>
+        <select id="f-gender"><option value="M">Nam</option><option value="F">Nữ</option><option value="X">Khác</option></select>
+      </div>
+      <div class="field"><label>Nhóm máu</label>
+        <select id="f-blood"><option>A+</option><option>A-</option><option>B+</option><option>B-</option><option>O+</option><option>O-</option><option>AB+</option><option>AB-</option><option>Không rõ</option></select>
+      </div>
+      <div class="field"><label>Club / Team</label><input id="f-club" placeholder="Tên club (nếu có)"></div>
+    </div>
+    <div class="field"><label>Liên hệ khẩn cấp + SĐT</label><input id="f-emergency" placeholder="Tên người thân · 0900 000 000"></div>
+    <div class="field"><label>Điều kiện y tế BTC cần biết</label><input id="f-medical" placeholder="Dị ứng thuốc, bệnh nền... (bỏ qua nếu không có)"></div>
+  </div>
+  <div class="nav-row">
+    <div></div>
+    <button class="btn btn-gold" onclick="goStep(2)">Chọn event →</button>
+  </div>
+</div>
+
+<!-- ══ STEP 2: CHỌN EVENT ══ -->
+<div class="panel" id="p2">
+
+  <!-- Warning: đã có sự kiện trong ngày -->
+  <div id="conflict-warn" style="display:none;background:rgba(245,166,35,.08);border:1px solid rgba(245,166,35,.3);border-radius:7px;padding:12px 14px;margin-bottom:14px;font-size:12px;color:var(--gold)">
+    ⚡ <strong>Lưu ý xung đột giờ:</strong> <span id="conflict-msg"></span>
+  </div>
+
+  <div class="sec">
+    <div class="sec-title"><span class="sec-icon">🏅</span> Chọn event tham gia</div>
+    <div style="font-size:11px;color:var(--muted);margin-bottom:12px">Có thể đăng ký nhiều event — hệ thống sẽ kiểm tra xung đột giờ tự động</div>
+
+    <div class="event-grid">
+      <div class="ev-card" id="ev-5k" onclick="toggleEvent(this,'5k','🏃 5K','Thứ 7 · 7h00','150.000đ','run','#FF6B6B','Trắng',null)">
+        <div class="ev-icon">🏃</div>
+        <div class="ev-name">Run 5K</div>
+        <div class="ev-detail">Thứ 7 · 7h00 - 10h00</div>
+        <div class="ev-price">150.000đ</div>
+      </div>
+      <div class="ev-card" id="ev-10k" onclick="toggleEvent(this,'10k','🏃 10K','Thứ 7 · 6h30','200.000đ','run','#FF6B6B','Trắng',null)">
+        <div class="ev-icon">🏃</div>
+        <div class="ev-name">Run 10K</div>
+        <div class="ev-detail">Thứ 7 · 6h30 - 11h00</div>
+        <div class="ev-price">200.000đ</div>
+      </div>
+      <div class="ev-card" id="ev-21k" onclick="toggleEvent(this,'21k','🏃 21K','Thứ 7 · 5h30','350.000đ','run','#FF6B6B','Trắng',null)">
+        <div class="ev-icon">🏃</div>
+        <div class="ev-name">Run 21K</div>
+        <div class="ev-detail">Thứ 7 · 5h30 - 12h00</div>
+        <div class="ev-price">350.000đ</div>
+      </div>
+      <div class="ev-card" id="ev-duo" onclick="toggleEvent(this,'duo','🚴🏃 Duathlon','CN · 7h00','450.000đ','duo','#F5A623','Cam',null)">
+        <div class="ev-badge" style="background:rgba(245,166,35,.2);color:var(--gold)">Mới</div>
+        <div class="ev-icon">🚴🏃</div>
+        <div class="ev-name">Duathlon</div>
+        <div class="ev-detail">CN · 7h00 · Đạp 20K + Chạy 5K</div>
+        <div class="ev-price">500.000đ</div>
+      </div>
+      <div class="ev-card" id="ev-tri" onclick="toggleEvent(this,'tri','🏊🚴🏃 Triathlon','CN · 6h00','750.000đ','tri','#5DADE2','Xanh dương',null)">
+        <div class="ev-badge" style="background:rgba(41,128,185,.2);color:#5DADE2">Mới</div>
+        <div class="ev-icon">🏊🚴🏃</div>
+        <div class="ev-name">Triathlon</div>
+        <div class="ev-detail">CN · 6h00 · Bơi 750m + Đạp 20K + Chạy 5K</div>
+        <div class="ev-price">900.000đ</div>
+      </div>
+      <div class="ev-card" id="ev-relay" onclick="showRelayForm()">
+        <div class="ev-badge" style="background:rgba(39,174,96,.15);color:#52BE80">Nhóm</div>
+        <div class="ev-icon">🔄</div>
+        <div class="ev-name">Relay 3 môn</div>
+        <div class="ev-detail">CN · 7h00 · Bơi + Đạp + Chạy · 3 người</div>
+        <div class="ev-price">1.200.000đ/nhóm</div>
+      </div>
+      <div class="ev-card" id="ev-kid" onclick="toggleEvent(this,'kid','👦 Kid Run','CN · 15h00','100.000đ','kid','#BB8FCE','Tím',null)">
+        <div class="ev-icon">👦</div>
+        <div class="ev-name">Kid Run</div>
+        <div class="ev-detail">CN · 15h00 · 500m hoặc 1K · ≤15 tuổi</div>
+        <div class="ev-price">100.000đ</div>
+      </div>
+    </div>
+
+    <!-- RELAY FORM (hidden) -->
+    <div id="relay-section" style="display:none;margin-top:8px">
+      <div style="font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--green);margin-bottom:10px">Đội Relay 3 môn</div>
+      <div class="relay-member">
+        <div class="rm-header">
+          <div class="rm-num">1</div>
+          <div><div class="rm-label">VĐV chặng 1</div><div class="rm-sport">🏊 Bơi 750m</div></div>
+        </div>
+        <div class="row2">
+          <div class="field"><label>Họ tên</label><input placeholder="Tên thành viên 1" id="r1-name"></div>
+          <div class="field"><label>SĐT</label><input placeholder="0912..." id="r1-phone" type="tel"></div>
+        </div>
+      </div>
+      <div class="relay-member">
+        <div class="rm-header">
+          <div class="rm-num">2</div>
+          <div><div class="rm-label">VĐV chặng 2</div><div class="rm-sport">🚴 Đạp 20km</div></div>
+        </div>
+        <div class="row2">
+          <div class="field"><label>Họ tên</label><input placeholder="Tên thành viên 2" id="r2-name"></div>
+          <div class="field"><label>SĐT</label><input placeholder="0912..." id="r2-phone" type="tel"></div>
+        </div>
+      </div>
+      <div class="relay-member">
+        <div class="rm-header">
+          <div class="rm-num">3</div>
+          <div><div class="rm-label">VĐV chặng 3</div><div class="rm-sport">🏃 Chạy 5km</div></div>
+        </div>
+        <div class="row2">
+          <div class="field"><label>Họ tên</label><input placeholder="Tên thành viên 3" id="r3-name"></div>
+          <div class="field"><label>SĐT</label><input placeholder="0912..." id="r3-phone" type="tel"></div>
+        </div>
+      </div>
+      <div class="field"><label>Tên đội</label><input id="relay-team-name" placeholder="VD: Team Gia Đình Khoa 2026"></div>
+      <button class="btn btn-green" onclick="confirmRelay()" style="font-size:12px;padding:8px 16px">✓ Xác nhận đội relay</button>
+    </div>
+
+    <!-- Added events summary -->
+    <div id="cart-events" style="margin-top:14px;display:none">
+      <div style="font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--muted);margin-bottom:8px">Đã chọn</div>
+      <div id="cart-list"></div>
+    </div>
+  </div>
+
+  <div class="nav-row">
+    <button class="btn btn-outline" onclick="goStep(1)">← Quay lại</button>
+    <button class="btn btn-gold" onclick="goStep(3)">Chọn gói ảnh →</button>
+  </div>
+</div>
+
+<!-- ══ STEP 3: GÓI ẢNH + BIB MÀU ══ -->
+<div class="panel" id="p3">
+  <div class="sec">
+    <div class="sec-title"><span class="sec-icon">📷</span> Gói ảnh & Màu BIB nhận dạng</div>
+    <div style="font-size:11px;color:var(--muted);margin-bottom:14px;line-height:1.7">
+      Màu BIB giúp cameraman nhận dạng và ưu tiên chụp theo gói của bạn. Đăng ký sau ngày race, giá tăng 25%.
+    </div>
+
+    <div class="media-grid">
+      <!-- FREE -->
+      <div class="media-card mc-basic" id="mc-free" onclick="selectMedia(this,'free',0)">
+        <div class="mc-header">
+          <div class="mc-name" style="color:#888">Cơ bản</div>
+          <div class="mc-price">Miễn phí</div>
+        </div>
+        <div class="mc-bib bib-free">■ BIB trắng</div>
+        <ul class="mc-features">
+          <li>Ảnh watermark · chất lượng thấp</li>
+          <li>Xem được · không tải về</li>
+          <li class="yes" style="color:#555">Mua bổ sung sau race +25%</li>
+        </ul>
+      </div>
+
+      <!-- STANDARD -->
+      <div class="media-card mc-standard sel" id="mc-std" onclick="selectMedia(this,'standard',299000)">
+        <div style="position:absolute;top:-1px;left:50%;transform:translateX(-50%);background:var(--blue);color:#fff;font-size:8px;font-weight:800;padding:2px 10px;border-radius:0 0 5px 5px;letter-spacing:1px">PHỔ BIẾN</div>
+        <div class="mc-header" style="margin-top:10px">
+          <div class="mc-name" style="color:#5DADE2">Standard</div>
+          <div class="mc-price">299.000đ</div>
+        </div>
+        <div class="mc-bib bib-blue">■ BIB xanh dương</div>
+        <ul class="mc-features">
+          <li class="yes">Toàn bộ ảnh full HD</li>
+          <li class="yes">Tải về không giới hạn</li>
+          <li class="yes">Cameraman ưu tiên chụp</li>
+          <li>Retouch cơ bản (logo + màu sắc)</li>
+        </ul>
+        <div class="mc-late">Sau race: 374.000đ (+25%)</div>
+      </div>
+
+      <!-- PREMIUM -->
+      <div class="media-card mc-premium" id="mc-prem" onclick="selectMedia(this,'premium',599000)">
+        <div class="mc-header">
+          <div class="mc-name" style="color:var(--gold)">Premium</div>
+          <div class="mc-price">599.000đ</div>
+        </div>
+        <div class="mc-bib bib-gold">■ BIB vàng gold</div>
+        <ul class="mc-features">
+          <li class="yes">Toàn bộ ảnh RAW + full HD</li>
+          <li class="yes">NAG theo sát toàn hành trình</li>
+          <li class="yes">Retouch chuyên nghiệp</li>
+          <li class="yes">Video montage cá nhân 60s</li>
+          <li class="yes">Ưu tiên đặc biệt tại finish line</li>
+        </ul>
+        <div class="mc-late">Sau race: 749.000đ (+25%)</div>
+      </div>
+    </div>
+
+    <!-- BIB preview -->
+    <div class="bib-preview" id="bib-preview">
+      <div class="bib-sample" id="bib-sample" style="background:#333;color:#888">A 001</div>
+      <div class="bib-info" id="bib-info">Gói Cơ bản · BIB trắng · Cameraman chụp tự do</div>
+    </div>
+
+    <!-- NAG vị trí độc quyền (cho admin/NAG xem) -->
+    <div style="margin-top:14px;padding:12px 14px;background:rgba(245,166,35,.05);border:1px solid rgba(245,166,35,.15);border-radius:7px">
+      <div style="font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--gold);margin-bottom:6px">📷 Thông tin cho NAG</div>
+      <div style="font-size:11px;color:var(--muted);line-height:1.7">
+        BIB vàng = Premium · BIB xanh = Standard · BIB trắng = Cơ bản<br>
+        <span style="color:rgba(255,255,255,.5)">NAG đăng ký vị trí độc quyền → xem tab "NAG / Vị trí chụp" trên topbar</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="nav-row">
+    <button class="btn btn-outline" onclick="goStep(2)">← Quay lại</button>
+    <button class="btn btn-gold" onclick="goStep(4)">Xem tổng kết →</button>
+  </div>
+</div>
+
+<!-- ══ STEP 4: XÁC NHẬN ══ -->
+<div class="panel" id="p4">
+
+  <div class="cart" id="final-cart">
+    <div style="font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--gold);margin-bottom:12px">Tổng kết đăng ký</div>
+    <div id="final-events"></div>
+    <div class="cart-row" style="margin-top:8px">
+      <span class="cart-label">Phí event</span>
+      <span class="cart-val" id="total-event">0đ</span>
+    </div>
+    <div class="cart-row" id="media-row">
+      <span class="cart-label">Gói ảnh Standard <span class="early-badge">GIÁ SỚM</span></span>
+      <span class="cart-val">299.000đ</span>
+    </div>
+    <div class="cart-row">
+      <span style="font-size:14px;font-weight:700">Tổng thanh toán</span>
+      <span class="cart-total-val" id="grand-total">499.000đ</span>
+    </div>
+  </div>
+
+  <!-- BIB assignment preview -->
+  <div id="success-events-preview" style="margin-bottom:14px"></div>
+
+  <div class="sec">
+    <div class="sec-title"><span class="sec-icon">📋</span> Xác nhận điều khoản</div>
+    <div style="display:flex;flex-direction:column;gap:8px">
+      <label style="display:flex;align-items:flex-start;gap:8px;font-size:12px;cursor:pointer">
+        <input type="checkbox" id="agree1" style="margin-top:2px;accent-color:var(--gold)">
+        <span>Tôi đủ sức khỏe tham gia và đã được tư vấn y tế nếu cần</span>
+      </label>
+      <label style="display:flex;align-items:flex-start;gap:8px;font-size:12px;cursor:pointer">
+        <input type="checkbox" id="agree2" style="margin-top:2px;accent-color:var(--gold)">
+        <span>Tôi đồng ý với điều khoản sử dụng và chính sách hoàn tiền của HLRace</span>
+      </label>
+      <label style="display:flex;align-items:flex-start;gap:8px;font-size:12px;cursor:pointer">
+        <input type="checkbox" id="agree3" style="margin-top:2px;accent-color:var(--gold)">
+        <span>Tôi cho phép BTC sử dụng ảnh/video của tôi cho mục đích truyền thông phi thương mại</span>
+      </label>
+    </div>
+  </div>
+
+  <div class="nav-row">
+    <button class="btn btn-outline" onclick="goStep(3)">← Quay lại</button>
+    <button class="btn btn-red" onclick="doSubmit()" style="flex:2;justify-content:center;font-size:14px">✓ Xác nhận đăng ký &amp; Thanh toán</button>
+  </div>
+</div>
+
+<!-- ══ SUCCESS ══ -->
+<div class="success" id="success">
+  <div class="success-icon">🏅</div>
+  <div class="success-title">Đăng ký thành công!</div>
+  <div style="font-size:12px;color:var(--muted);margin-bottom:16px">Xác nhận đã gửi về email. BIB sẽ được gửi đến nhà in 10 ngày trước race.</div>
+  <div class="success-events" id="success-list"></div>
+  <div style="background:rgba(245,166,35,.08);border:1px solid rgba(245,166,35,.2);border-radius:7px;padding:12px;max-width:400px;margin:16px auto;font-size:11px;color:var(--muted);line-height:1.8;text-align:left">
+    <strong style="color:var(--gold)">Tiếp theo:</strong><br>
+    · Chụp màn hình hoặc lưu email xác nhận<br>
+    · Ảnh của bạn sẽ tự động xuất hiện trong profile sau race<br>
+    · Kết quả sẽ được cập nhật realtime vào ngày thi đấu
+  </div>
+</div>
+
+<!-- ══ REFEREE SHEET MODAL ══ -->
+<div id="referee-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:200;overflow-y:auto;padding:20px">
+  <div style="max-width:700px;margin:0 auto;background:var(--dark2);border:1px solid var(--border2);border-radius:10px;padding:20px">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+      <div style="font-size:12px;font-weight:800;letter-spacing:2px;text-transform:uppercase;color:var(--green)">📋 Sheet trọng tài — Cấu trúc nhập tay</div>
+      <button onclick="document.getElementById('referee-modal').style.display='none'" style="background:none;border:none;color:var(--muted);font-size:18px;cursor:pointer">✕</button>
+    </div>
+
+    <div style="font-size:11px;color:var(--muted);margin-bottom:14px;line-height:1.7">
+      Copy cấu trúc này vào Google Sheets. Trọng tài nhập tay kết quả theo từng môn. HLRace đọc file này để cập nhật kết quả realtime.
+    </div>
+
+    <div class="sheet-preview">
+      <div class="sp-title">Sheet 1: DANH_SACH_VDV (hệ thống tự sinh)</div>
+      <table class="sp-table">
+        <thead><tr><th>BIB</th><th>BIB_COLOR</th><th>HO_TEN</th><th>EVENT</th><th>GIOI_TINH</th><th>CLUB</th><th>PHOTO_PKG</th></tr></thead>
+        <tbody>
+          <tr><td style="color:var(--gold)">A001</td><td><span style="background:rgba(41,128,185,.3);padding:1px 5px;border-radius:3px">XANH</span></td><td>Nguyễn Minh Khoa</td><td>21K</td><td>M</td><td>HP Runners</td><td>Standard</td></tr>
+          <tr><td style="color:var(--gold)">A002</td><td><span style="background:rgba(245,166,35,.3);padding:1px 5px;border-radius:3px">VÀNG</span></td><td>Trần Thu Hà</td><td>10K</td><td>F</td><td>—</td><td>Premium</td></tr>
+          <tr><td style="color:var(--gold)">B001</td><td><span style="background:#333;padding:1px 5px;border-radius:3px">TRẮNG</span></td><td>Đội Gia Đình Khoa</td><td>Relay</td><td>Mixed</td><td>—</td><td>Cơ bản</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="sheet-preview">
+      <div class="sp-title">Sheet 2: KET_QUA_RUN (trọng tài nhập)</div>
+      <table class="sp-table">
+        <thead><tr><th>BIB</th><th>GIO_XUAT_PHAT</th><th>GIO_VE_DICH</th><th>THANH_TICH</th><th>XEP_HANG_CHUNG</th><th>XEP_HANG_NHOM</th><th>GHI_CHU</th></tr></thead>
+        <tbody>
+          <tr><td style="color:var(--gold)">A001</td><td>05:30:00</td><td>07:52:34</td><td>2:22:34</td><td>47</td><td>M30-39: 12</td><td></td></tr>
+          <tr><td style="color:var(--gold)">A002</td><td>06:30:00</td><td>07:44:21</td><td>1:14:21</td><td>8</td><td>F: 3</td><td>New PB!</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="sheet-preview">
+      <div class="sp-title">Sheet 3: KET_QUA_MULTI (Duathlon/Triathlon)</div>
+      <table class="sp-table">
+        <thead><tr><th>BIB</th><th>EVENT</th><th>T1_BOI</th><th>T_CHUYEN1</th><th>T2_DAP</th><th>T_CHUYEN2</th><th>T3_CHAY</th><th>TONG</th><th>XH</th></tr></thead>
+        <tbody>
+          <tr><td style="color:var(--gold)">C001</td><td>TRI</td><td>18:42</td><td>02:15</td><td>38:30</td><td>01:45</td><td>27:18</td><td>1:28:30</td><td>3</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="sheet-preview">
+      <div class="sp-title">Sheet 4: KET_QUA_RELAY</div>
+      <table class="sp-table">
+        <thead><tr><th>BIB_NHOM</th><th>TEN_DOI</th><th>VDV1</th><th>T_BOI</th><th>VDV2</th><th>T_DAP</th><th>VDV3</th><th>T_CHAY</th><th>TONG</th><th>XH</th></tr></thead>
+        <tbody>
+          <tr><td style="color:var(--gold)">B001</td><td>Gia Đình Khoa</td><td>Khoa</td><td>22:15</td><td>Lan</td><td>42:30</td><td>Long</td><td>28:45</td><td>1:33:30</td><td>2</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div style="font-size:11px;color:var(--muted);line-height:1.7;margin-top:12px;padding:10px 12px;background:var(--dark3);border-radius:6px">
+      <strong style="color:var(--gold)">Cách sử dụng:</strong> Tải template Google Sheets → Chia sẻ với trọng tài → Nhập real-time trong ngày thi → HLRace Apps Script đọc mỗi 30 giây → Kết quả hiển thị trên leaderboard.html và gửi thông báo cho VĐV.
+    </div>
+  </div>
+</div>
+
+<!-- ══ NAG PANEL ══ -->
+<div id="nag-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:200;overflow-y:auto;padding:20px">
+  <div style="max-width:600px;margin:0 auto;background:var(--dark2);border:1px solid var(--border2);border-radius:10px;padding:20px">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+      <div style="font-size:12px;font-weight:800;letter-spacing:2px;text-transform:uppercase;color:var(--gold)">📷 NAG — Đăng ký vị trí chụp</div>
+      <button onclick="document.getElementById('nag-modal').style.display='none'" style="background:none;border:none;color:var(--muted);font-size:18px;cursor:pointer">✕</button>
+    </div>
+
+    <div style="font-size:11px;color:var(--muted);margin-bottom:14px;line-height:1.7">
+      Mỗi vị trí chụp được bán độc quyền cho 1 NAG. Sau race, ảnh upload vào thư mục hệ thống — HLRace phân phối tự động đến VĐV.
+    </div>
+
+    <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:16px">
+      <div style="background:var(--dark3);border:1px solid rgba(245,166,35,.2);border-radius:7px;padding:12px 14px;display:flex;justify-content:space-between;align-items:center">
+        <div>
+          <div style="font-size:12px;font-weight:700;color:var(--gold)">Km 5 — Đoạn leo dốc đặc trưng</div>
+          <div style="font-size:10px;color:var(--muted);margin-top:2px">Điểm chụp BIB vàng ưu tiên · ~800 VĐV đi qua</div>
+        </div>
+        <button class="btn btn-gold" style="padding:6px 14px;font-size:11px">Đặt vị trí</button>
+      </div>
+      <div style="background:var(--dark3);border:1px solid rgba(245,166,35,.2);border-radius:7px;padding:12px 14px;display:flex;justify-content:space-between;align-items:center">
+        <div>
+          <div style="font-size:12px;font-weight:700;color:var(--gold)">Km 10 — Finish line chính</div>
+          <div style="font-size:10px;color:var(--muted);margin-top:2px">Vị trí đắt nhất · Toàn bộ VĐV về đích</div>
+        </div>
+        <button class="btn btn-gold" style="padding:6px 14px;font-size:11px">Đặt vị trí</button>
+      </div>
+      <div style="background:var(--dark3);border:1px solid rgba(39,174,96,.2);border-radius:7px;padding:12px 14px;display:flex;justify-content:space-between;align-items:center;opacity:.6">
+        <div>
+          <div style="font-size:12px;font-weight:700;color:#52BE80">Km 2 — Đoạn đồng bằng đầu race</div>
+          <div style="font-size:10px;color:var(--muted);margin-top:2px">✓ Đã được đặt bởi NAG Trần Minh</div>
+        </div>
+        <button class="btn btn-outline" style="padding:6px 14px;font-size:11px" disabled>Đã đặt</button>
+      </div>
+    </div>
+
+    <div style="font-size:11px;color:var(--muted);padding:10px 12px;background:var(--dark3);border-radius:6px;line-height:1.7">
+      <strong style="color:var(--gold)">Quy trình sau race:</strong><br>
+      1. Hậu kỳ ảnh: thêm logo + watermark BTC<br>
+      2. Upload vào Google Drive theo thư mục BIB số<br>
+      3. HLRace Apps Script đọc → match BIB → push vào profile VĐV<br>
+      4. VĐV nhận thông báo "Ảnh của bạn đã có" trong app<br>
+      5. Ảnh Standard/Premium: xem full · Ảnh cơ bản: watermark + mua upgrade
+    </div>
+  </div>
+</div>
+
+</div><!-- end wrap -->
+
+<script>
+// STATE
+let events = [], mediaPkg = {id:'standard', price:299000, name:'Standard', color:'#5DADE2', bib:'XANH'};
+let relayAdded = false;
+
+// ── STEP NAVIGATION ──
+function goStep(n){
+  if(n>1 && events.length===0 && n>=3){alert('Chọn ít nhất 1 event trước');return;}
+  [1,2,3,4].forEach(i=>{
+    document.getElementById('p'+i).classList.toggle('on', i===n);
+    const st = document.getElementById('st'+i);
+    st.className = 'st' + (i<n?' done':i===n?' active':'');
+    if(i<4) document.getElementById('sl'+i).className = 'st-line'+(i<n?' done':'');
+  });
+  if(n===4) buildSummary();
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+// ── EVENT SCHEDULE (for conflict check) ──
+const SCHEDULE = {
+  '5k': {day:'Thứ 7', start:7*60, end:10*60},
+  '10k':{day:'Thứ 7', start:6*60+30, end:11*60},
+  '21k':{day:'Thứ 7', start:5*60+30, end:12*60},
+  'duo':{day:'CN', start:7*60, end:12*60},
+  'tri':{day:'CN', start:6*60, end:13*60},
+  'relay':{day:'CN', start:7*60, end:14*60},
+  'kid':{day:'CN', start:15*60, end:17*60},
+};
+
+function checkConflict(newId){
+  const newSch = SCHEDULE[newId];
+  for(const ev of events){
+    const exSch = SCHEDULE[ev.id];
+    if(exSch.day === newSch.day && newSch.start < exSch.end && newSch.end > exSch.start){
+      return ev.name;
+    }
+  }
+  return null;
+}
+
+function toggleEvent(el, id, name, detail, price, type, color, bibColor, extra){
+  if(el.classList.contains('added')){
+    events = events.filter(e=>e.id!==id);
+    el.classList.remove('added','on');
+  } else {
+    const conflict = checkConflict(id);
+    if(conflict){
+      document.getElementById('conflict-warn').style.display='block';
+      document.getElementById('conflict-msg').textContent=`"${name}" xung đột giờ với "${conflict}" — không thể đăng ký cùng lúc`;
+      return;
+    }
+    document.getElementById('conflict-warn').style.display='none';
+    const priceNum = parseInt(price.replace(/\D/g,''));
+    events.push({id, name, detail, price:priceNum, color, bibColor});
+    el.classList.add('added','on');
+  }
+  renderCartEvents();
+}
+
+function renderCartEvents(){
+  const list = document.getElementById('cart-list');
+  const wrap = document.getElementById('cart-events');
+  if(!events.length){wrap.style.display='none';return;}
+  wrap.style.display='block';
+  list.innerHTML = events.map(e=>`
+    <div style="display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid var(--border)">
+      <div style="width:10px;height:10px;border-radius:50%;background:${e.color};flex-shrink:0"></div>
+      <span style="flex:1;font-size:12px">${e.name}</span>
+      <span style="font-family:'DM Mono';font-size:11px;color:var(--gold)">${e.price.toLocaleString('vi')}đ</span>
+    </div>`).join('');
+}
+
+function showRelayForm(){
+  const sec = document.getElementById('relay-section');
+  sec.style.display = sec.style.display==='none'?'block':'none';
+}
+
+function confirmRelay(){
+  const teamName = document.getElementById('relay-team-name').value || 'Đội Relay';
+  if(relayAdded) return;
+  relayAdded = true;
+  events.push({id:'relay', name:`🔄 Relay: ${teamName}`, detail:'CN · 7h00', price:1200000, color:'#52BE80', bibColor:'XANH LÁ'});
+  document.getElementById('relay-section').style.display='none';
+  document.getElementById('ev-relay').classList.add('added');
+  renderCartEvents();
+  alert('✓ Đội relay đã được thêm: '+teamName);
+}
+
+// ── MEDIA PACKAGE ──
+function selectMedia(el, id, price){
+  document.querySelectorAll('.media-card').forEach(c=>{c.classList.remove('sel');});
+  el.classList.add('sel');
+  const configs = {
+    free:     {name:'Cơ bản', price:0, color:'#555', bib:'TRẮNG', bibBg:'#333', bibTxt:'#888', info:'Gói Cơ bản · BIB trắng · Cameraman chụp tự do'},
+    standard: {name:'Standard', price:299000, color:'#5DADE2', bib:'XANH', bibBg:'rgba(41,128,185,.3)', bibTxt:'#5DADE2', info:'Gói Standard · BIB xanh · Cameraman ưu tiên chụp bạn'},
+    premium:  {name:'Premium', price:599000, color:' #F5A623', bib:'VÀNG', bibBg:'rgba(245,166,35,.3)', bibTxt:'#F5A623', info:'Gói Premium · BIB vàng · NAG theo sát toàn hành trình + video montage'},
+  };
+  mediaPkg = {id, ...configs[id]};
+  const sample = document.getElementById('bib-sample');
+  sample.style.background = configs[id].bibBg;
+  sample.style.color = configs[id].bibTxt;
+  document.getElementById('bib-info').textContent = configs[id].info;
+}
+
+// ── SUMMARY ──
+function buildSummary(){
+  const evTotal = events.reduce((s,e)=>s+e.price,0);
+  const grand = evTotal + mediaPkg.price;
+  document.getElementById('total-event').textContent = evTotal.toLocaleString('vi')+'đ';
+  document.getElementById('grand-total').textContent = grand.toLocaleString('vi')+'đ';
+  const mediaRow = document.getElementById('media-row');
+  if(mediaPkg.price===0){ mediaRow.style.display='none'; }
+  else { mediaRow.style.display='flex'; mediaRow.querySelector('.cart-label').innerHTML=`Gói ảnh ${mediaPkg.name} <span class="early-badge">GIÁ SỚM</span>`; mediaRow.querySelector('.cart-val').textContent=mediaPkg.price.toLocaleString('vi')+'đ'; }
+
+  const preview = document.getElementById('success-events-preview');
+  preview.innerHTML = events.map((e,i)=>`
+    <div style="display:flex;align-items:center;gap:10px;padding:8px 12px;background:var(--dark3);border:1px solid var(--border2);border-radius:7px;margin-bottom:6px">
+      <div style="width:42px;height:26px;border-radius:4px;background:${mediaPkg.id==='premium'?'rgba(245,166,35,.3)':mediaPkg.id==='standard'?'rgba(41,128,185,.3)':'#333'};display:flex;align-items:center;justify-content:center;font-family:'Bebas Neue';font-size:12px;color:${mediaPkg.id==='premium'?'#F5A623':mediaPkg.id==='standard'?'#5DADE2':'#888'};flex-shrink:0">${String.fromCharCode(65+Math.floor(i/100))+String(i+1).padStart(3,'0')}</div>
+      <div style="flex:1">
+        <div style="font-size:12px;font-weight:700">${e.name}</div>
+        <div style="font-size:10px;color:var(--muted)">${e.detail}</div>
+      </div>
+    </div>`).join('');
+}
+
+// ── SUBMIT ──
+function doSubmit(){
+  if(!document.getElementById('agree1').checked||!document.getElementById('agree2').checked){
+    alert('Vui lòng xác nhận các điều khoản bên trên');return;
+  }
+  [1,2,3,4].forEach(i=>document.getElementById('p'+i).classList.remove('on'));
+  const succ = document.getElementById('success');
+  succ.style.display='block';
+  const list = document.getElementById('success-list');
+  list.innerHTML = events.map((e,i)=>`
+    <div class="sev">
+      <div class="sev-bib" style="background:${mediaPkg.id==='premium'?'rgba(245,166,35,.3)':mediaPkg.id==='standard'?'rgba(41,128,185,.3)':'#333'};color:${mediaPkg.id==='premium'?'#F5A623':mediaPkg.id==='standard'?'#5DADE2':'#888'}">${String.fromCharCode(65+i)+String(i+1).padStart(3,'0')}</div>
+      <div class="sev-info">
+        <div class="sev-name">${e.name}</div>
+        <div class="sev-detail">${e.detail} · BIB ${mediaPkg.bib}</div>
+      </div>
+    </div>`).join('');
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+function showRefereeSheet(){ document.getElementById('referee-modal').style.display='block'; }
+function showNAGPanel(){ document.getElementById('nag-modal').style.display='block'; }
+</script>
+</body>
+</html>

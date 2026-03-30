@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HLRace Platform — Kiến trúc tổng thể</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Syne:wght@700;800&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --ink:#0A0A0F;--paper:#F5F3EE;--paper2:#EDEBE4;
+  --v:#4A1FFF;--v2:#2D00CC;--pk:#FF2D6B;--amber:#FF8C00;
+  --green:#00A86B;--cyan:#0099CC;--gold:#D4A017;
+  --warm:#F0ECE4;--line:rgba(10,10,15,.1);
+}
+body{background:var(--paper);color:var(--ink);font-family:'Space Grotesk',sans-serif;min-height:100vh;overflow-x:hidden}
+
+/* GRAIN */
+body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:999;opacity:.018;
+  background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-size:256px}
+
+/* HEADER */
+.hdr{padding:32px 40px 24px;border-bottom:1.5px solid var(--line);display:flex;justify-content:space-between;align-items:flex-end;flex-wrap:wrap;gap:12px}
+.hdr-l{}
+.eyebrow{font-family:'JetBrains Mono';font-size:9px;letter-spacing:3px;text-transform:uppercase;color:var(--v);margin-bottom:6px;opacity:.7}
+.hdr-title{font-family:'Syne';font-size:clamp(28px,4vw,48px);font-weight:800;line-height:.95;letter-spacing:-1px}
+.hdr-title span{color:var(--v)}
+.hdr-r{font-size:10px;color:rgba(10,10,15,.45);font-family:'JetBrains Mono';text-align:right;line-height:1.8}
+
+/* GRID CONTAINER */
+.canvas{padding:32px 40px 60px;max-width:1400px;margin:0 auto}
+
+/* SECTION LABEL */
+.sec-lbl{font-family:'JetBrains Mono';font-size:9px;letter-spacing:3px;text-transform:uppercase;color:rgba(10,10,15,.35);margin-bottom:12px;display:flex;align-items:center;gap:8px}
+.sec-lbl::after{content:'';flex:1;height:1px;background:var(--line)}
+
+/* LAYER ROWS */
+.layer{margin-bottom:28px}
+
+/* NODES */
+.nodes{display:flex;gap:10px;flex-wrap:wrap}
+.node{border-radius:10px;padding:14px 16px;position:relative;cursor:default;transition:transform .2s,box-shadow .2s;flex-shrink:0}
+.node:hover{transform:translateY(-2px);box-shadow:0 8px 28px rgba(0,0,0,.12)}
+.nd-icon{font-size:18px;margin-bottom:6px}
+.nd-name{font-family:'Syne';font-size:12px;font-weight:800;margin-bottom:2px;line-height:1.2}
+.nd-sub{font-size:9px;opacity:.55;line-height:1.4;max-width:140px}
+.nd-status{position:absolute;top:9px;right:9px;font-family:'JetBrains Mono';font-size:7px;font-weight:700;padding:2px 5px;border-radius:3px;letter-spacing:.5px}
+.live{background:rgba(0,168,107,.12);color:var(--green)}
+.new{background:rgba(74,31,255,.1);color:var(--v)}
+.plan{background:rgba(255,140,0,.1);color:var(--amber)}
+
+/* NODE COLORS */
+.n-ops{background:#0A0A0F;color:#F5F3EE}
+.n-ops .nd-sub{opacity:.4}
+.n-eco{background:var(--warm);border:1.5px solid rgba(10,10,15,.08)}
+.n-comm{background:var(--v);color:#fff}
+.n-comm .nd-sub{opacity:.65}
+.n-comm .live,.n-comm .new,.n-comm .plan{background:rgba(255,255,255,.15);color:#fff}
+.n-good{background:#001A0D;color:#fff}
+.n-good .nd-sub{opacity:.5}
+.n-tour{background:var(--amber);color:#000}
+.n-tour .nd-sub{opacity:.6}
+.n-sport{background:var(--paper2);border:1.5px solid rgba(10,10,15,.08)}
+.n-ai{background:#0099CC;color:#fff}
+.n-ai .nd-sub{opacity:.65}
+
+/* CONNECTOR ARROWS */
+.connectors{position:relative;height:40px;margin:-6px 0;pointer-events:none}
+.conn-row{display:flex;gap:10px;flex-wrap:wrap;padding:0 20px}
+.arr{font-size:18px;color:rgba(10,10,15,.15);flex:1;text-align:center;min-width:60px;display:flex;align-items:center;justify-content:center}
+
+/* FLYWHEEL */
+.flywheel-wrap{background:var(--ink);border-radius:16px;padding:28px 32px;margin-bottom:28px;position:relative;overflow:hidden}
+.fw-bg{position:absolute;top:-60px;right:-60px;width:260px;height:260px;border-radius:50%;background:radial-gradient(circle,rgba(74,31,255,.25),transparent 70%)}
+.fw-bg2{position:absolute;bottom:-40px;left:80px;width:200px;height:200px;border-radius:50%;background:radial-gradient(circle,rgba(0,168,107,.12),transparent 70%)}
+.fw-title{font-family:'Syne';font-size:22px;font-weight:800;color:#fff;margin-bottom:4px;position:relative}
+.fw-sub{font-size:11px;color:rgba(255,255,255,.4);margin-bottom:24px;font-family:'JetBrains Mono';position:relative}
+.fw-steps{display:flex;gap:0;flex-wrap:wrap;position:relative}
+.fws{flex:1;min-width:130px;padding:14px 16px;position:relative}
+.fws:not(:last-child)::after{content:'→';position:absolute;right:-10px;top:50%;transform:translateY(-50%);color:rgba(255,255,255,.2);font-size:18px;z-index:1}
+.fws-n{font-family:'JetBrains Mono';font-size:8px;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,.3);margin-bottom:6px}
+.fws-t{font-family:'Syne';font-size:13px;font-weight:800;color:#fff;margin-bottom:3px;line-height:1.2}
+.fws-s{font-size:9px;color:rgba(255,255,255,.45);line-height:1.5}
+.fws-num{font-family:'Syne';font-size:28px;font-weight:800;color:var(--v);opacity:.3;position:absolute;top:10px;right:12px}
+@media(max-width:600px){.fws:not(:last-child)::after{display:none}}
+
+/* REVENUE TABLE */
+.rev-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:10px;margin-bottom:28px}
+.rev-item{background:var(--warm);border:1.5px solid rgba(10,10,15,.07);border-radius:10px;padding:14px}
+.ri-src{font-size:9px;font-family:'JetBrains Mono';letter-spacing:1px;text-transform:uppercase;color:rgba(10,10,15,.4);margin-bottom:5px}
+.ri-val{font-family:'Syne';font-size:22px;font-weight:800;color:var(--v);line-height:1;margin-bottom:3px}
+.ri-desc{font-size:10px;color:rgba(10,10,15,.5);line-height:1.5}
+
+/* PRIORITY */
+.priority-list{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:28px}
+@media(max-width:760px){.priority-list{grid-template-columns:1fr}}
+.pri{border-radius:10px;padding:16px;position:relative;overflow:hidden}
+.pri-1{background:var(--v);color:#fff}
+.pri-2{background:var(--ink);color:#fff}
+.pri-3{background:var(--warm);border:1.5px solid rgba(10,10,15,.08)}
+.pri-num{font-family:'Syne';font-size:64px;font-weight:800;position:absolute;right:10px;top:-4px;opacity:.08;line-height:1}
+.pri-tag{font-family:'JetBrains Mono';font-size:8px;letter-spacing:2px;text-transform:uppercase;opacity:.5;margin-bottom:7px}
+.pri-name{font-family:'Syne';font-size:16px;font-weight:800;margin-bottom:5px;line-height:1.2}
+.pri-why{font-size:10px;opacity:.6;line-height:1.6}
+.pri-items{margin-top:10px;display:flex;flex-direction:column;gap:4px}
+.pi{font-size:10px;opacity:.7;display:flex;gap:6px;align-items:flex-start}
+.pi::before{content:'→';opacity:.4;flex-shrink:0}
+
+/* DATA FLOWS */
+.df-row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:28px}
+.df{flex:1;min-width:220px;background:var(--warm);border:1.5px solid rgba(10,10,15,.07);border-radius:10px;padding:14px}
+.df-title{font-family:'Syne';font-size:12px;font-weight:800;margin-bottom:8px;display:flex;align-items:center;gap:6px}
+.df-flow{display:flex;flex-direction:column;gap:4px}
+.dff{font-size:10px;color:rgba(10,10,15,.55);padding:5px 8px;background:rgba(10,10,15,.03);border-radius:5px;line-height:1.5;display:flex;gap:6px}
+.dff-dot{width:5px;height:5px;border-radius:50%;flex-shrink:0;margin-top:5px}
+
+/* FOOTER NOTE */
+.foot{border-top:1.5px solid var(--line);padding:20px 40px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px}
+.foot-l{font-size:10px;color:rgba(10,10,15,.35);font-family:'JetBrains Mono';line-height:1.8}
+.foot-r{display:flex;gap:8px;flex-wrap:wrap}
+.page-link{padding:7px 14px;border-radius:6px;font-size:10px;font-weight:700;font-family:'Space Grotesk';cursor:pointer;text-decoration:none;transition:all .2s;border:1.5px solid rgba(10,10,15,.1);color:var(--ink)}
+.page-link:hover{background:var(--v);color:#fff;border-color:var(--v)}
+.page-link.primary{background:var(--v);color:#fff;border-color:var(--v)}
+.page-link.primary:hover{background:var(--v2)}
+</style>
+</head>
+<body>
+
+<header class="hdr">
+  <div class="hdr-l">
+    <div class="eyebrow">// Platform Architecture · v13</div>
+    <div class="hdr-title">VRACE<span>.</span><br>PLATFORM MAP</div>
+  </div>
+  <div class="hdr-r">
+    Cập nhật: 03/2026<br>
+    13 modules · 3 tầng<br>
+    Hà Nội → Việt Nam → ?
+  </div>
+</header>
+
+<div class="canvas">
+
+  <!-- FLYWHEEL -->
+  <div class="flywheel-wrap">
+    <div class="fw-bg"></div><div class="fw-bg2"></div>
+    <div class="fw-title">Vòng lặp tự nuôi sống</div>
+    <div class="fw-sub">// The core flywheel — mỗi vòng tạo ra giá trị cho vòng tiếp theo</div>
+    <div class="fw-steps">
+      <div class="fws"><div class="fws-num">1</div><div class="fws-n">Seed</div><div class="fws-t">Runner đăng ký race</div><div class="fws-s">Profile, điểm, lịch sử được tích lũy</div></div>
+      <div class="fws"><div class="fws-num">2</div><div class="fws-n">Connect</div><div class="fws-t">AI match bạn chạy</div><div class="fws-s">Cùng race → nhóm luyện tập → gắn kết</div></div>
+      <div class="fws"><div class="fws-num">3</div><div class="fws-n">Commerce</div><div class="fws-t">Race Ocean mở cửa</div><div class="fws-s">Flash window · AI Hải · 6–15% hoa hồng</div></div>
+      <div class="fws"><div class="fws-num">4</div><div class="fws-n">Tourism</div><div class="fws-t">Khách quốc tế đến</div><div class="fws-s">Tìm local runner · 70k/match · bản đồ chạy</div></div>
+      <div class="fws"><div class="fws-num">5</div><div class="fws-n">Good</div><div class="fws-t">Cộng đồng làm điều tốt</div><div class="fws-s">Điểm → từ thiện · chiến dịch · gây quỹ</div></div>
+      <div class="fws"><div class="fws-num">→</div><div class="fws-n">Loop</div><div class="fws-t">Platform lớn hơn</div><div class="fws-s">Dữ liệu tốt hơn → AI tốt hơn → match tốt hơn</div></div>
+    </div>
+  </div>
+
+  <!-- LAYER 1: OPS -->
+  <div class="layer">
+    <div class="sec-lbl">Tầng 1 — Vận hành giải chạy (Core · đã live)</div>
+    <div class="nodes">
+      <div class="node n-ops" style="min-width:130px"><div class="nd-status live">LIVE</div><div class="nd-icon">📋</div><div class="nd-name">Đăng ký VĐV</div><div class="nd-sub">4 bước · BIB tự động · Sheets sync</div></div>
+      <div class="node n-ops" style="min-width:130px"><div class="nd-status live">LIVE</div><div class="nd-icon">👥</div><div class="nd-name">Nhân sự</div><div class="nd-sub">7 vai trò · 5 bước · Điểm cống hiến</div></div>
+      <div class="node n-ops" style="min-width:130px"><div class="nd-status live">LIVE</div><div class="nd-icon">📱</div><div class="nd-name">Check-in BIB</div><div class="nd-sub">Phát BIB realtime · counter per cự ly</div></div>
+      <div class="node n-ops" style="min-width:130px"><div class="nd-status live">LIVE</div><div class="nd-icon">⚙️</div><div class="nd-name">Admin Panel</div><div class="nd-sub">6 tab · AI báo cáo · Xuất PDF</div></div>
+      <div class="node n-ops" style="min-width:130px"><div class="nd-status live">LIVE</div><div class="nd-icon">🏆</div><div class="nd-name">Leaderboard</div><div class="nd-sub">5 cấp bậc · Điểm CĐ · Public</div></div>
+      <div class="node n-ops" style="min-width:130px"><div class="nd-status live">LIVE</div><div class="nd-icon">🏙️</div><div class="nd-name">City Dashboard</div><div class="nd-sub">24 quận · Heat map · KPI lãnh đạo</div></div>
+    </div>
+  </div>
+
+  <!-- LAYER 2: ECOSYSTEM -->
+  <div class="layer">
+    <div class="sec-lbl">Tầng 2 — Hệ sinh thái race (đã live)</div>
+    <div class="nodes">
+      <div class="node n-eco" style="min-width:140px"><div class="nd-status live">LIVE</div><div class="nd-icon">🏪</div><div class="nd-name">Marketplace</div><div class="nd-sub">22 hạng mục · Pass-through · 7 nhóm</div></div>
+      <div class="node n-eco" style="min-width:140px"><div class="nd-status live">LIVE</div><div class="nd-icon">✅</div><div class="nd-name">Nghiệm thu</div><div class="nd-sub">3 bên · 6 bước · Audit log đầy đủ</div></div>
+      <div class="node n-eco" style="min-width:140px"><div class="nd-status live">LIVE</div><div class="nd-icon">🌊</div><div class="nd-name">Race Ocean</div><div class="nd-sub">Flash window · AI Hải · 6–15% hoa hồng</div></div>
+      <div class="node n-eco" style="min-width:140px"><div class="nd-status plan">PLAN</div><div class="nd-icon">💳</div><div class="nd-name">Payment Gate</div><div class="nd-sub">Auto billing · VNPay · Momo · stripe</div></div>
+      <div class="node n-eco" style="min-width:140px"><div class="nd-status plan">PLAN</div><div class="nd-icon">📜</div><div class="nd-name">E-Contract</div><div class="nd-sub">Hợp đồng 3 bên · Chữ ký số · VAT</div></div>
+    </div>
+  </div>
+
+  <!-- LAYER 3: COMMUNITY -->
+  <div class="layer">
+    <div class="sec-lbl">Tầng 3 — Cộng đồng & kết nối (đang build)</div>
+    <div class="nodes">
+      <div class="node n-comm" style="min-width:140px"><div class="nd-status live">LIVE</div><div class="nd-icon">🤝</div><div class="nd-name">Runner Connect</div><div class="nd-sub">Match theo race · Nhóm luyện · AI Mây</div></div>
+      <div class="node n-comm" style="min-width:140px"><div class="nd-status new">NEW ↓</div><div class="nd-icon">✈️</div><div class="nd-name">Running Tourism</div><div class="nd-sub">Khách + local runner · Map · 70k/match</div></div>
+      <div class="node n-comm" style="min-width:140px"><div class="nd-status new">NEW ↓</div><div class="nd-icon">💙</div><div class="nd-name">Community Good</div><div class="nd-sub">Điểm → từ thiện · Chiến dịch · Gây quỹ</div></div>
+      <div class="node n-comm" style="min-width:140px"><div class="nd-status plan">PLAN</div><div class="nd-icon">🏅</div><div class="nd-name">Digital Medal</div><div class="nd-sub">PNG đẹp · Share MXH · Bộ sưu tập</div></div>
+      <div class="node n-comm" style="min-width:140px"><div class="nd-status plan">PLAN</div><div class="nd-icon">📓</div><div class="nd-name">Race Journal</div><div class="nd-sub">Nhật ký cá nhân · AI review · Portfolio</div></div>
+    </div>
+  </div>
+
+  <!-- LAYER 4: MULTI-SPORT -->
+  <div class="layer">
+    <div class="sec-lbl">Tầng 4 — Mở rộng đa môn thể thao (roadmap)</div>
+    <div class="nodes">
+      <div class="node n-sport" style="min-width:110px"><div class="nd-status plan">Q3'26</div><div class="nd-icon">🚴</div><div class="nd-name">Cycling</div><div class="nd-sub">Đạp xe · BIB · Race</div></div>
+      <div class="node n-sport" style="min-width:110px"><div class="nd-status plan">Q3'26</div><div class="nd-icon">🏊</div><div class="nd-name">Swimming</div><div class="nd-sub">Bơi lội · Giải bơi</div></div>
+      <div class="node n-sport" style="min-width:110px"><div class="nd-status plan">Q4'26</div><div class="nd-icon">🏔️</div><div class="nd-name">Trekking</div><div class="nd-sub">Leo núi · Trail map</div></div>
+      <div class="node n-sport" style="min-width:110px"><div class="nd-status plan">Q4'26</div><div class="nd-icon">🧘</div><div class="nd-name">Yoga / Fitness</div><div class="nd-sub">Ngoài trời · Cộng đồng</div></div>
+      <div class="node n-sport" style="min-width:110px"><div class="nd-status plan">2027</div><div class="nd-icon">🔱</div><div class="nd-name">Triathlon</div><div class="nd-sub">Duathlon · 3 môn</div></div>
+      <div class="node n-sport" style="min-width:130px"><div class="nd-status plan">AI</div><div class="nd-icon">🤖</div><div class="nd-name">AI Event Suggest</div><div class="nd-sub">Đề xuất sự kiện từ dữ liệu CĐ · ngày lễ</div></div>
+    </div>
+  </div>
+
+  <!-- LAYER 5: AI CORE -->
+  <div class="layer">
+    <div class="sec-lbl">Tầng AI — Bộ não chung (Claude API)</div>
+    <div class="nodes">
+      <div class="node n-ai" style="min-width:120px"><div class="nd-status live">LIVE</div><div class="nd-icon">🤖</div><div class="nd-name">AI Báo cáo</div><div class="nd-sub">Admin · Phân tích dữ liệu race</div></div>
+      <div class="node n-ai" style="min-width:120px"><div class="nd-status live">LIVE</div><div class="nd-icon">🌊</div><div class="nd-name">AI Hải</div><div class="nd-sub">Race Ocean · Commerce · Wishlist</div></div>
+      <div class="node n-ai" style="min-width:120px"><div class="nd-status live">LIVE</div><div class="nd-icon">☁️</div><div class="nd-name">AI Mây</div><div class="nd-sub">Runner Connect · Match · Pricing</div></div>
+      <div class="node n-ai" style="min-width:120px"><div class="nd-status new">NEW</div><div class="nd-icon">✈️</div><div class="nd-name">AI Tour Guide</div><div class="nd-sub">Tourism match · Bản đồ chạy · Ngôn ngữ</div></div>
+      <div class="node n-ai" style="min-width:120px"><div class="nd-status new">NEW</div><div class="nd-icon">💙</div><div class="nd-name">AI Good</div><div class="nd-sub">Chiến dịch từ thiện · Gây quỹ · Cộng đồng</div></div>
+      <div class="node n-ai" style="min-width:120px"><div class="nd-status plan">PLAN</div><div class="nd-icon">🏋️</div><div class="nd-name">AI Coach</div><div class="nd-sub">Lịch tập cá nhân · Phân tích performance</div></div>
+    </div>
+  </div>
+
+  <!-- REVENUE STREAMS -->
+  <div class="sec-lbl" style="margin-bottom:12px">Nguồn doanh thu</div>
+  <div class="rev-grid">
+    <div class="rev-item"><div class="ri-src">Subscription</div><div class="ri-val">29–149k</div><div class="ri-desc">Runner Connect · Starter / Pro / Elite · /tháng</div></div>
+    <div class="rev-item"><div class="ri-src">Tourism Match</div><div class="ri-val">70k</div><div class="ri-desc">/match · Khách tìm local runner · Phí một lần</div></div>
+    <div class="rev-item"><div class="ri-src">Commerce</div><div class="ri-val">6–15%</div><div class="ri-desc">Race Ocean · Hoa hồng trên mỗi deal bán hàng</div></div>
+    <div class="rev-item"><div class="ri-src">BIB Platform</div><div class="ri-val">5–15k</div><div class="ri-desc">/BIB · Phí vận hành · Multi-sport mở rộng</div></div>
+    <div class="rev-item"><div class="ri-src">Marketplace</div><div class="ri-val">Listing</div><div class="ri-desc">Nhà cung cấp đăng gói · Phí featured listing</div></div>
+    <div class="rev-item"><div class="ri-src">AI Event</div><div class="ri-val">SaaS</div><div class="ri-desc">BTC khác thuê nền tảng · White-label · /giải</div></div>
+    <div class="rev-item"><div class="ri-src">Community Good</div><div class="ri-val">Sponsor</div><div class="ri-desc">Nhà tài trợ match điểm runner · CSR budget</div></div>
+    <div class="rev-item"><div class="ri-src">Data Insights</div><div class="ri-val">B2B</div><div class="ri-desc">Báo cáo xu hướng thể thao · địa phương · DN</div></div>
+  </div>
+
+  <!-- DATA FLOWS -->
+  <div class="sec-lbl" style="margin-bottom:12px">Luồng dữ liệu quan trọng</div>
+  <div class="df-row">
+    <div class="df">
+      <div class="df-title">✈️ Tourism Flow</div>
+      <div class="df-flow">
+        <div class="dff"><div class="dff-dot" style="background:var(--amber)"></div>Khách nhập: điểm đến, pace, ngôn ngữ, ngày chạy</div>
+        <div class="dff"><div class="dff-dot" style="background:var(--v)"></div>AI Tour Guide match local runner phù hợp</div>
+        <div class="dff"><div class="dff-dot" style="background:var(--green)"></div>Khách xem profile, hoạt động, review của runner</div>
+        <div class="dff"><div class="dff-dot" style="background:var(--amber)"></div>Thanh toán 70k → runner nhận thông báo</div>
+        <div class="dff"><div class="dff-dot" style="background:var(--green)"></div>Sau chạy: rating, ảnh → tích vào profile runner</div>
+      </div>
+    </div>
+    <div class="df">
+      <div class="df-title">💙 Community Good Flow</div>
+      <div class="df-flow">
+        <div class="dff"><div class="dff-dot" style="background:var(--cyan)"></div>AI Mây phát hiện trending: nhiều người hỏi cùng chủ đề</div>
+        <div class="dff"><div class="dff-dot" style="background:var(--v)"></div>Đề xuất thảo luận → cộng đồng vote → tạo chiến dịch</div>
+        <div class="dff"><div class="dff-dot" style="background:var(--amber)"></div>Ai đó post nhu cầu → AI đánh giá → kêu gọi hành động</div>
+        <div class="dff"><div class="dff-dot" style="background:var(--green)"></div>Runner đóng góp điểm / km / tiền → sponsor match 1:1</div>
+        <div class="dff"><div class="dff-dot" style="background:var(--cyan)"></div>Kết quả minh bạch → tích vào lịch sử runner & cộng đồng</div>
+      </div>
+    </div>
+    <div class="df">
+      <div class="df-title">🤖 AI Expand Flow</div>
+      <div class="df-flow">
+        <div class="dff"><div class="dff-dot" style="background:var(--v)"></div>AI đọc dữ liệu: đăng ký, race, xu hướng, ngày lễ</div>
+        <div class="dff"><div class="dff-dot" style="background:var(--amber)"></div>Phát hiện: "Nhiều runner HN thích trekking tháng 9"</div>
+        <div class="dff"><div class="dff-dot" style="background:var(--green)"></div>Đề xuất: tạo sự kiện trekking → liên hệ tài trợ phù hợp</div>
+        <div class="dff"><div class="dff-dot" style="background:var(--cyan)"></div>BTC xem xét → 1 click tạo event → BIB system sẵn sàng</div>
+        <div class="dff"><div class="dff-dot" style="background:var(--v)"></div>Dữ liệu mới từ event → AI học → đề xuất tốt hơn</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PRIORITY -->
+  <div class="sec-lbl" style="margin-bottom:12px">Ưu tiên build tiếp theo</div>
+  <div class="priority-list">
+    <div class="pri pri-1">
+      <div class="pri-num">1</div>
+      <div class="pri-tag">// Build ngay · Cao nhất</div>
+      <div class="pri-name">Running Tourism</div>
+      <div class="pri-why">Doanh thu rõ ràng (70k/match), dữ liệu runner đã có, khách quốc tế đến Hà Nội là thị trường thật.</div>
+      <div class="pri-items">
+        <div class="pi">Chat AI tìm local runner theo địa điểm + pace</div>
+        <div class="pi">Bản đồ đường chạy (shared map database)</div>
+        <div class="pi">Profile runner cho khách xem (hoạt động, review)</div>
+        <div class="pi">Notification system khi có match</div>
+      </div>
+    </div>
+    <div class="pri pri-2">
+      <div class="pri-num">2</div>
+      <div class="pri-tag">// Build song song</div>
+      <div class="pri-name">Community for Good</div>
+      <div class="pri-why">Tạo linh hồn cho platform. Không app nào đang làm điều này. Đây là thứ giữ chân người dùng lâu dài.</div>
+      <div class="pri-items">
+        <div class="pi">Điểm runner → đổi thành đóng góp từ thiện</div>
+        <div class="pi">AI đề xuất chiến dịch từ trending cộng đồng</div>
+        <div class="pi">Gây quỹ nhanh cho tình huống khẩn cấp</div>
+        <div class="pi">Thảo luận theo chủ đề · AI dẫn dắt</div>
+      </div>
+    </div>
+    <div class="pri pri-3">
+      <div class="pri-num">3</div>
+      <div class="pri-tag">// Sau khi có traction</div>
+      <div class="pri-name">Multi-sport + AI Coach</div>
+      <div class="pri-why">Khi database runner đủ lớn, mở rộng sang cycling, trekking sẽ tự nhiên. AI Coach là premium upsell mạnh nhất.</div>
+      <div class="pri-items">
+        <div class="pi">Cycling BIB → dùng lại toàn bộ infrastructure</div>
+        <div class="pi">AI đề xuất sự kiện từ dữ liệu cộng đồng</div>
+        <div class="pi">AI Coach cá nhân — lịch tập theo race schedule</div>
+        <div class="pi">White-label cho BTC khác thuê nền tảng</div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<footer class="foot">
+  <div class="foot-l">
+    HLRace Platform Map · v13 · 03/2026<br>
+    13 modules · Claude API · Google Sheets backend
+  </div>
+  <div class="foot-r">
+    <a class="page-link" href="index.html">📋 Đăng ký</a>
+    <a class="page-link" href="runner-connect.html">🤝 Connect</a>
+    <a class="page-link" href="race-ocean.html">🌊 Ocean</a>
+    <a class="page-link" href="marketplace.html">🏪 Market</a>
+    <a class="page-link primary" href="running-tourism.html">✈️ Tourism →</a>
+    <a class="page-link primary" href="community-good.html">💙 Good →</a>
+  </div>
+</footer>
+</body>
+</html>

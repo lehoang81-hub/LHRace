@@ -1,0 +1,1056 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>HLRace — Race Infographic Generator</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Space+Grotesk:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&family=Playfair+Display:ital,wght@1,700&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#08090D;--s1:#0F1015;--s2:#161820;
+  --ink:#F2F0FF;--ink2:#9896B8;--muted:#4A4860;
+  --gold:#FFD060;--ember:#FF5C35;--teal:#00E5C4;--violet:#7C5CFF;
+  --br:rgba(124,92,255,.12);
+}
+body{background:var(--bg);color:var(--ink);font-family:'Space Grotesk',sans-serif;min-height:100vh}
+
+/* ─── SETUP SCREEN ─── */
+.setup{max-width:680px;margin:0 auto;padding:40px 20px 60px}
+.setup-eyebrow{font-family:'DM Mono';font-size:10px;letter-spacing:3px;text-transform:uppercase;color:var(--violet);margin-bottom:12px}
+.setup-h{font-family:'Bebas Neue';font-size:clamp(44px,8vw,80px);line-height:.95;letter-spacing:1px;margin-bottom:8px;background:linear-gradient(135deg,var(--gold),var(--ember));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.setup-sub{font-size:13px;color:var(--ink2);line-height:1.7;margin-bottom:30px;max-width:500px}
+
+/* STYLE PICKER */
+.style-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:24px}
+@media(max-width:500px){.style-grid{grid-template-columns:repeat(2,1fr)}}
+.style-card{border-radius:12px;padding:14px 12px;cursor:pointer;border:2px solid rgba(255,255,255,.06);transition:all .2s;text-align:center;position:relative;overflow:hidden}
+.style-card::before{content:'';position:absolute;inset:0;opacity:0;transition:opacity .2s}
+.style-card.on{border-color:var(--gold) !important}
+.style-card.on::after{content:'✓';position:absolute;top:6px;right:8px;font-size:11px;color:var(--gold);font-weight:700}
+.sc-icon{font-size:28px;margin-bottom:6px}
+.sc-name{font-size:11px;font-weight:700;letter-spacing:.5px;margin-bottom:2px}
+.sc-desc{font-size:9px;color:var(--ink2);line-height:1.4}
+
+/* STYLE THEMES */
+.s-adventure{background:rgba(255,92,53,.06);border-color:rgba(255,92,53,.2)}.s-adventure.on{--accent:#FF5C35}
+.s-adventure::before{background:radial-gradient(circle at 50% 0%,rgba(255,92,53,.1),transparent)}
+.s-war{background:rgba(255,68,0,.06);border-color:rgba(255,68,0,.2)}.s-war.on{--accent:#FF4400}
+.s-science{background:rgba(0,229,196,.06);border-color:rgba(0,229,196,.2)}.s-science.on{--accent:#00E5C4}
+.s-myth{background:rgba(124,92,255,.06);border-color:rgba(124,92,255,.2)}.s-myth.on{--accent:#7C5CFF}
+.s-sport{background:rgba(255,208,96,.06);border-color:rgba(255,208,96,.2)}.s-sport.on{--accent:#FFD060}
+.s-journey{background:rgba(180,120,255,.06);border-color:rgba(180,120,255,.2)}.s-journey.on{--accent:#B478FF}
+
+/* COLOR THEME PICKER */
+.color-row{display:flex;gap:8px;margin-bottom:24px;flex-wrap:wrap}
+.color-chip{width:36px;height:36px;border-radius:50%;cursor:pointer;border:2px solid transparent;transition:all .2s;position:relative}
+.color-chip.on{border-color:#fff;transform:scale(1.2)}
+.color-chip.on::after{content:'';position:absolute;inset:-4px;border-radius:50%;border:1px solid rgba(255,255,255,.3)}
+
+.field{margin-bottom:14px}
+.field label{display:block;font-family:'DM Mono';font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:6px}
+.field input,.field select,.field textarea{width:100%;padding:11px 13px;background:var(--s2);border:1.5px solid rgba(255,255,255,.07);border-radius:9px;color:var(--ink);font-family:'Space Grotesk';font-size:13px;outline:none;transition:border-color .2s;resize:none}
+.field input:focus,.field select:focus,.field textarea:focus{border-color:rgba(255,208,96,.4)}
+.field input::placeholder,.field textarea::placeholder{color:var(--muted)}
+.field select option{background:var(--s2)}
+
+.fields-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+@media(max-width:480px){.fields-row{grid-template-columns:1fr}}
+
+.gen-btn{width:100%;padding:16px;background:linear-gradient(135deg,var(--gold),var(--ember));border:none;border-radius:12px;font-family:'Bebas Neue';font-size:22px;letter-spacing:2px;color:#000;cursor:pointer;transition:all .3s;margin-top:6px}
+.gen-btn:hover{transform:translateY(-2px);box-shadow:0 8px 30px rgba(255,208,96,.3)}
+.gen-btn:active{transform:translateY(0)}
+
+/* ─── INFOGRAPHIC ─── */
+.infographic{display:none;max-width:900px;margin:0 auto;padding:20px}
+.info-actions{display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap}
+.btn{padding:9px 18px;border-radius:8px;font-family:'Space Grotesk';font-size:11px;font-weight:700;border:none;cursor:pointer;transition:all .2s;display:inline-flex;align-items:center;gap:6px}
+.btn-gold{background:var(--gold);color:#000}.btn-ghost{background:rgba(255,255,255,.06);color:var(--ink2);border:1px solid rgba(255,255,255,.1)}.btn-ghost:hover{color:var(--ink)}
+
+/* THE CARD */
+.race-card{border-radius:20px;overflow:hidden;position:relative;font-family:'Space Grotesk'}
+
+/* HERO */
+.rc-hero{padding:36px 36px 28px;position:relative;overflow:hidden}
+.rc-hero::before{content:'';position:absolute;inset:0;background:inherit;filter:brightness(.6)}
+.rc-noise{position:absolute;inset:0;opacity:.04;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E");background-size:150px}
+.rc-hero-content{position:relative;z-index:2}
+.rc-eyebrow{font-family:'DM Mono';font-size:9px;letter-spacing:3px;text-transform:uppercase;margin-bottom:10px;opacity:.8}
+.rc-title{font-family:'Bebas Neue';font-size:clamp(40px,6vw,72px);line-height:.9;letter-spacing:1px;margin-bottom:6px}
+.rc-subtitle{font-size:13px;opacity:.7;margin-bottom:18px}
+.rc-tags{display:flex;gap:6px;flex-wrap:wrap}
+.rc-tag{padding:4px 11px;border-radius:20px;font-size:9px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;background:rgba(255,255,255,.15);backdrop-filter:blur(8px)}
+
+/* BODY */
+.rc-body{padding:28px 32px}
+.rc-section{margin-bottom:28px}
+.rc-sec-title{font-family:'DM Mono';font-size:8px;letter-spacing:3px;text-transform:uppercase;opacity:.5;margin-bottom:14px;display:flex;align-items:center;gap:8px}
+.rc-sec-title::after{content:'';flex:1;height:1px;background:currentColor;opacity:.2}
+
+/* STAT GRID */
+.stat-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px}
+.stat-box{border-radius:12px;padding:14px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.06);position:relative;overflow:hidden}
+.stat-box::before{content:'';position:absolute;top:0;left:0;right:0;height:2px}
+.sb-icon{font-size:22px;margin-bottom:7px;line-height:1}
+.sb-value{font-family:'Bebas Neue';font-size:32px;line-height:1;margin-bottom:2px}
+.sb-label{font-size:9px;text-transform:uppercase;letter-spacing:1px;opacity:.5}
+.sb-subtext{font-size:10px;margin-top:4px;opacity:.7;line-height:1.4}
+
+/* FUN FACTS */
+.fun-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px}
+.fun-card{border-radius:12px;padding:16px;border:1px solid rgba(255,255,255,.06);position:relative;overflow:hidden}
+.fun-icon{font-size:32px;margin-bottom:8px}
+.fun-number{font-family:'Bebas Neue';font-size:28px;line-height:1;margin-bottom:3px}
+.fun-text{font-size:11px;line-height:1.5;opacity:.75}
+.fun-punchline{font-size:10px;font-style:italic;margin-top:5px;opacity:.5}
+
+/* ELEVATION VISUAL */
+.elevation-bar{height:80px;position:relative;margin:10px 0;border-radius:8px;overflow:hidden;background:rgba(255,255,255,.03)}
+.elev-fill{position:absolute;bottom:0;left:0;right:0;border-radius:4px 4px 0 0;transition:height 1s cubic-bezier(.23,1,.32,1)}
+.elev-label{position:absolute;top:8px;left:12px;font-family:'DM Mono';font-size:9px;letter-spacing:1px;opacity:.6}
+.elev-value{position:absolute;top:8px;right:12px;font-family:'Bebas Neue';font-size:18px}
+
+/* TERRAIN TAGS */
+.terrain-row{display:flex;gap:6px;flex-wrap:wrap}
+.terrain-tag{padding:6px 12px;border-radius:6px;font-size:10px;font-weight:600;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.08)}
+
+/* QUOTE / SOUL */
+.soul-block{border-radius:14px;padding:22px;text-align:center;position:relative;overflow:hidden}
+.soul-star{font-size:36px;margin-bottom:12px;display:block}
+.soul-quote{font-family:'Playfair Display';font-style:italic;font-size:clamp(16px,2.5vw,22px);line-height:1.5;margin-bottom:8px}
+.soul-sub{font-family:'DM Mono';font-size:9px;letter-spacing:2px;text-transform:uppercase;opacity:.5}
+
+/* MAP STUB */
+.map-stub{border-radius:12px;overflow:hidden;height:140px;position:relative;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06);display:flex;align-items:center;justify-content:center}
+.map-path{position:absolute;inset:0}
+.map-pin{position:absolute;font-size:20px;animation:pulse 2s ease-in-out infinite}
+@keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.2)}}
+
+/* FOOTER */
+.rc-footer{padding:18px 32px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;font-family:'DM Mono';font-size:9px;letter-spacing:1px;text-transform:uppercase;opacity:.4;border-top:1px solid rgba(255,255,255,.06)}
+
+/* THEMES */
+.theme-adventure .rc-hero{background:linear-gradient(135deg,#1A0800,#3D1500,#6B2500)}
+.theme-adventure .stat-box::before{background:linear-gradient(90deg,#FF5C35,transparent)}
+.theme-adventure .sb-value,.theme-adventure .fun-number{color:#FF5C35}
+.theme-adventure .fun-card{background:rgba(255,92,53,.06);border-color:rgba(255,92,53,.15)}
+.theme-adventure .soul-block{background:linear-gradient(135deg,rgba(255,92,53,.1),rgba(255,80,0,.05))}
+
+.theme-war .rc-hero{background:linear-gradient(135deg,#1A0000,#2D0A00,#4A1000)}
+.theme-war .stat-box::before{background:linear-gradient(90deg,#FF4400,transparent)}
+.theme-war .sb-value,.theme-war .fun-number{color:#FF6622}
+.theme-war .fun-card{background:rgba(255,68,0,.06);border-color:rgba(255,68,0,.15)}
+.theme-war .soul-block{background:linear-gradient(135deg,rgba(255,68,0,.1),rgba(200,0,0,.05))}
+
+.theme-science .rc-hero{background:linear-gradient(135deg,#001A16,#003D30,#006B55)}
+.theme-science .stat-box::before{background:linear-gradient(90deg,#00E5C4,transparent)}
+.theme-science .sb-value,.theme-science .fun-number{color:#00E5C4}
+.theme-science .fun-card{background:rgba(0,229,196,.05);border-color:rgba(0,229,196,.15)}
+.theme-science .soul-block{background:linear-gradient(135deg,rgba(0,229,196,.08),rgba(0,150,130,.05))}
+
+.theme-myth .rc-hero{background:linear-gradient(135deg,#0A0020,#150040,#200060)}
+.theme-myth .stat-box::before{background:linear-gradient(90deg,#7C5CFF,transparent)}
+.theme-myth .sb-value,.theme-myth .fun-number{color:#A084FF}
+.theme-myth .fun-card{background:rgba(124,92,255,.06);border-color:rgba(124,92,255,.15)}
+.theme-myth .soul-block{background:linear-gradient(135deg,rgba(124,92,255,.1),rgba(180,120,255,.05))}
+
+.theme-sport .rc-hero{background:linear-gradient(135deg,#1A1400,#3D3000,#6B5000)}
+.theme-sport .stat-box::before{background:linear-gradient(90deg,#FFD060,transparent)}
+.theme-sport .sb-value,.theme-sport .fun-number{color:#FFD060}
+.theme-sport .fun-card{background:rgba(255,208,96,.05);border-color:rgba(255,208,96,.15)}
+.theme-sport .soul-block{background:linear-gradient(135deg,rgba(255,208,96,.08),rgba(255,160,0,.05))}
+
+.theme-journey .rc-hero{background:linear-gradient(135deg,#12001A,#280040,#3D0060)}
+.theme-journey .stat-box::before{background:linear-gradient(90deg,#B478FF,transparent)}
+.theme-journey .sb-value,.theme-journey .fun-number{color:#B478FF}
+.theme-journey .fun-card{background:rgba(180,120,255,.06);border-color:rgba(180,120,255,.15)}
+.theme-journey .soul-block{background:linear-gradient(135deg,rgba(180,120,255,.1),rgba(120,80,220,.05))}
+
+/* COLOR OVERRIDES */
+.color-sunset .rc-hero{background:linear-gradient(135deg,#1A0800,#3D1A00,#6B3D00,#1A0020)!important}
+.color-ocean .rc-hero{background:linear-gradient(135deg,#001A2A,#003D5A,#00608A)!important}
+.color-forest .rc-hero{background:linear-gradient(135deg,#001A00,#003D15,#006B2A)!important}
+.color-night .rc-hero{background:linear-gradient(135deg,#050510,#0A0A20,#101030)!important}
+.color-fire .rc-hero{background:linear-gradient(135deg,#1A0000,#3D0A00,#6B1500)!important}
+
+/* LOADING */
+.gen-loading{text-align:center;padding:40px;display:none}
+.loading-ring{width:48px;height:48px;border:3px solid rgba(255,208,96,.2);border-top-color:var(--gold);border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 16px}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* MOBILE */
+@media(max-width:600px){.rc-body{padding:20px 18px}.rc-hero{padding:24px 20px 18px}.stat-grid{grid-template-columns:1fr 1fr}.fun-grid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+
+<!-- ═══ SETUP ═══ -->
+<div class="setup" id="setupScreen">
+  <div class="setup-eyebrow">HLRace · Race Infographic Generator</div>
+  <div class="setup-h">Biến race thành<br>ký ức bất tử</div>
+  <div class="setup-sub">Nhập thông tin race, chọn phong cách, AI sẽ tạo infographic cảm xúc cá nhân hóa cho bạn — với những so sánh hài hước và dữ liệu được dịch sang ngôn ngữ đời thường.</div>
+
+  <!-- STYLE PICKER -->
+  <div class="field">
+    <label>Phong cách kể chuyện</label>
+    <div class="style-grid">
+      <div class="style-card s-adventure on" data-style="adventure" onclick="pickStyle(this)">
+        <div class="sc-icon">🧗</div>
+        <div class="sc-name">Thám hiểm</div>
+        <div class="sc-desc">Người khám phá vùng đất mới, chinh phục thiên nhiên</div>
+      </div>
+      <div class="style-card s-war" data-style="war" onclick="pickStyle(this)">
+        <div class="sc-icon">⚔️</div>
+        <div class="sc-name">Chiến đấu</div>
+        <div class="sc-desc">Chiến binh, trận địa, vinh quang và hy sinh</div>
+      </div>
+      <div class="style-card s-science" data-style="science" onclick="pickStyle(this)">
+        <div class="sc-icon">🔬</div>
+        <div class="sc-name">Khoa học</div>
+        <div class="sc-desc">Số liệu, phân tích, tương đương vật lý hài hước</div>
+      </div>
+      <div class="style-card s-myth" data-style="myth" onclick="pickStyle(this)">
+        <div class="sc-icon">🏛️</div>
+        <div class="sc-name">Thần thoại</div>
+        <div class="sc-desc">Anh hùng, thử thách, định mệnh và huyền thoại</div>
+      </div>
+      <div class="style-card s-sport" data-style="sport" onclick="pickStyle(this)">
+        <div class="sc-icon">🏆</div>
+        <div class="sc-name">Thể thao</div>
+        <div class="sc-desc">Kỷ lục, thống kê, so sánh với vận động viên pro</div>
+      </div>
+      <div class="style-card s-journey" data-style="journey" onclick="pickStyle(this)">
+        <div class="sc-icon">🌙</div>
+        <div class="sc-name">Hành trình</div>
+        <div class="sc-desc">Triết học, nội tâm, ý nghĩa của từng bước chân</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- COLOR PICKER -->
+  <div class="field">
+    <label>Màu chủ đạo</label>
+    <div class="color-row">
+      <div class="color-chip on" data-color="default" style="background:linear-gradient(135deg,#FF5C35,#FFD060)" onclick="pickColor(this)" title="Lửa hoàng hôn"></div>
+      <div class="color-chip" data-color="ocean" style="background:linear-gradient(135deg,#006B8A,#00E5C4)" onclick="pickColor(this)" title="Đại dương"></div>
+      <div class="color-chip" data-color="forest" style="background:linear-gradient(135deg,#006B2A,#88CC44)" onclick="pickColor(this)" title="Rừng sâu"></div>
+      <div class="color-chip" data-color="night" style="background:linear-gradient(135deg,#101030,#7C5CFF)" onclick="pickColor(this)" title="Đêm huyền bí"></div>
+      <div class="color-chip" data-color="fire" style="background:linear-gradient(135deg,#6B1500,#FF4400)" onclick="pickColor(this)" title="Lửa đỏ"></div>
+      <div class="color-chip" data-color="sunset" style="background:linear-gradient(135deg,#6B3D00,#FF8C35,#3D0040)" onclick="pickColor(this)" title="Hoàng hôn tím"></div>
+    </div>
+  </div>
+
+  <!-- INPUT FIELDS -->
+  <div class="field"><label>Tên của bạn</label><input id="runnerName" placeholder="Nguyễn Văn Minh" value="Nguyễn Văn Minh"></div>
+  <div class="fields-row">
+    <div class="field"><label>Tên race</label><input id="raceName" placeholder="Sapa 100 Ultra Trail" value="Sapa 100 Ultra Trail 2026"></div>
+    <div class="field"><label>Cự ly (km)</label><input id="raceKm" type="number" placeholder="25" value="25"></div>
+  </div>
+  <div class="fields-row">
+    <div class="field"><label>Độ leo (m)</label><input id="elevGain" type="number" placeholder="1800" value="1800"></div>
+    <div class="field"><label>Thời gian hoàn thành</label><input id="finishTime" placeholder="6h 45m" value="6h 45m"></div>
+  </div>
+  <div class="fields-row">
+    <div class="field"><label>Địa điểm</label><input id="raceLocation" placeholder="Sapa, Lào Cai" value="Sapa, Lào Cai"></div>
+    <div class="field"><label>Ngày race</label><input id="raceDate" placeholder="25/05/2026" value="25/05/2026"></div>
+  </div>
+  <div class="field">
+    <label>Ký ức race — kể lại cảm xúc của bạn (AI sẽ lọc ra những điểm đặc biệt)</label>
+    <textarea id="raceMemory" rows="6" placeholder="Viết tự do như kể cho bạn nghe — không cần chỉnh sửa, không cần cấu trúc. Càng chi tiết, AI càng tạo ra infographic đẹp và đúng với bạn hơn...">Tôi được chạy giữa cánh đồng lúa xanh mướt bát ngát, con đường ít bóng cây nhưng cảnh thật thoáng tầm mắt và tôi được nhìn trọn vẹn không gian mênh mông của biển lúa. Tôi gặp bạn chạy mang số BIB 1516, cô ấy xinh, tốt bụng mà chạy khỏe hơn tôi tưởng. Tôi đã mạnh dạn hỏi chuyện cô ấy để cho quên đi số km cần phải hoàn thành phía trước, để tạo ra một chất xúc tác mới cho đoạn đường phía trước. Cách cô ấy phối đồ cũng thật đẹp và hiện đại — chiếc quần T8 với màu hồng tương phản giữa cánh đồng lúa thật đẹp, vest nước hiệu Kailas ôm tròn cơ thể một cách gọn gàng, chiếc Garmin mới hơn cái của tôi, tai nghe truyền xương Shokz rất tinh tế và thời trang. Tôi đã hỏi cô ấy về tính năng mới của loại này. Đoạn này cả tôi và cô ấy cùng không dùng gậy vì đường có dốc thoải.</textarea>
+    <div style="display:flex;gap:8px;margin-top:8px;align-items:center;flex-wrap:wrap">
+      <button type="button" onclick="extractKeyInsights()" id="extractBtn"
+        style="padding:8px 16px;background:rgba(124,92,255,.15);border:1.5px solid rgba(124,92,255,.3);border-radius:8px;color:#a084ff;font-family:'Space Grotesk';font-size:11px;font-weight:700;cursor:pointer;transition:all .2s;display:flex;align-items:center;gap:6px">
+        ✦ AI lọc key insights từ ký ức
+      </button>
+      <span style="font-size:10px;color:var(--muted)">AI sẽ nhận diện: cảnh quan · đồng hành · gear · cảm xúc · địa hình</span>
+    </div>
+    <div id="insightsPanel" style="display:none;margin-top:10px;padding:14px;background:rgba(124,92,255,.06);border:1px solid rgba(124,92,255,.2);border-radius:10px">
+      <div style="font-family:'DM Mono';font-size:8px;letter-spacing:2px;text-transform:uppercase;color:#a084ff;margin-bottom:10px">KEY INSIGHTS ĐƯỢC LỌC</div>
+      <div id="insightsContent"></div>
+    </div>
+  </div>
+
+  <button class="gen-btn" onclick="generateInfographic()">✦ TẠO INFOGRAPHIC</button>
+
+  <div class="gen-loading" id="genLoading">
+    <div class="loading-ring"></div>
+    <div style="font-family:'DM Mono';font-size:10px;letter-spacing:2px;color:var(--ink2)" id="loadingMsg">ĐANG TẠO KÝ ỨC...</div>
+  </div>
+</div>
+
+<!-- ═══ INFOGRAPHIC ═══ -->
+<div class="infographic" id="infoScreen">
+  <div class="info-actions">
+    <button class="btn btn-gold" onclick="downloadCard()">⬇ Tải PNG</button>
+    <button class="btn btn-ghost" onclick="shareCard()">↗ Chia sẻ</button>
+    <button class="btn btn-ghost" onclick="showSetup()">↩ Làm lại</button>
+  </div>
+  <div class="race-card" id="raceCard"></div>
+</div>
+
+<script>
+let selectedStyle = 'adventure';
+let selectedColor = 'default';
+
+function pickStyle(el) {
+  
+// ─── AI INSIGHTS EXTRACTOR ──────────────────────────────────────
+async function extractKeyInsights() {
+  const text = document.getElementById('raceMemory').value.trim();
+  if (!text || text.length < 50) {
+    alert('Hãy kể thêm về ký ức của bạn — càng chi tiết AI càng lọc được nhiều điểm hay!');
+    return;
+  }
+
+  const btn = document.getElementById('extractBtn');
+  btn.textContent = '⏳ Đang phân tích...';
+  btn.disabled = true;
+
+  const apiKey = localStorage.getItem('race_api_key') || '';
+
+  // Nếu có API key → dùng Claude thật
+  if (apiKey) {
+    try {
+      const res = await fetch('https://api.anthropic.com/v1/messages', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-api-key': apiKey,
+          'anthropic-version': '2023-06-01',
+          'anthropic-dangerous-direct-browser-access': 'true'
+        },
+        body: JSON.stringify({
+          model: 'claude-sonnet-4-20250514',
+          max_tokens: 800,
+          messages: [{
+            role: 'user',
+            content: `Bạn là AI phân tích ký ức race chạy bộ. Đọc đoạn văn sau và lọc ra các key insights theo đúng format JSON này:
+
+{
+  "scenery": ["mô tả cảnh quan, màu sắc, không gian đặc biệt"],
+  "companions": ["thông tin về bạn đồng hành: BIB, ngoại hình, tính cách"],
+  "gear_spotted": ["gear của người khác: brand, model, màu sắc, nhận xét"],
+  "emotions": ["cảm xúc chính trong đoạn này"],
+  "terrain": ["đặc điểm địa hình: dốc, đường, điều kiện"],
+  "memorable_quote": "một câu ngắn gọn tóm tắt khoảnh khắc này (< 20 từ)",
+  "color_palette": ["2-3 màu chủ đạo của ký ức này theo mô tả"],
+  "community_tags": ["các tag dữ liệu cộng đồng: #T8 #Kailas #Shokz #canhdonglua ..."]
+}
+
+Chỉ trả về JSON thuần, không giải thích.
+
+Đoạn văn:
+${text}`
+          }]
+        })
+      });
+      const data = await res.json();
+      const jsonText = data.content[0].text;
+      const insights = JSON.parse(jsonText.replace(/```json|```/g, '').trim());
+      renderInsights(insights);
+    } catch(e) {
+      renderInsightsMock(text);
+    }
+  } else {
+    // Mock extraction nếu không có API key
+    await new Promise(r => setTimeout(r, 1200));
+    renderInsightsMock(text);
+  }
+
+  btn.textContent = '✦ AI lọc key insights từ ký ức';
+  btn.disabled = false;
+}
+
+function renderInsightsMock(text) {
+  // Pattern matching đơn giản
+  const insights = {
+    scenery: [],
+    companions: [],
+    gear_spotted: [],
+    emotions: [],
+    terrain: [],
+    memorable_quote: '',
+    color_palette: [],
+    community_tags: []
+  };
+
+  // Scenery detection
+  if (text.includes('cánh đồng lúa') || text.includes('đồng lúa')) insights.scenery.push('Cánh đồng lúa xanh mướt bát ngát');
+  if (text.includes('sương')) insights.scenery.push('Sương mù bao phủ');
+  if (text.includes('thung lũng')) insights.scenery.push('Nhìn xuống thung lũng');
+  if (text.includes('suối')) insights.scenery.push('Lội suối');
+  if (text.includes('biển lúa')) insights.scenery.push('Biển lúa mênh mông');
+  if (insights.scenery.length === 0) insights.scenery.push('Cảnh quan thiên nhiên đặc sắc');
+
+  // Companion detection
+  const bibMatch = text.match(/BIB\s*(\d+)/i);
+  if (bibMatch) insights.companions.push(`BIB #${bibMatch[1]}`);
+  if (text.includes('xinh')) insights.companions.push('Bạn đồng hành dễ thương');
+  if (text.includes('tốt bụng')) insights.companions.push('Tính cách tốt bụng, cởi mở');
+  if (text.includes('khỏe')) insights.companions.push('Chạy khỏe, pace tốt');
+
+  // Gear detection
+  const gearKeywords = [
+    {kw:'T8', tag:'#QueT8'},
+    {kw:'Kailas', tag:'#KailasVest'},
+    {kw:'Garmin', tag:'#Garmin'},
+    {kw:'Shokz', tag:'#ShokzBoneConduction'},
+    {kw:'tai nghe truyền xương', tag:'#BoneConductionHeadphones'},
+    {kw:'gậy', tag:'#TrailPoles'},
+    {kw:'vest', tag:'#RunningVest'},
+  ];
+  gearKeywords.forEach(g => {
+    if (text.toLowerCase().includes(g.kw.toLowerCase())) {
+      insights.gear_spotted.push(g.kw);
+      insights.community_tags.push(g.tag);
+    }
+  });
+
+  // Màu sắc
+  if (text.includes('hồng')) { insights.color_palette.push('#FF80AB — Hồng T8'); insights.community_tags.push('#MauHong'); }
+  if (text.includes('xanh')) { insights.color_palette.push('#4CAF50 — Xanh lúa'); }
+  if (text.includes('xanh lá') || text.includes('xanh mướt')) insights.color_palette.push('#66BB6A — Xanh mướt');
+  if (insights.color_palette.length === 0) insights.color_palette.push('#78909C — Xám thiên nhiên');
+
+  // Emotions
+  if (text.includes('quên') || text.includes('xúc tác')) insights.emotions.push('Tập trung, tạo động lực mới');
+  if (text.includes('mạnh dạn')) insights.emotions.push('Tự tin kết nối');
+  if (text.includes('đẹp')) insights.emotions.push('Cảm giác thẩm mỹ, ngưỡng mộ');
+  if (insights.emotions.length === 0) insights.emotions.push('Tích cực, hứng khởi');
+
+  // Terrain
+  if (text.includes('dốc thoải')) insights.terrain.push('Dốc thoải, không cần gậy');
+  if (text.includes('đồng bằng') || text.includes('phẳng')) insights.terrain.push('Đường bằng phẳng');
+  if (text.includes('đường mòn')) insights.terrain.push('Đường mòn');
+  if (insights.terrain.length === 0) insights.terrain.push('Địa hình trail hỗn hợp');
+
+  // Community tags
+  insights.community_tags.push('#CanhDongLua', '#GặpBạnChạy', '#TrailVietnam');
+
+  // Quote
+  const quoteParts = [];
+  if (insights.companions.length > 0) quoteParts.push('gặp bạn đồng hành đáng nhớ');
+  if (insights.scenery.length > 0) quoteParts.push('giữa ' + insights.scenery[0].toLowerCase());
+  insights.memorable_quote = quoteParts.length > 0
+    ? `Khoảnh khắc ${quoteParts.join(', ')} — đủ để quên đi những km còn lại`
+    : 'Một khoảnh khắc đủ để làm nên toàn bộ race';
+
+  renderInsights(insights);
+}
+
+function renderInsights(insights) {
+  const panel = document.getElementById('insightsPanel');
+  const content = document.getElementById('insightsContent');
+  panel.style.display = 'block';
+
+  const sections = [
+    { key: 'scenery',       icon: '🌿', label: 'Cảnh quan & không gian' },
+    { key: 'companions',    icon: '🏃', label: 'Bạn đồng hành' },
+    { key: 'gear_spotted',  icon: '⚙️', label: 'Gear nhận diện' },
+    { key: 'emotions',      icon: '❤️', label: 'Cảm xúc chủ đạo' },
+    { key: 'terrain',       icon: '🗺️', label: 'Địa hình' },
+    { key: 'color_palette', icon: '🎨', label: 'Bảng màu ký ức' },
+    { key: 'community_tags',icon: '#',  label: 'Tags cộng đồng' },
+  ];
+
+  let html = '';
+
+  // Memorable quote
+  if (insights.memorable_quote) {
+    html += `<div style="padding:10px 14px;background:rgba(160,132,255,.08);border-left:3px solid #a084ff;border-radius:0 8px 8px 0;font-style:italic;font-size:12px;line-height:1.6;margin-bottom:12px;color:#c4b8ff">"${insights.memorable_quote}"</div>`;
+  }
+
+  // Grid of sections
+  html += '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:8px">';
+  sections.forEach(sec => {
+    const items = insights[sec.key];
+    if (!items || !items.length) return;
+    html += `<div style="background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06);border-radius:8px;padding:10px 12px">
+      <div style="font-size:9px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--muted);margin-bottom:7px">${sec.icon} ${sec.label}</div>
+      ${items.map(item => `<div style="font-size:11px;line-height:1.6;padding:2px 0;border-bottom:1px solid rgba(255,255,255,.04)">${item}</div>`).join('')}
+    </div>`;
+  });
+  html += '</div>';
+
+  // Data value note
+  html += `<div style="margin-top:10px;font-size:9px;color:var(--muted);line-height:1.6">
+    💡 <strong style="color:#a084ff">Giá trị dữ liệu cộng đồng:</strong>
+    Khi 100 VĐV cùng race đều kể ký ức, AI có thể trả lời:
+    "Bao nhiêu người nhắc đến chiếc quần T8 màu hồng?"
+    "Đoạn nào trong race tạo ra nhiều cảm xúc nhất?"
+    "Gear nào được nhắc đến nhiều nhất tại race này?"
+  </div>`;
+
+  content.innerHTML = html;
+
+  // Scroll to show it
+  panel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+// ─── UPDATE renderCard to show AI-extracted quote nicely ─────────
+const _origRenderCard = renderCard;
+
+document.querySelectorAll('.style-card').forEach(c => c.classList.remove('on'));
+  el.classList.add('on');
+  selectedStyle = el.dataset.style;
+}
+function pickColor(el) {
+  document.querySelectorAll('.color-chip').forEach(c => c.classList.remove('on'));
+  el.classList.add('on');
+  selectedColor = el.dataset.color;
+}
+
+// ─── CONTENT GENERATORS ───────────────────────────────────────────
+function getStyleContent(style, data) {
+  const { name, km, elev, time, race, location, memory } = data;
+  const kcal = Math.round(km * 80 + elev * 0.15);
+  const fat = (kcal / 9000 * 1000).toFixed(0); // grams of fat
+  const fatBurgers = (kcal / 300).toFixed(1);
+  const elevFloors = Math.round(elev / 3);
+  const elevEiffel = (elev / 330).toFixed(1);
+  const distEarth = (km / 40075 * 100).toFixed(3);
+  const sweat = Math.round(km * 0.8);
+
+  const styles = {
+    adventure: {
+      eyebrow: '🧭 NHẬT KÝ THÁM HIỂM',
+      heroTitle: race.toUpperCase(),
+      heroSub: `${location} · ${data.date}`,
+      tags: ['TRAIL', `${km}KM`, 'CHINH PHỤC'],
+      soulIcon: '⭐',
+      soulQuote: `"${name} đã để lại một ngôi sao trên bản đồ ${location} —\nngôi sao ấy sẽ ở đó mãi mãi."`,
+      soulSub: `${race} · ${data.date}`,
+      funFacts: [
+        {icon:'🔥', n:`${kcal.toLocaleString()} kcal`, text:`Năng lượng đốt cháy`, punchline:`Tương đương ${fatBurgers} cái bánh burger — nhưng ngon hơn nhiều`},
+        {icon:'🧈', n:`${fat}g`, text:`Mỡ cơ thể tiêu hao`, punchline:`Bằng ${(fat/10).toFixed(0)} thỏi bơ Anchor. Cơ thể bạn tự làm xúc xích!`},
+        {icon:'🏙️', n:`${elevFloors} tầng`, text:`Tổng độ leo tương đương`, punchline:`Như leo thang bộ ${(elevFloors/40).toFixed(0)} tòa nhà 40 tầng liên tiếp`},
+        {icon:'🌍', n:`${distEarth}%`, text:`Vòng quanh trái đất`, punchline:`Bạn đã chạy ${distEarth}% chu vi địa cầu. Tiếp tục!`},
+        {icon:'💧', n:`~${sweat}ml`, text:`Lượng mồ hôi ước tính`, punchline:`Đủ pha ${Math.round(sweat/250)} ly trà sữa size lớn`},
+        {icon:'🗻', n:`×${elevEiffel}`, text:`Tháp Eiffel chồng lên nhau`, punchline:`Độ leo ${elev}m = ${elevEiffel} lần chiều cao Tháp Eiffel`},
+      ],
+      mapLabel: `📍 Ngôi sao ký ức của ${name} tại ${location}`,
+    },
+    war: {
+      eyebrow: '⚔️ BÁO CÁO CHIẾN TRƯỜNG',
+      heroTitle: race.toUpperCase(),
+      heroSub: `TRẬN ĐỊA ${location.toUpperCase()} · ${data.date}`,
+      tags: ['CHIẾN BINH', `${km}KM`, 'VINH QUANG'],
+      soulIcon: '🔥',
+      soulQuote: `"Trong ${time}, ${name} đã chiến đấu qua ${km}km trận địa —\nkhông một bước lùi."`,
+      soulSub: `Chiến binh HLRace · ${race}`,
+      funFacts: [
+        {icon:'⚡', n:`${kcal.toLocaleString()} kcal`, text:`Năng lượng chiến đấu tiêu hao`, punchline:`Đủ để chiến ${Math.round(kcal/8)} trận đấu FIFA liên tục`},
+        {icon:'💀', n:`${fat}g`, text:`Mỡ địch tiêu diệt (trong cơ thể)`, punchline:`Tuyên chiến với chính mình — và thắng`},
+        {icon:'🏔️', n:`${elev}m`, text:`Độ cao chinh phục`, punchline:`Tương đương leo ${elevFloors} tầng nhà trong một ngày`},
+        {icon:'🩸', n:`~${sweat}ml`, text:`Nước trong người đổ ra`, punchline:`Chiến binh thật sự đổ mồ hôi, không đổ lệ`},
+        {icon:'🎖️', n:`Top ∞%`, text:`Người dám thử`, punchline:`99% người nghe trail 100K sẽ lắc đầu. Bạn không phải số đó.`},
+        {icon:'🌐', n:`${distEarth}%`, text:`Của chu vi trái đất`, punchline:`Địa cầu chưa bao giờ thấy ${name} từ góc này`},
+      ],
+      mapLabel: `⚔️ Trận địa ${name} đã chinh phục tại ${location}`,
+    },
+    science: {
+      eyebrow: '🔬 BÁO CÁO KHOA HỌC',
+      heroTitle: race.toUpperCase(),
+      heroSub: `THỰC NGHIỆM TẠI ${location.toUpperCase()} · ${data.date}`,
+      tags: ['TRAIL', `${km}KM`, 'PEER-REVIEWED'],
+      soulIcon: '🔬',
+      soulQuote: `"Nghiên cứu sinh ${name} đã hoàn thành thực nghiệm ${km}km\nvới hệ số thành công = 100%"`,
+      soulSub: `Tạp chí HLRace Journal · Impact Factor: Vô cực`,
+      funFacts: [
+        {icon:'⚡', n:`${kcal.toLocaleString()} kcal`, text:`Năng lượng tiêu hao (đo bằng nhiệt lượng kế)`, punchline:`Đủ thắp sáng bóng đèn 60W trong ${Math.round(kcal*4184/60/3600)} tiếng`},
+        {icon:'🧬', n:`${(km*1500).toLocaleString()} bước`, text:`Chu kỳ co-duỗi cơ ước tính`, punchline:`Mỗi bước = 2 triệu tế bào thần kinh kích hoạt`},
+        {icon:'🏗️', n:`${elev}m`, text:`Công thực hiện chống trọng lực`, punchline:`W = mgh = ${Math.round(65*9.8*elev)} Joule ≈ ${(65*9.8*elev/3600000).toFixed(3)} kWh`},
+        {icon:'💧', n:`${sweat}ml`, text:`Lượng chất lỏng trao đổi`, punchline:`pH mồ hôi = 4.5-7.5 · NaCl nồng độ 0.9% · Vị mặn`},
+        {icon:'🌡️', n:`~39°C`, text:`Nhiệt độ cơ thể lúc đỉnh điểm`, punchline:`Cao hơn ngưỡng sốt y tế 0.5°C. Cơ thể bạn là lò phản ứng.`},
+        {icon:'🧠', n:`×6`, text:`Endorphin tăng so với lúc nghỉ`, punchline:`Còn gọi là "runner's high" — nghiện hợp pháp`},
+      ],
+      mapLabel: `📍 Địa điểm thực nghiệm: ${location}`,
+    },
+    myth: {
+      eyebrow: '🏛️ SỬ THI HIỆN ĐẠI',
+      heroTitle: race.toUpperCase(),
+      heroSub: `CUỘC THỬ THÁCH TẠI ${location.toUpperCase()}`,
+      tags: ['HUYỀN THOẠI', `${km}KM`, 'BẤT TỬ'],
+      soulIcon: '⭐',
+      soulQuote: `"Và khi các vị thần nhìn xuống ${location},\nhọ thấy ${name} — và gật đầu."`,
+      soulSub: `Được khắc vào biên niên sử HLRace · ${data.date}`,
+      funFacts: [
+        {icon:'🏛️', n:`${km}km`, text:`Hành trình của người anh hùng`, punchline:`Odysseus đi 10 năm. Bạn làm trong ${time}.`},
+        {icon:'⚡', n:`${kcal.toLocaleString()} kcal`, text:`Ngọn lửa Prometheus đốt cháy`, punchline:`Lửa trời đã thắp sáng con đường ${km}km này`},
+        {icon:'🌋', n:`${elev}m`, text:`Olympus đã chinh phục`, punchline:`Đỉnh Olympus 2.917m. Bạn leo ${elev}m — không kém`},
+        {icon:'💫', n:'Duy nhất', text:`Linh hồn để lại tại ${location}`, punchline:`Mỗi race là một đời sống. Bạn đã sống đời này trọn vẹn.`},
+        {icon:'🦅', n:`${Math.round(km/time.replace(/[^0-9]/g,''))}km/h`, text:`Tốc độ trung bình ước tính`, punchline:`Thấp hơn chim ưng nhưng bạn không có cánh`},
+        {icon:'⭐', n:'∞', text:`Ký ức bất tử`, punchline:`Không AI, không dữ liệu nào xoá được khoảnh khắc này`},
+      ],
+      mapLabel: `⭐ Nơi ${name} trở thành huyền thoại`,
+    },
+    sport: {
+      eyebrow: '🏆 RACE ANALYTICS',
+      heroTitle: race.toUpperCase(),
+      heroSub: `SEASON 2026 · ${location.toUpperCase()}`,
+      tags: ['FINISHER', `${km}KM`, `${time.toUpperCase()}`],
+      soulIcon: '🏆',
+      soulQuote: `"${name} hoàn thành ${km}km trong ${time} —\ncùng với chưa đến 0.1% dân số Việt Nam từng làm điều này."`,
+      soulSub: `HLRace Performance Analytics · ${data.date}`,
+      funFacts: [
+        {icon:'⚡', n:`${kcal.toLocaleString()}`, text:`Calories burned`, punchline:`= ${Math.round(kcal/2000)} ngày ăn bình thường dồn vào ${time}`},
+        {icon:'📈', n:`${Math.round(elev/km)}m/km`, text:`Độ dốc trung bình`, punchline:`Pro runners tập 200m/km. Bạn vượt đó.`},
+        {icon:'💪', n:`${(km*1500).toLocaleString()}`, text:`Estimated steps`, punchline:`Smartwatch bình thường recommend 10,000/ngày. Bạn làm gấp ${Math.round(km*1.5)} lần.`},
+        {icon:'🩸', n:`${sweat * 0.7}mg`, text:`Natri mất qua mồ hôi`, punchline:`Lý do bạn thèm muối sau race`},
+        {icon:'📊', n:`Top tier`, text:`Performance level`, punchline:`Trail finisher = top ${Math.round(100000/50000)}% dân số Việt Nam`},
+        {icon:'🔄', n:`${km*2} chân`, text:`Số lần đổi chân khi chạy`, punchline:`Mỗi km = 2 bước × 1,500. Chân bạn làm việc như máy.`},
+      ],
+      mapLabel: `📍 Race location: ${location}`,
+    },
+    journey: {
+      eyebrow: '🌙 HÀNH TRÌNH NỘI TÂM',
+      heroTitle: race.toUpperCase(),
+      heroSub: `${location} · Một ngày thay đổi`,
+      tags: ['CHẠY', 'HIỆN DIỆN', 'TỰ DO'],
+      soulIcon: '🌙',
+      soulQuote: `"Không phải đôi chân chạy race —\nmà là tâm trí ${name} đã chọn tiếp tục."`,
+      soulSub: `Nhật ký HLRace · ${data.date}`,
+      funFacts: [
+        {icon:'🌊', n:`${time}`, text:`Khoảng thời gian hiện diện hoàn toàn`, punchline:`Không email, không tin tức — chỉ có đất, bầu trời và bước chân`},
+        {icon:'🔮', n:`${km}km`, text:`Khoảng cách từ con người cũ đến mới`, punchline:`Mỗi km là một phiên bản bạn bỏ lại phía sau`},
+        {icon:'🌱', n:`${kcal.toLocaleString()} kcal`, text:`Năng lượng nạp vào hành trình`, punchline:`Cơ thể đã cho tâm trí mượn toàn bộ để hoàn thành`},
+        {icon:'💭', n:`~${Math.round(km*8)} phút`, text:`Thời gian trong trạng thái flow`, punchline:`Khoa học gọi là flow state. Runners gọi là lý do tồn tại.`},
+        {icon:'🌍', n:`${distEarth}%`, text:`Của thế giới bạn đã chạm`, punchline:`Nhỏ nhưng thật — và đó là điều duy nhất quan trọng`},
+        {icon:'❤️', n:'1 ngày', text:`Nhưng là 1 ngày bạn thật sự sống`, punchline:`"The race is always bigger than any single runner" — nhưng runner luôn lớn hơn nỗi sợ hãi."`},
+      ],
+      mapLabel: `🌙 Nơi ${name} tìm thấy chính mình`,
+    },
+  };
+  return styles[style] || styles.adventure;
+}
+
+// ─── GENERATE ──────────────────────────────────────────────────────
+async function generateInfographic() {
+  const data = {
+    name: document.getElementById('runnerName').value || 'Runner',
+    race: document.getElementById('raceName').value || 'Ultra Trail',
+    km: parseFloat(document.getElementById('raceKm').value) || 25,
+    elev: parseFloat(document.getElementById('elevGain').value) || 1800,
+    time: document.getElementById('finishTime').value || '6h 30m',
+    location: document.getElementById('raceLocation').value || 'Việt Nam',
+    date: document.getElementById('raceDate').value || '2026',
+    memory: document.getElementById('raceMemory').value || '',
+  };
+
+  document.getElementById('genLoading').style.display = 'block';
+  document.querySelector('.gen-btn').style.display = 'none';
+
+  const loadMsgs = ['PHÂN TÍCH DỮ LIỆU RACE...','TÍNH TOÁN NỖI ĐAU...','CHUYỂN ĐỔI MỒ HÔI THÀNH NGHỆ THUẬT...','ĐÓNG KHUNG KÝ ỨC...','GẦN XONG RỒI...'];
+  let i = 0;
+  const interval = setInterval(() => {
+    document.getElementById('loadingMsg').textContent = loadMsgs[i++ % loadMsgs.length];
+  }, 600);
+
+  await new Promise(r => setTimeout(r, 2800));
+  clearInterval(interval);
+  renderCard(data);
+}
+
+function renderCard(data) {
+  const content = getStyleContent(selectedStyle, data);
+  const { km, elev, time, name, race, location, memory } = data;
+  const kcal = Math.round(km * 80 + elev * 0.15);
+  const elevFloors = Math.round(elev / 3);
+  const diffPct = Math.min(elev / km / 3 * 100, 100);
+
+  const card = document.getElementById('raceCard');
+  card.className = `race-card theme-${selectedStyle} ${selectedColor !== 'default' ? 'color-'+selectedColor : ''}`;
+
+  card.innerHTML = `
+    <!-- HERO -->
+    <div class="rc-hero">
+      <div class="rc-noise"></div>
+      <div class="rc-hero-content">
+        <div class="rc-eyebrow">${content.eyebrow}</div>
+        <div class="rc-title">${content.heroTitle}</div>
+        <div class="rc-subtitle">${content.heroSub}</div>
+        <div class="rc-tags">
+          ${content.tags.map(t=>`<span class="rc-tag">${t}</span>`).join('')}
+          <span class="rc-tag">✓ FINISHER</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="rc-body">
+
+      <!-- THỐNG KÊ CHÍNH -->
+      <div class="rc-section">
+        <div class="rc-sec-title">Thống kê race</div>
+        <div class="stat-grid">
+          <div class="stat-box">
+            <div class="sb-icon">🏃</div>
+            <div class="sb-value">${km}km</div>
+            <div class="sb-label">Cự ly</div>
+          </div>
+          <div class="stat-box">
+            <div class="sb-icon">⏱️</div>
+            <div class="sb-value">${time}</div>
+            <div class="sb-label">Thời gian</div>
+          </div>
+          <div class="stat-box">
+            <div class="sb-icon">📈</div>
+            <div class="sb-value">${elev}m</div>
+            <div class="sb-label">Độ leo</div>
+            <div class="sb-subtext">≈ ${elevFloors} tầng nhà</div>
+          </div>
+          <div class="stat-box">
+            <div class="sb-icon">🔥</div>
+            <div class="sb-value">${kcal.toLocaleString()}</div>
+            <div class="sb-label">kcal đốt cháy</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ELEVATION VISUAL -->
+      <div class="rc-section">
+        <div class="rc-sec-title">Độ khó địa hình</div>
+        <div style="display:flex;gap:8px;align-items:flex-end;height:80px;padding:8px;background:rgba(255,255,255,.03);border-radius:10px;border:1px solid rgba(255,255,255,.06)">
+          ${generateElevBars(km, elev)}
+        </div>
+        <div class="terrain-row" style="margin-top:10px">
+          ${['Trail','Kỹ thuật','Đêm','Dốc cao','Thiên nhiên'].map((t,i)=>`
+            <span class="terrain-tag" style="opacity:${0.5+i*0.12}">${['🌲','⚡','🌙','🏔️','🌿'][i]} ${t}</span>
+          `).join('')}
+        </div>
+      </div>
+
+      <!-- FUN FACTS -->
+      <div class="rc-section">
+        <div class="rc-sec-title">Dữ liệu được dịch sang đời thường</div>
+        <div class="fun-grid">
+          ${content.funFacts.map(f => `
+            <div class="fun-card">
+              <div class="fun-icon">${f.icon}</div>
+              <div class="fun-number">${f.n}</div>
+              <div class="fun-text">${f.text}</div>
+              <div class="fun-punchline">${f.punchline}</div>
+            </div>
+          `).join('')}
+        </div>
+      </div>
+
+      <!-- KHOẢNH KHẮC NHỚ NHẤT -->
+      ${memory ? `
+      <div class="rc-section">
+        <div class="rc-sec-title">Khoảnh khắc không bao giờ quên</div>
+        <div style="padding:16px 20px;background:rgba(255,255,255,.03);border-radius:10px;border-left:3px solid currentColor;font-style:italic;font-size:13px;line-height:1.7;opacity:.8">"${memory}"</div>
+      </div>
+      ` : ''}
+
+      <!-- BẢN ĐỒ KÝ ỨC -->
+      <div class="rc-section">
+        <div class="rc-sec-title">Ngôi sao trên bản đồ</div>
+        <div class="map-stub">
+          <svg class="map-path" viewBox="0 0 600 140" preserveAspectRatio="xMidYMid slice">
+            ${generateMapPath()}
+          </svg>
+          <div class="map-pin" style="top:40%;left:48%">⭐</div>
+          <div style="position:absolute;bottom:10px;left:50%;transform:translateX(-50%);font-family:'DM Mono';font-size:8px;letter-spacing:1px;opacity:.5;white-space:nowrap">${content.mapLabel}</div>
+        </div>
+      </div>
+
+      <!-- SOUL BLOCK -->
+      <div class="soul-block">
+        <span class="soul-star">${content.soulIcon}</span>
+        <div class="soul-quote">${content.soulQuote}</div>
+        <div class="soul-sub">${content.soulSub}</div>
+      </div>
+
+    </div>
+
+    <!-- FOOTER -->
+    <div class="rc-footer">
+      <span>HLRace · lehoang81@gmail.com · 0904 028 281</span>
+      <span>${name} · ${race} · ${data.date}</span>
+    </div>
+  `;
+
+  document.getElementById('genLoading').style.display = 'none';
+  document.getElementById('setupScreen').style.display = 'none';
+  document.getElementById('infoScreen').style.display = 'block';
+
+  // Animate stats
+  setTimeout(() => animateNumbers(), 300);
+}
+
+function generateElevBars(km, elev) {
+  const bars = Math.min(Math.floor(km / 2), 30);
+  const heights = [];
+  let peak = 30;
+  for (let i = 0; i < bars; i++) {
+    const progress = i / bars;
+    const wave = Math.sin(progress * Math.PI * 2.5) * 0.3 + Math.sin(progress * Math.PI) * 0.7;
+    heights.push(Math.max(8, Math.round(wave * 85 + 10)));
+  }
+  const max = Math.max(...heights);
+  return heights.map((h, i) => {
+    const pct = h / max * 100;
+    const opacity = 0.3 + (pct / 100) * 0.7;
+    return `<div style="flex:1;background:currentColor;opacity:${opacity.toFixed(2)};border-radius:3px 3px 0 0;height:${pct}%;min-height:4px;transition:height 1s cubic-bezier(.23,1,.32,1);transition-delay:${i*20}ms"></div>`;
+  }).join('');
+}
+
+function generateMapPath() {
+  const paths = [
+    `<path d="M50,80 Q100,40 150,60 Q200,80 250,50 Q300,20 350,55 Q400,90 450,65 Q500,40 550,70" fill="none" stroke="currentColor" stroke-width="2" opacity="0.15" stroke-dasharray="4,4"/>
+     <path d="M50,100 Q150,90 250,95 Q350,100 450,88 Q520,80 550,90" fill="none" stroke="currentColor" stroke-width="1.5" opacity="0.1"/>
+     <path d="M80,70 Q160,30 240,55 Q320,80 380,45 Q440,15 520,50" fill="none" stroke="currentColor" stroke-width="3" opacity="0.25"/>`,
+  ];
+  return paths[0];
+}
+
+function animateNumbers() {
+  document.querySelectorAll('.sb-value, .fun-number').forEach(el => {
+    el.style.opacity = '0';
+    el.style.transform = 'translateY(10px)';
+    el.style.transition = 'all 0.4s ease';
+    setTimeout(() => {
+      el.style.opacity = '1';
+      el.style.transform = 'translateY(0)';
+    }, Math.random() * 500);
+  });
+}
+
+function showSetup() {
+  document.getElementById('infoScreen').style.display = 'none';
+  document.getElementById('setupScreen').style.display = 'block';
+  document.querySelector('.gen-btn').style.display = 'block';
+}
+
+async function downloadCard() {
+  const card = document.getElementById('raceCard');
+  // Simple screenshot using browser print
+  const btn = document.querySelector('.info-actions');
+  btn.style.display = 'none';
+  window.print();
+  btn.style.display = 'flex';
+}
+
+function shareCard() {
+  if (navigator.share) {
+    navigator.share({ title: 'Race Infographic', text: 'Tôi vừa hoàn thành race này!', url: window.location.href });
+  } else {
+    navigator.clipboard.writeText(window.location.href);
+    alert('✅ Đã copy link! Chia sẻ cho bạn bè.');
+  }
+}
+
+// CSS color override based on style
+function updateThemeAccent() {
+  const styleColors = {adventure:'#FF5C35',war:'#FF4400',science:'#00E5C4',myth:'#A084FF',sport:'#FFD060',journey:'#B478FF'};
+  document.documentElement.style.setProperty('--accent', styleColors[selectedStyle] || '#FFD060');
+}
+
+// ─── AI INSIGHTS EXTRACTOR ──────────────────────────────────────
+async function extractKeyInsights() {
+  const text = document.getElementById('raceMemory').value.trim();
+  if (!text || text.length < 50) {
+    alert('Hãy kể thêm về ký ức của bạn — càng chi tiết AI càng lọc được nhiều điểm hay!');
+    return;
+  }
+
+  const btn = document.getElementById('extractBtn');
+  btn.textContent = '⏳ Đang phân tích...';
+  btn.disabled = true;
+
+  const apiKey = localStorage.getItem('race_api_key') || '';
+
+  // Nếu có API key → dùng Claude thật
+  if (apiKey) {
+    try {
+      const res = await fetch('https://api.anthropic.com/v1/messages', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-api-key': apiKey,
+          'anthropic-version': '2023-06-01',
+          'anthropic-dangerous-direct-browser-access': 'true'
+        },
+        body: JSON.stringify({
+          model: 'claude-sonnet-4-20250514',
+          max_tokens: 800,
+          messages: [{
+            role: 'user',
+            content: `Bạn là AI phân tích ký ức race chạy bộ. Đọc đoạn văn sau và lọc ra các key insights theo đúng format JSON này:
+
+{
+  "scenery": ["mô tả cảnh quan, màu sắc, không gian đặc biệt"],
+  "companions": ["thông tin về bạn đồng hành: BIB, ngoại hình, tính cách"],
+  "gear_spotted": ["gear của người khác: brand, model, màu sắc, nhận xét"],
+  "emotions": ["cảm xúc chính trong đoạn này"],
+  "terrain": ["đặc điểm địa hình: dốc, đường, điều kiện"],
+  "memorable_quote": "một câu ngắn gọn tóm tắt khoảnh khắc này (< 20 từ)",
+  "color_palette": ["2-3 màu chủ đạo của ký ức này theo mô tả"],
+  "community_tags": ["các tag dữ liệu cộng đồng: #T8 #Kailas #Shokz #canhdonglua ..."]
+}
+
+Chỉ trả về JSON thuần, không giải thích.
+
+Đoạn văn:
+${text}`
+          }]
+        })
+      });
+      const data = await res.json();
+      const jsonText = data.content[0].text;
+      const insights = JSON.parse(jsonText.replace(/```json|```/g, '').trim());
+      renderInsights(insights);
+    } catch(e) {
+      renderInsightsMock(text);
+    }
+  } else {
+    // Mock extraction nếu không có API key
+    await new Promise(r => setTimeout(r, 1200));
+    renderInsightsMock(text);
+  }
+
+  btn.textContent = '✦ AI lọc key insights từ ký ức';
+  btn.disabled = false;
+}
+
+function renderInsightsMock(text) {
+  // Pattern matching đơn giản
+  const insights = {
+    scenery: [],
+    companions: [],
+    gear_spotted: [],
+    emotions: [],
+    terrain: [],
+    memorable_quote: '',
+    color_palette: [],
+    community_tags: []
+  };
+
+  // Scenery detection
+  if (text.includes('cánh đồng lúa') || text.includes('đồng lúa')) insights.scenery.push('Cánh đồng lúa xanh mướt bát ngát');
+  if (text.includes('sương')) insights.scenery.push('Sương mù bao phủ');
+  if (text.includes('thung lũng')) insights.scenery.push('Nhìn xuống thung lũng');
+  if (text.includes('suối')) insights.scenery.push('Lội suối');
+  if (text.includes('biển lúa')) insights.scenery.push('Biển lúa mênh mông');
+  if (insights.scenery.length === 0) insights.scenery.push('Cảnh quan thiên nhiên đặc sắc');
+
+  // Companion detection
+  const bibMatch = text.match(/BIB\s*(\d+)/i);
+  if (bibMatch) insights.companions.push(`BIB #${bibMatch[1]}`);
+  if (text.includes('xinh')) insights.companions.push('Bạn đồng hành dễ thương');
+  if (text.includes('tốt bụng')) insights.companions.push('Tính cách tốt bụng, cởi mở');
+  if (text.includes('khỏe')) insights.companions.push('Chạy khỏe, pace tốt');
+
+  // Gear detection
+  const gearKeywords = [
+    {kw:'T8', tag:'#QueT8'},
+    {kw:'Kailas', tag:'#KailasVest'},
+    {kw:'Garmin', tag:'#Garmin'},
+    {kw:'Shokz', tag:'#ShokzBoneConduction'},
+    {kw:'tai nghe truyền xương', tag:'#BoneConductionHeadphones'},
+    {kw:'gậy', tag:'#TrailPoles'},
+    {kw:'vest', tag:'#RunningVest'},
+  ];
+  gearKeywords.forEach(g => {
+    if (text.toLowerCase().includes(g.kw.toLowerCase())) {
+      insights.gear_spotted.push(g.kw);
+      insights.community_tags.push(g.tag);
+    }
+  });
+
+  // Màu sắc
+  if (text.includes('hồng')) { insights.color_palette.push('#FF80AB — Hồng T8'); insights.community_tags.push('#MauHong'); }
+  if (text.includes('xanh')) { insights.color_palette.push('#4CAF50 — Xanh lúa'); }
+  if (text.includes('xanh lá') || text.includes('xanh mướt')) insights.color_palette.push('#66BB6A — Xanh mướt');
+  if (insights.color_palette.length === 0) insights.color_palette.push('#78909C — Xám thiên nhiên');
+
+  // Emotions
+  if (text.includes('quên') || text.includes('xúc tác')) insights.emotions.push('Tập trung, tạo động lực mới');
+  if (text.includes('mạnh dạn')) insights.emotions.push('Tự tin kết nối');
+  if (text.includes('đẹp')) insights.emotions.push('Cảm giác thẩm mỹ, ngưỡng mộ');
+  if (insights.emotions.length === 0) insights.emotions.push('Tích cực, hứng khởi');
+
+  // Terrain
+  if (text.includes('dốc thoải')) insights.terrain.push('Dốc thoải, không cần gậy');
+  if (text.includes('đồng bằng') || text.includes('phẳng')) insights.terrain.push('Đường bằng phẳng');
+  if (text.includes('đường mòn')) insights.terrain.push('Đường mòn');
+  if (insights.terrain.length === 0) insights.terrain.push('Địa hình trail hỗn hợp');
+
+  // Community tags
+  insights.community_tags.push('#CanhDongLua', '#GặpBạnChạy', '#TrailVietnam');
+
+  // Quote
+  const quoteParts = [];
+  if (insights.companions.length > 0) quoteParts.push('gặp bạn đồng hành đáng nhớ');
+  if (insights.scenery.length > 0) quoteParts.push('giữa ' + insights.scenery[0].toLowerCase());
+  insights.memorable_quote = quoteParts.length > 0
+    ? `Khoảnh khắc ${quoteParts.join(', ')} — đủ để quên đi những km còn lại`
+    : 'Một khoảnh khắc đủ để làm nên toàn bộ race';
+
+  renderInsights(insights);
+}
+
+function renderInsights(insights) {
+  const panel = document.getElementById('insightsPanel');
+  const content = document.getElementById('insightsContent');
+  panel.style.display = 'block';
+
+  const sections = [
+    { key: 'scenery',       icon: '🌿', label: 'Cảnh quan & không gian' },
+    { key: 'companions',    icon: '🏃', label: 'Bạn đồng hành' },
+    { key: 'gear_spotted',  icon: '⚙️', label: 'Gear nhận diện' },
+    { key: 'emotions',      icon: '❤️', label: 'Cảm xúc chủ đạo' },
+    { key: 'terrain',       icon: '🗺️', label: 'Địa hình' },
+    { key: 'color_palette', icon: '🎨', label: 'Bảng màu ký ức' },
+    { key: 'community_tags',icon: '#',  label: 'Tags cộng đồng' },
+  ];
+
+  let html = '';
+
+  // Memorable quote
+  if (insights.memorable_quote) {
+    html += `<div style="padding:10px 14px;background:rgba(160,132,255,.08);border-left:3px solid #a084ff;border-radius:0 8px 8px 0;font-style:italic;font-size:12px;line-height:1.6;margin-bottom:12px;color:#c4b8ff">"${insights.memorable_quote}"</div>`;
+  }
+
+  // Grid of sections
+  html += '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:8px">';
+  sections.forEach(sec => {
+    const items = insights[sec.key];
+    if (!items || !items.length) return;
+    html += `<div style="background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06);border-radius:8px;padding:10px 12px">
+      <div style="font-size:9px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--muted);margin-bottom:7px">${sec.icon} ${sec.label}</div>
+      ${items.map(item => `<div style="font-size:11px;line-height:1.6;padding:2px 0;border-bottom:1px solid rgba(255,255,255,.04)">${item}</div>`).join('')}
+    </div>`;
+  });
+  html += '</div>';
+
+  // Data value note
+  html += `<div style="margin-top:10px;font-size:9px;color:var(--muted);line-height:1.6">
+    💡 <strong style="color:#a084ff">Giá trị dữ liệu cộng đồng:</strong>
+    Khi 100 VĐV cùng race đều kể ký ức, AI có thể trả lời:
+    "Bao nhiêu người nhắc đến chiếc quần T8 màu hồng?"
+    "Đoạn nào trong race tạo ra nhiều cảm xúc nhất?"
+    "Gear nào được nhắc đến nhiều nhất tại race này?"
+  </div>`;
+
+  content.innerHTML = html;
+
+  // Scroll to show it
+  panel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+// ─── UPDATE renderCard to show AI-extracted quote nicely ─────────
+const _origRenderCard = renderCard;
+
+document.querySelectorAll('.style-card').forEach(c => c.addEventListener('click', updateThemeAccent));
+updateThemeAccent();
+</script>
+<style>
+@media print {
+  .info-actions { display: none !important; }
+  body { background: #08090D !important; }
+  .race-card { break-inside: avoid; }
+}
+</style>
+</body>
+</html>

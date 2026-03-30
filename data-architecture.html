@@ -1,0 +1,515 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HLRace — Sơ đồ kiến trúc dữ liệu</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Syne:wght@700;800&family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0A0A0F;--bg2:#111118;--bg3:#18181F;
+  --ink:#F0EEF8;--ink2:#B0AACC;--muted:#52506A;
+  --v:#6B3FFF;--pk:#FF3D7A;--green:#00CC7A;--amber:#FFB020;
+  --cyan:#00C8D4;--red:#FF4040;
+  --sheets:#0F9D58;--local:#4285F4;--mem:#FF6D00;
+  --br:rgba(107,63,255,.15);
+}
+body{background:var(--bg);color:var(--ink);font-family:'Outfit',sans-serif;min-height:100vh;padding:0 0 60px}
+
+/* HEADER */
+.hdr{background:linear-gradient(180deg,rgba(107,63,255,.08),transparent);border-bottom:1px solid var(--br);padding:28px 32px 22px}
+.hdr-eyebrow{font-family:'JetBrains Mono';font-size:9px;letter-spacing:3px;text-transform:uppercase;color:var(--v);margin-bottom:8px;opacity:.8}
+.hdr-h{font-family:'Syne';font-size:clamp(24px,4vw,40px);font-weight:800;letter-spacing:-1px;margin-bottom:5px}
+.hdr-sub{font-size:12px;color:var(--muted);line-height:1.7;max-width:700px}
+
+/* TABS */
+.tabs{display:flex;border-bottom:1px solid rgba(255,255,255,.06);padding:0 32px;background:var(--bg2);overflow-x:auto;scrollbar-width:none}
+.tabs::-webkit-scrollbar{display:none}
+.tab{padding:14px 18px;font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;cursor:pointer;color:var(--muted);border-bottom:2px solid transparent;white-space:nowrap;transition:all .2s}
+.tab:hover{color:var(--ink)}.tab.on{color:var(--v);border-color:var(--v)}
+
+/* PANELS */
+.panel{display:none;padding:28px 32px}.panel.on{display:block}
+@media(max-width:600px){.panel{padding:20px 16px}}
+
+/* SECTION */
+.sec{margin-bottom:36px}
+.sec-title{font-family:'Syne';font-size:18px;font-weight:800;margin-bottom:4px}
+.sec-sub{font-size:11px;color:var(--muted);margin-bottom:18px;line-height:1.7}
+
+/* LEGEND */
+.legend{display:flex;gap:16px;flex-wrap:wrap;margin-bottom:22px;padding:12px 16px;background:var(--bg2);border-radius:9px;border:1px solid rgba(255,255,255,.04)}
+.leg{display:flex;align-items:center;gap:7px;font-size:10px;font-weight:600;color:var(--ink2)}
+.leg-dot{width:10px;height:10px;border-radius:2px;flex-shrink:0}
+
+/* DATA FLOW DIAGRAM */
+.dfd{position:relative;overflow-x:auto}
+.dfd-inner{min-width:700px}
+
+/* NODES */
+.node-group{margin-bottom:24px}
+.ng-label{font-family:'JetBrains Mono';font-size:8px;letter-spacing:3px;text-transform:uppercase;color:var(--muted);margin-bottom:10px;display:flex;align-items:center;gap:8px}
+.ng-label::after{content:'';flex:1;height:1px;background:rgba(255,255,255,.04)}
+.nodes-row{display:flex;gap:10px;flex-wrap:wrap}
+
+/* INDIVIDUAL NODE */
+.node{border-radius:10px;padding:12px 14px;flex-shrink:0;position:relative;min-width:140px;max-width:180px;transition:all .2s;cursor:default}
+.node:hover{transform:translateY(-2px)}
+.n-actor{background:rgba(107,63,255,.08);border:1.5px solid rgba(107,63,255,.25)}
+.n-action{background:rgba(0,204,122,.06);border:1.5px solid rgba(0,204,122,.2)}
+.n-storage{border-radius:10px}
+.n-sheets{background:rgba(15,157,88,.1);border:1.5px solid rgba(15,157,88,.3)}
+.n-local{background:rgba(66,133,244,.08);border:1.5px solid rgba(66,133,244,.25)}
+.n-memory{background:rgba(255,109,0,.08);border:1.5px solid rgba(255,109,0,.25)}
+.n-problem{background:rgba(255,64,64,.06);border:1.5px dashed rgba(255,64,64,.3)}
+.nd-icon{font-size:18px;margin-bottom:6px}
+.nd-name{font-size:11px;font-weight:800;margin-bottom:2px;line-height:1.3}
+.nd-sub{font-size:9px;line-height:1.5;opacity:.6}
+.nd-badge{position:absolute;top:8px;right:8px;font-family:'JetBrains Mono';font-size:7px;font-weight:700;padding:2px 5px;border-radius:3px;letter-spacing:.5px}
+.nb-ok{background:rgba(0,204,122,.15);color:var(--green)}
+.nb-warn{background:rgba(255,176,32,.15);color:var(--amber)}
+.nb-bad{background:rgba(255,64,64,.15);color:var(--red)}
+.nb-new{background:rgba(107,63,255,.15);color:var(--v)}
+
+/* ARROWS / FLOWS */
+.flow{display:flex;flex-direction:column;gap:0;margin:16px 0}
+.flow-step{display:flex;align-items:flex-start;gap:12px;padding:10px 14px;border-radius:8px;margin-bottom:4px;transition:all .2s}
+.flow-step:hover{background:rgba(255,255,255,.02)}
+.fs-num{font-family:'JetBrains Mono';font-size:11px;font-weight:700;color:var(--v);width:22px;flex-shrink:0;padding-top:1px}
+.fs-arrow{font-size:14px;flex-shrink:0;padding-top:2px}
+.fs-content{flex:1}
+.fs-action{font-size:12px;font-weight:700;margin-bottom:2px}
+.fs-where{font-size:10px;color:var(--muted);display:flex;align-items:center;gap:6px}
+.fs-storage{display:inline-flex;align-items:center;gap:4px;padding:2px 7px;border-radius:4px;font-size:9px;font-weight:700;font-family:'JetBrains Mono'}
+.s-sheets{background:rgba(15,157,88,.12);color:#0F9D58;border:1px solid rgba(15,157,88,.2)}
+.s-local{background:rgba(66,133,244,.1);color:#4285F4;border:1px solid rgba(66,133,244,.2)}
+.s-memory{background:rgba(255,109,0,.1);color:#FF6D00;border:1px solid rgba(255,109,0,.2)}
+.s-none{background:rgba(255,64,64,.1);color:var(--red);border:1px solid rgba(255,64,64,.2)}
+
+/* TABLE */
+.tbl{width:100%;border-collapse:collapse;font-size:11px}
+.tbl th{font-family:'JetBrains Mono';font-size:8px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);text-align:left;padding:8px 12px;border-bottom:1px solid rgba(255,255,255,.06);font-weight:700}
+.tbl td{padding:9px 12px;border-bottom:1px solid rgba(255,255,255,.03);vertical-align:top;line-height:1.5}
+.tbl tr:hover td{background:rgba(255,255,255,.015)}
+.tbl-name{font-weight:700;color:var(--ink)}
+.tbl-type{font-family:'JetBrains Mono';font-size:9px}
+.tbl-note{font-size:10px;color:var(--muted)}
+.status{display:inline-flex;align-items:center;gap:3px;font-size:8px;font-weight:700;padding:2px 6px;border-radius:3px}
+
+/* PROBLEM CARDS */
+.prob-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:10px;margin-bottom:24px}
+.prob{background:rgba(255,64,64,.04);border:1px solid rgba(255,64,64,.15);border-radius:10px;padding:14px}
+.prob-icon{font-size:22px;margin-bottom:8px}
+.prob-title{font-size:12px;font-weight:800;color:var(--red);margin-bottom:4px}
+.prob-desc{font-size:10px;color:var(--muted);line-height:1.6}
+.prob-example{font-size:10px;font-style:italic;color:rgba(255,64,64,.6);margin-top:6px;padding:5px 8px;background:rgba(255,64,64,.03);border-radius:5px}
+
+/* SOLUTION CARDS */
+.sol-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:10px}
+.sol{border-radius:10px;padding:14px}
+.sol-now{background:rgba(0,204,122,.05);border:1.5px solid rgba(0,204,122,.2)}
+.sol-next{background:rgba(107,63,255,.05);border:1.5px solid rgba(107,63,255,.2)}
+.sol-future{background:rgba(255,176,32,.04);border:1.5px solid rgba(255,176,32,.18)}
+.sol-label{font-family:'JetBrains Mono';font-size:8px;letter-spacing:2px;text-transform:uppercase;margin-bottom:8px;font-weight:700}
+.sl-now{color:var(--green)}.sl-next{color:var(--v)}.sl-future{color:var(--amber)}
+.sol-title{font-size:13px;font-weight:800;margin-bottom:5px}
+.sol-items{display:flex;flex-direction:column;gap:4px}
+.si{font-size:10px;color:var(--muted);display:flex;gap:5px;align-items:flex-start;line-height:1.5}
+.si::before{content:'→';color:var(--green);font-size:10px;flex-shrink:0;opacity:.6}
+.sol-next .si::before{color:var(--v)}
+.sol-future .si::before{color:var(--amber)}
+
+/* SCHEMA DIAGRAM */
+.schema{font-family:'JetBrains Mono';font-size:10px;background:var(--bg2);border:1px solid rgba(255,255,255,.06);border-radius:10px;padding:16px;overflow-x:auto;line-height:1.9}
+.s-table{margin-bottom:18px}
+.s-table-name{font-size:11px;font-weight:700;color:var(--cyan);margin-bottom:6px;display:flex;align-items:center;gap:8px}
+.s-table-name::before{content:'▶';font-size:8px;opacity:.5}
+.s-col{display:flex;gap:16px;padding:2px 0}
+.s-col:hover{color:var(--ink)}
+.sc-name{color:var(--green);min-width:180px}
+.sc-type{color:var(--amber);min-width:100px}
+.sc-note{color:var(--muted);font-size:9px}
+.sc-pk{color:var(--pk)}.sc-fk{color:var(--cyan)}
+.s-divider{border:none;border-top:1px solid rgba(255,255,255,.05);margin:10px 0}
+
+/* TIMELINE */
+.timeline{position:relative;padding-left:28px}
+.timeline::before{content:'';position:absolute;left:8px;top:0;bottom:0;width:1px;background:rgba(107,63,255,.2)}
+.tl-item{position:relative;margin-bottom:18px}
+.tl-dot{position:absolute;left:-24px;top:4px;width:10px;height:10px;border-radius:50%;border:2px solid var(--bg)}
+.tl-dot-now{background:var(--green)}.tl-dot-next{background:var(--v)}.tl-dot-plan{background:var(--amber);opacity:.6}
+.tl-label{font-family:'JetBrains Mono';font-size:8px;letter-spacing:2px;text-transform:uppercase;margin-bottom:4px;font-weight:700}
+.tl-now .tl-label{color:var(--green)}.tl-next .tl-label{color:var(--v)}.tl-plan .tl-label{color:var(--amber);opacity:.6}
+.tl-title{font-size:13px;font-weight:800;margin-bottom:4px}
+.tl-desc{font-size:10px;color:var(--muted);line-height:1.6}
+
+/* CALLOUT */
+.callout{border-radius:10px;padding:14px 16px;margin-bottom:14px;font-size:11px;line-height:1.7}
+.c-v{background:rgba(107,63,255,.06);border:1px solid rgba(107,63,255,.2);color:var(--ink2)}.c-v strong{color:var(--v)}
+.c-g{background:rgba(0,204,122,.06);border:1px solid rgba(0,204,122,.2);color:var(--ink2)}.c-g strong{color:var(--green)}
+.c-a{background:rgba(255,176,32,.06);border:1px solid rgba(255,176,32,.2);color:var(--ink2)}.c-a strong{color:var(--amber)}
+.c-r{background:rgba(255,64,64,.06);border:1px solid rgba(255,64,64,.2);color:var(--ink2)}.c-r strong{color:var(--red)}
+</style>
+</head>
+<body>
+
+<div class="hdr">
+  <div class="hdr-eyebrow">// Data Architecture · HLRace Platform</div>
+  <div class="hdr-h">Sơ đồ luồng dữ liệu</div>
+  <div class="hdr-sub">Giải thích đầy đủ cách hệ thống hiện tại lưu trữ và truy xuất dữ liệu — bao gồm những điểm yếu và lộ trình nâng cấp.</div>
+</div>
+
+<div class="tabs">
+  <div class="tab on" onclick="showTab('current',this)">Hiện tại</div>
+  <div class="tab" onclick="showTab('flows',this)">Luồng dữ liệu</div>
+  <div class="tab" onclick="showTab('schema',this)">Cấu trúc bảng</div>
+  <div class="tab" onclick="showTab('problems',this)">Vấn đề & Giải pháp</div>
+  <div class="tab" onclick="showTab('roadmap',this)">Lộ trình nâng cấp</div>
+</div>
+
+<!-- ═══ TAB: CURRENT ═══ -->
+<div class="panel on" id="panel-current">
+
+  <div class="sec">
+    <div class="sec-title">Tổng quan: Ai lưu ở đâu?</div>
+    <div class="sec-sub">Hệ thống hiện tại không có tài khoản người dùng. Nhận dạng người dùng qua số điện thoại hoặc CCCD.</div>
+
+    <div class="legend">
+      <div class="leg"><div class="leg-dot" style="background:#0F9D58"></div>Google Sheets — lưu lâu dài, đồng bộ</div>
+      <div class="leg"><div class="leg-dot" style="background:#4285F4"></div>localStorage — chỉ trên máy đó, mất khi xoá cache</div>
+      <div class="leg"><div class="leg-dot" style="background:#FF6D00"></div>RAM / In-memory — mất khi đóng tab</div>
+      <div class="leg"><div class="leg-dot" style="background:#FF4040;opacity:.7"></div>Chưa lưu thật — chỉ là demo</div>
+    </div>
+
+    <!-- ACTOR NODES -->
+    <div class="node-group">
+      <div class="ng-label">Người dùng (Actors)</div>
+      <div class="nodes-row">
+        <div class="node n-actor"><div class="nd-icon">🏃</div><div class="nd-name">VĐV</div><div class="nd-sub">Đăng ký race · Nhận BIB · Chạy</div></div>
+        <div class="node n-actor"><div class="nd-icon">👥</div><div class="nd-name">TNV / Nhân sự</div><div class="nd-sub">Đăng ký vai trò · Nhận điểm CĐ</div></div>
+        <div class="node n-actor"><div class="nd-icon">🏢</div><div class="nd-name">Nhà cung cấp</div><div class="nd-sub">Đăng ký · Upload nghiệm thu</div></div>
+        <div class="node n-actor"><div class="nd-icon">💰</div><div class="nd-name">Nhà tài trợ</div><div class="nd-sub">Xác nhận thanh toán</div></div>
+        <div class="node n-actor"><div class="nd-icon">⚙️</div><div class="nd-name">Admin BTC</div><div class="nd-sub">Quản lý toàn bộ · Có mật khẩu</div></div>
+        <div class="node n-actor"><div class="nd-icon">✈️</div><div class="nd-name">Khách tourism</div><div class="nd-sub">Tìm local runner</div></div>
+      </div>
+    </div>
+
+    <!-- STORAGE NODES -->
+    <div class="node-group">
+      <div class="ng-label">Nơi lưu trữ dữ liệu</div>
+      <div class="nodes-row">
+        <div class="node n-sheets" style="max-width:220px">
+          <div class="nd-badge nb-ok">PERSISTENT</div>
+          <div class="nd-icon">📊</div>
+          <div class="nd-name">Google Sheets</div>
+          <div class="nd-sub">DANG_KY · NHAN_SU · CONFIG<br>Đồng bộ mọi thiết bị<br>Truy cập qua Apps Script API</div>
+        </div>
+        <div class="node n-local" style="max-width:220px">
+          <div class="nd-badge nb-warn">DEVICE ONLY</div>
+          <div class="nd-icon">💾</div>
+          <div class="nd-name">localStorage</div>
+          <div class="nd-sub">Profile · Plan · Preferences<br>Chỉ trên máy đó<br>Mất khi xoá cache!</div>
+        </div>
+        <div class="node n-memory" style="max-width:220px">
+          <div class="nd-badge nb-warn">SESSION ONLY</div>
+          <div class="nd-icon">🧠</div>
+          <div class="nd-name">In-memory (RAM)</div>
+          <div class="nd-sub">Chat history AI<br>Filter state<br>Mất khi đóng tab</div>
+        </div>
+        <div class="node n-problem" style="max-width:220px">
+          <div class="nd-badge nb-bad">DEMO ONLY</div>
+          <div class="nd-icon">⚠️</div>
+          <div class="nd-name">Hardcoded data</div>
+          <div class="nd-sub">Community Good campaigns<br>Tourism runners<br>Runner Connect profiles</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- WHAT EACH STORES -->
+    <div class="node-group">
+      <div class="ng-label">Dữ liệu nào lưu ở đâu — chi tiết</div>
+      <table class="tbl" style="background:var(--bg2);border-radius:10px;overflow:hidden">
+        <thead>
+          <tr><th>Dữ liệu</th><th>Lưu ở đâu</th><th>Nhận dạng bằng</th><th>Trạng thái</th></tr>
+        </thead>
+        <tbody>
+          <tr><td class="tbl-name">Đăng ký VĐV</td><td><span class="fs-storage s-sheets">📊 Sheets / DANG_KY</span></td><td class="tbl-note">Số điện thoại + CCCD</td><td><span class="status nb-ok">✓ Hoạt động</span></td></tr>
+          <tr><td class="tbl-name">BIB số</td><td><span class="fs-storage s-sheets">📊 Sheets / DANG_KY</span></td><td class="tbl-note">BIB counter / cự ly</td><td><span class="status nb-ok">✓ Hoạt động</span></td></tr>
+          <tr><td class="tbl-name">Lịch sử race VĐV</td><td><span class="fs-storage s-none">❌ Chưa có</span></td><td class="tbl-note">—</td><td><span class="status nb-bad">✗ Thiếu</span></td></tr>
+          <tr><td class="tbl-name">Thông tin nhân sự / TNV</td><td><span class="fs-storage s-sheets">📊 Sheets / NHAN_SU</span></td><td class="tbl-note">Số điện thoại</td><td><span class="status nb-ok">✓ Hoạt động</span></td></tr>
+          <tr><td class="tbl-name">Điểm cống hiến TNV</td><td><span class="fs-storage s-sheets">📊 Sheets / NHAN_SU</span></td><td class="tbl-note">Số điện thoại</td><td><span class="status nb-ok">✓ Hoạt động</span></td></tr>
+          <tr><td class="tbl-name">Lịch sử điểm TNV</td><td><span class="fs-storage s-none">❌ Chưa có bảng riêng</span></td><td class="tbl-note">—</td><td><span class="status nb-warn">~ Giới hạn</span></td></tr>
+          <tr><td class="tbl-name">Hợp đồng nghiệm thu</td><td><span class="fs-storage s-sheets">📊 Sheets / CONTRACT</span></td><td class="tbl-note">contractId</td><td><span class="status nb-ok">✓ Hoạt động</span></td></tr>
+          <tr><td class="tbl-name">Runner Connect profile</td><td><span class="fs-storage s-local">💾 localStorage</span></td><td class="tbl-note">—</td><td><span class="status nb-warn">⚠ Máy cố định</span></td></tr>
+          <tr><td class="tbl-name">Danh sách race đã ĐK</td><td><span class="fs-storage s-local">💾 localStorage</span></td><td class="tbl-note">—</td><td><span class="status nb-warn">⚠ Máy cố định</span></td></tr>
+          <tr><td class="tbl-name">Wishlist sản phẩm</td><td><span class="fs-storage s-local">💾 localStorage</span></td><td class="tbl-note">—</td><td><span class="status nb-warn">⚠ Máy cố định</span></td></tr>
+          <tr><td class="tbl-name">Chat AI history</td><td><span class="fs-storage s-memory">🧠 RAM (session)</span></td><td class="tbl-note">—</td><td><span class="status nb-warn">⚠ Mất khi đóng tab</span></td></tr>
+          <tr><td class="tbl-name">Tourism bookings</td><td><span class="fs-storage s-none">❌ Chưa lưu thật</span></td><td class="tbl-note">—</td><td><span class="status nb-bad">✗ Demo only</span></td></tr>
+          <tr><td class="tbl-name">Community campaigns</td><td><span class="fs-storage s-none">❌ Hardcoded</span></td><td class="tbl-note">—</td><td><span class="status nb-bad">✗ Demo only</span></td></tr>
+          <tr><td class="tbl-name">Cấu hình race</td><td><span class="fs-storage s-sheets">📊 Sheets / CONFIG</span></td><td class="tbl-note">key-value</td><td><span class="status nb-ok">✓ Hoạt động</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ TAB: FLOWS ═══ -->
+<div class="panel" id="panel-flows">
+
+  <div class="sec">
+    <div class="sec-title">Luồng 1 — VĐV đăng ký race</div>
+    <div class="sec-sub">Hành trình đầy đủ từ khi VĐV mở form đến khi nhận BIB</div>
+    <div class="flow">
+      <div class="flow-step"><div class="fs-num">1</div><div class="fs-arrow">→</div><div class="fs-content"><div class="fs-action">VĐV mở index.html, điền form 4 bước</div><div class="fs-where">Không cần tài khoản · Nhận dạng: số điện thoại + CCCD</div></div></div>
+      <div class="flow-step"><div class="fs-num">2</div><div class="fs-arrow">→</div><div class="fs-content"><div class="fs-action">Submit form → gọi Apps Script API</div><div class="fs-where"><span class="fs-storage s-sheets">📊 Ghi vào DANG_KY</span> · Gồm: tên, SĐT, CCCD, cự ly, size áo, thông tin khẩn cấp</div></div></div>
+      <div class="flow-step"><div class="fs-num">3</div><div class="fs-arrow">→</div><div class="fs-content"><div class="fs-action">Admin duyệt trạng thái trong admin.html</div><div class="fs-where"><span class="fs-storage s-sheets">📊 Update cột status</span> · pending → approved → paid</div></div></div>
+      <div class="flow-step"><div class="fs-num">4</div><div class="fs-arrow">→</div><div class="fs-content"><div class="fs-action">Ngày race: checkin.html tìm VĐV theo SĐT hoặc tên</div><div class="fs-where"><span class="fs-storage s-sheets">📊 Đọc DANG_KY</span> · Gán BIB · Update cột checkedIn, bibNumber, checkedInTime</div></div></div>
+      <div class="flow-step"><div class="fs-num">⚠</div><div class="fs-arrow">!</div><div class="fs-content"><div class="fs-action" style="color:var(--amber)">VĐV đăng ký race tiếp theo?</div><div class="fs-where">Phải điền lại toàn bộ form từ đầu · Hệ thống không nhớ · Không có lịch sử liên kết</div></div></div>
+    </div>
+  </div>
+
+  <div class="sec">
+    <div class="sec-title">Luồng 2 — TNV tích điểm cống hiến</div>
+    <div class="sec-sub">Cách điểm được lưu và truy xuất hiện tại</div>
+    <div class="flow">
+      <div class="flow-step"><div class="fs-num">1</div><div class="fs-arrow">→</div><div class="fs-content"><div class="fs-action">TNV điền staff.html, submit đăng ký</div><div class="fs-where"><span class="fs-storage s-sheets">📊 Ghi vào NHAN_SU</span> · initialPoints: 10 · extraJson: toàn bộ thông tin chuyên môn</div></div></div>
+      <div class="flow-step"><div class="fs-num">2</div><div class="fs-arrow">→</div><div class="fs-content"><div class="fs-action">Sau race, Admin vào admin.html → tab Điểm & Vinh danh</div><div class="fs-where">Tìm TNV theo tên · Chọn loại điểm · Nhập ghi chú</div></div></div>
+      <div class="flow-step"><div class="fs-num">3</div><div class="fs-arrow">→</div><div class="fs-content"><div class="fs-action">Apps Script updateStaffPoints chạy</div><div class="fs-where"><span class="fs-storage s-sheets">📊 Update NHAN_SU</span> · Cộng vào totalPoints · Tăng eventsCount · Ghi lastPointNote + lastPointTs</div></div></div>
+      <div class="flow-step"><div class="fs-num">4</div><div class="fs-arrow">→</div><div class="fs-content"><div class="fs-action">Leaderboard.html đọc và hiển thị bảng xếp hạng</div><div class="fs-where"><span class="fs-storage s-sheets">📊 Đọc NHAN_SU</span> · Sort theo totalPoints · Cache localStorage 5 phút</div></div></div>
+      <div class="flow-step"><div class="fs-num">⚠</div><div class="fs-arrow">!</div><div class="fs-content"><div class="fs-action" style="color:var(--amber)">Chỉ lưu tổng điểm — không có lịch sử chi tiết từng lần cộng</div><div class="fs-where">Muốn biết "tháng 1 cộng bao nhiêu điểm loại gì?" → không truy xuất được</div></div></div>
+    </div>
+  </div>
+
+  <div class="sec">
+    <div class="sec-title">Luồng 3 — Runner Connect (lỗ hổng lớn nhất)</div>
+    <div class="sec-sub">Profile, race list, wishlist — tất cả chỉ trên một máy</div>
+    <div class="flow">
+      <div class="flow-step"><div class="fs-num">1</div><div class="fs-arrow">→</div><div class="fs-content"><div class="fs-action">VĐV vào runner-connect.html lần đầu</div><div class="fs-where">Tên lấy từ <span class="fs-storage s-local">💾 reg_fullName</span> · Cự ly từ <span class="fs-storage s-local">💾 reg_distance</span> · Đặt khi đăng ký VĐV</div></div></div>
+      <div class="flow-step"><div class="fs-num">2</div><div class="fs-arrow">→</div><div class="fs-content"><div class="fs-action">VĐV thêm race, lưu profile, nâng cấp plan</div><div class="fs-where"><span class="fs-storage s-local">💾 rc_my_races</span> · <span class="fs-storage s-local">💾 rc_pace</span> · <span class="fs-storage s-local">💾 rc_plan</span> · Tất cả chỉ trên máy đó</div></div></div>
+      <div class="flow-step"><div class="fs-num">3</div><div class="fs-arrow">→</div><div class="fs-content"><div class="fs-action">Danh sách runner để match: hardcoded trong code</div><div class="fs-where"><span class="fs-storage s-memory">🧠 COMMUNITY array</span> · Không phải từ Sheets thật · Chỉ 6 runner demo</div></div></div>
+      <div class="flow-step"><div class="fs-num">⚠</div><div class="fs-arrow">!</div><div class="fs-content"><div class="fs-action" style="color:var(--red)">Dùng điện thoại khác → mất tất cả</div><div class="fs-where">Không có tài khoản → không đồng bộ → không thể nhận thông báo</div></div></div>
+    </div>
+  </div>
+
+  <div class="sec">
+    <div class="sec-title">Luồng 4 — Admin nhìn thấy gì?</div>
+    <div class="sec-sub">Admin có đủ quyền đọc nhưng không có dashboard tổng hợp người dùng xuyên suốt</div>
+    <div class="flow">
+      <div class="flow-step"><div class="fs-num">1</div><div class="fs-arrow">→</div><div class="fs-content"><div class="fs-action">Tab VĐV: xem danh sách DANG_KY của race hiện tại</div><div class="fs-where"><span class="fs-storage s-sheets">📊 Đọc DANG_KY</span> · Filter, approve, export CSV</div></div></div>
+      <div class="flow-step"><div class="fs-num">2</div><div class="fs-arrow">→</div><div class="fs-content"><div class="fs-action">Tab Nhân sự: xem danh sách NHAN_SU của race hiện tại</div><div class="fs-where"><span class="fs-storage s-sheets">📊 Đọc NHAN_SU</span> · Không có view "tổng hợp xuyên suốt nhiều race"</div></div></div>
+      <div class="flow-step"><div class="fs-num">3</div><div class="fs-arrow">→</div><div class="fs-content"><div class="fs-action">Muốn biết "anh Minh tham gia bao nhiêu race từ trước đến nay?"</div><div class="fs-where"><span class="fs-storage s-none">❌ Không có</span> · Phải search thủ công qua từng sheet race</div></div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ TAB: SCHEMA ═══ -->
+<div class="panel" id="panel-schema">
+
+  <div class="callout c-v"><strong>Chú ý:</strong> Đây là cấu trúc bảng Google Sheets hiện tại. Mỗi giải chạy thường có một file Sheets riêng — nghĩa là dữ liệu bị phân mảnh theo race, không có cái nhìn tổng hợp người dùng xuyên suốt.</div>
+
+  <div class="schema">
+    <div class="s-table">
+      <div class="s-table-name" style="color:#0F9D58">📊 Tab DANG_KY — Đăng ký VĐV</div>
+      <div class="s-col"><span class="sc-name sc-pk">rowIndex</span><span class="sc-type">NUMBER</span><span class="sc-note">Auto-increment, không phải ID thật</span></div>
+      <div class="s-col"><span class="sc-name">id</span><span class="sc-type">STRING</span><span class="sc-note">timestamp-random · ví dụ: 1741234567-abc</span></div>
+      <div class="s-col"><span class="sc-name">timestamp</span><span class="sc-type">DATETIME</span><span class="sc-note">Thời điểm submit form</span></div>
+      <div class="s-col"><span class="sc-name">status</span><span class="sc-type">ENUM</span><span class="sc-note">pending | approved | paid | checked_in</span></div>
+      <div class="s-col"><span class="sc-name">ptype</span><span class="sc-type">STRING</span><span class="sc-note">individual | team</span></div>
+      <div class="s-col"><span class="sc-name">fullName</span><span class="sc-type">STRING</span><span class="sc-note">Tên đầy đủ VĐV</span></div>
+      <div class="s-col"><span class="sc-name">gender</span><span class="sc-type">STRING</span><span class="sc-note">Nam | Nữ | Khác</span></div>
+      <div class="s-col"><span class="sc-name">dob</span><span class="sc-type">DATE</span><span class="sc-note">Ngày sinh</span></div>
+      <div class="s-col"><span class="sc-name">phone</span><span class="sc-type">STRING</span><span class="sc-note">⭐ Khoá nhận dạng chính — không unique enforce</span></div>
+      <div class="s-col"><span class="sc-name">email</span><span class="sc-type">STRING</span><span class="sc-note">Optional</span></div>
+      <div class="s-col"><span class="sc-name">idCard</span><span class="sc-type">STRING</span><span class="sc-note">CCCD / CMND</span></div>
+      <div class="s-col"><span class="sc-name">distance</span><span class="sc-type">STRING</span><span class="sc-note">1.5km | 3km | 5km</span></div>
+      <div class="s-col"><span class="sc-name">shirtSize</span><span class="sc-type">STRING</span><span class="sc-note">XS | S | M | L | XL | XXL</span></div>
+      <div class="s-col"><span class="sc-name">bibNumber</span><span class="sc-type">STRING</span><span class="sc-note">5K-001 — gán lúc check-in</span></div>
+      <div class="s-col"><span class="sc-name">checkedIn</span><span class="sc-type">BOOLEAN</span><span class="sc-note">FALSE mặc định</span></div>
+      <div class="s-col"><span class="sc-name">checkedInTime</span><span class="sc-type">DATETIME</span><span class="sc-note">Thời điểm nhận BIB</span></div>
+      <div class="s-col"><span class="sc-name">paymentImg</span><span class="sc-type">STRING</span><span class="sc-note">URL ảnh chứng từ thanh toán</span></div>
+    </div>
+    <hr class="s-divider">
+
+    <div class="s-table">
+      <div class="s-table-name" style="color:#0F9D58">📊 Tab NHAN_SU — Nhân sự / TNV</div>
+      <div class="s-col"><span class="sc-name sc-pk">id</span><span class="sc-type">STRING</span><span class="sc-note">timestamp-random</span></div>
+      <div class="s-col"><span class="sc-name">roleId</span><span class="sc-type">STRING</span><span class="sc-note">pacer | tnv | nag | medical | security | btc | cheer</span></div>
+      <div class="s-col"><span class="sc-name">fullName / phone / idCard</span><span class="sc-type">STRING</span><span class="sc-note">Tương tự DANG_KY</span></div>
+      <div class="s-col"><span class="sc-name">experience</span><span class="sc-type">STRING</span><span class="sc-note">Kinh nghiệm — từ step 3 của form</span></div>
+      <div class="s-col"><span class="sc-name">totalPoints</span><span class="sc-type">NUMBER</span><span class="sc-note">⚠ Chỉ lưu TỔNG — không có lịch sử từng lần</span></div>
+      <div class="s-col"><span class="sc-name">eventsCount</span><span class="sc-type">NUMBER</span><span class="sc-note">Số sự kiện đã tham gia</span></div>
+      <div class="s-col"><span class="sc-name">lastPointNote</span><span class="sc-type">STRING</span><span class="sc-note">Ghi chú lần cộng điểm cuối</span></div>
+      <div class="s-col"><span class="sc-name">lastPointTs</span><span class="sc-type">DATETIME</span><span class="sc-note">Thời điểm cộng điểm cuối</span></div>
+      <div class="s-col"><span class="sc-name">extraJson</span><span class="sc-type">JSON STRING</span><span class="sc-note">Toàn bộ fields chuyên môn từ step 3 · stringify</span></div>
+      <div class="s-col"><span class="sc-name">status</span><span class="sc-type">ENUM</span><span class="sc-note">pending | approved | rejected</span></div>
+    </div>
+    <hr class="s-divider">
+
+    <div class="s-table">
+      <div class="s-table-name" style="color:#4285F4">💾 localStorage — Runner Connect</div>
+      <div class="s-col"><span class="sc-name">reg_fullName</span><span class="sc-type">STRING</span><span class="sc-note">Set khi đăng ký VĐV, đọc vào Connect</span></div>
+      <div class="s-col"><span class="sc-name">reg_distance</span><span class="sc-type">STRING</span><span class="sc-note">Cự ly đã đăng ký</span></div>
+      <div class="s-col"><span class="sc-name">rc_my_races</span><span class="sc-type">JSON ARRAY</span><span class="sc-note">⚠ Danh sách race đã ĐK — chỉ trên máy này</span></div>
+      <div class="s-col"><span class="sc-name">rc_plan</span><span class="sc-type">STRING</span><span class="sc-note">free | starter | pro | elite — chưa verify thật</span></div>
+      <div class="s-col"><span class="sc-name">rc_pace / rc_goal / rc_area</span><span class="sc-type">STRING</span><span class="sc-note">Profile info — chỉ trên máy này</span></div>
+      <div class="s-col"><span class="sc-name">rc_wishlist</span><span class="sc-type">JSON ARRAY</span><span class="sc-note">Wishlist sản phẩm — chỉ trên máy này</span></div>
+      <div class="s-col"><span class="sc-name">race_api_key</span><span class="sc-type">STRING</span><span class="sc-note">Claude API key — admin setting</span></div>
+      <div class="s-col"><span class="sc-name">race_sheets_url</span><span class="sc-type">STRING</span><span class="sc-note">Google Sheets URL · race_drive_id</span></div>
+    </div>
+    <hr class="s-divider">
+
+    <div class="s-table">
+      <div class="s-table-name" style="color:#0F9D58">📊 Tab CONFIG — Cấu hình</div>
+      <div class="s-col"><span class="sc-name">staffRoles</span><span class="sc-type">JSON STRING</span><span class="sc-note">Array các vai trò nhân sự — admin tự thêm/sửa</span></div>
+      <div class="s-col"><span class="sc-name">providerCategories</span><span class="sc-type">JSON STRING</span><span class="sc-note">22 hạng mục marketplace</span></div>
+      <div class="s-col"><span class="sc-name">race_*</span><span class="sc-type">VARIOUS</span><span class="sc-note">Tên race, ngày, địa điểm, cự ly, phí, tài khoản bank...</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ TAB: PROBLEMS ═══ -->
+<div class="panel" id="panel-problems">
+
+  <div class="sec">
+    <div class="sec-title">5 vấn đề cốt lõi của kiến trúc hiện tại</div>
+
+    <div class="prob-grid">
+      <div class="prob">
+        <div class="prob-icon">🔄</div>
+        <div class="prob-title">Không nhận ra người quay lại</div>
+        <div class="prob-desc">Anh Minh đăng ký race tháng 1, tháng 3 đăng ký lại — hệ thống tạo row mới, không liên kết. Không có lịch sử.</div>
+        <div class="prob-example">→ Mỗi race = người mới hoàn toàn</div>
+      </div>
+      <div class="prob">
+        <div class="prob-icon">📱</div>
+        <div class="prob-title">Profile chỉ sống trên một máy</div>
+        <div class="prob-desc">Mọi thứ trong Runner Connect lưu localStorage. Đổi điện thoại, xoá cache, dùng trình duyệt khác — mất tất cả.</div>
+        <div class="prob-example">→ Không thể gửi thông báo cho đúng người</div>
+      </div>
+      <div class="prob">
+        <div class="prob-icon">🗂️</div>
+        <div class="prob-title">Dữ liệu phân mảnh theo race</div>
+        <div class="prob-desc">Mỗi race thường tạo file Sheets mới. Muốn biết "ai đã chạy nhiều nhất từ trước đến nay?" — phải gộp thủ công nhiều file.</div>
+        <div class="prob-example">→ Không có hồ sơ người dùng tổng thể</div>
+      </div>
+      <div class="prob">
+        <div class="prob-icon">📊</div>
+        <div class="prob-title">Lịch sử điểm không chi tiết</div>
+        <div class="prob-desc">NHAN_SU chỉ lưu tổng điểm hiện tại + ghi chú lần cuối. Không truy xuất được "tháng 1 anh Minh làm gì, được mấy điểm".</div>
+        <div class="prob-example">→ Khó minh bạch, khó audit</div>
+      </div>
+      <div class="prob">
+        <div class="prob-icon">🔔</div>
+        <div class="prob-title">Không có notification thật</div>
+        <div class="prob-desc">Tourism match, nhóm chạy, chiến dịch Good — tất cả "thông báo" chỉ là UI giả. Không có cơ chế push đến người dùng thật.</div>
+        <div class="prob-example">→ Tourism và Community Good không hoạt động thật</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="sec">
+    <div class="sec-title">Giải pháp theo cấp độ</div>
+    <div class="callout c-g"><strong>Tin tốt:</strong> Google Sheets vẫn tốt cho quy mô hiện tại (dưới 5,000 người/năm). Chỉ cần thêm một số bảng và thay localStorage bằng Sheets là giải quyết được 80% vấn đề.</div>
+
+    <div class="sol-grid">
+      <div class="sol sol-now">
+        <div class="sol-label sl-now">Làm ngay · Không cần code mới</div>
+        <div class="sol-title">Vá ngay với Sheets</div>
+        <div class="sol-items">
+          <div class="si">Tạo tab USERS: phone → userId duy nhất, liên kết các race</div>
+          <div class="si">Tạo tab POINTS_LOG: mỗi lần cộng điểm = 1 row</div>
+          <div class="si">Tạo tab RACE_HISTORY: userId × raceId</div>
+          <div class="si">Lưu Runner Connect profile vào Sheets thay localStorage</div>
+        </div>
+      </div>
+      <div class="sol sol-next">
+        <div class="sol-label sl-next">Bước tiếp · 1–3 tháng</div>
+        <div class="sol-title">Thêm Auth nhẹ</div>
+        <div class="sol-items">
+          <div class="si">SĐT + OTP qua Zalo hoặc SMS (giải phóng khỏi localStorage)</div>
+          <div class="si">Session token lưu Sheets (đơn giản nhất)</div>
+          <div class="si">Profile đồng bộ mọi thiết bị</div>
+          <div class="si">Booking tourism lưu thật vào Sheets</div>
+        </div>
+      </div>
+      <div class="sol sol-future">
+        <div class="sol-label sl-future">Khi scale · 6–12 tháng</div>
+        <div class="sol-title">Database thật</div>
+        <div class="sol-items">
+          <div class="si">Firebase hoặc Supabase (vẫn free tier tốt)</div>
+          <div class="si">Real-time sync, push notification thật</div>
+          <div class="si">Query phức tạp, analytics</div>
+          <div class="si">Multi-race, multi-city clean</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ TAB: ROADMAP ═══ -->
+<div class="panel" id="panel-roadmap">
+
+  <div class="sec">
+    <div class="sec-title">Lộ trình nâng cấp dữ liệu</div>
+    <div class="sec-sub">Từ hệ thống hiện tại đến platform đầy đủ — từng bước thực tế.</div>
+
+    <div class="timeline">
+
+      <div class="tl-item tl-now">
+        <div class="tl-dot tl-dot-now"></div>
+        <div class="tl-label">Hiện tại — Đang dùng</div>
+        <div class="tl-title">Google Sheets + localStorage</div>
+        <div class="tl-desc">VĐV và TNV lưu Sheets. Profile, wishlist, race list chỉ trên máy. Không có tài khoản. Phù hợp với race đơn lẻ, dưới 1,000 người.</div>
+      </div>
+
+      <div class="tl-item tl-next" style="margin-top:20px">
+        <div class="tl-dot tl-dot-next"></div>
+        <div class="tl-label">Bước 1 — Làm ngay · 1–2 tuần</div>
+        <div class="tl-title">Thêm 3 bảng vào Sheets hiện tại</div>
+        <div class="tl-desc">Tạo tab USERS (phone → userId), POINTS_LOG (lịch sử điểm), RACE_HISTORY (ai đã chạy race nào). Lưu Runner Connect profile vào Sheets thay localStorage. Chi phí: 0đ.</div>
+      </div>
+
+      <div class="tl-item tl-next" style="margin-top:20px">
+        <div class="tl-dot tl-dot-next"></div>
+        <div class="tl-label">Bước 2 — 1 tháng</div>
+        <div class="tl-title">OTP Authentication qua Zalo</div>
+        <div class="tl-desc">Người dùng nhập SĐT → nhận OTP qua Zalo OA → tạo session 30 ngày lưu Sheets. Không cần mật khẩu. Profile đồng bộ mọi thiết bị. Tourism booking lưu thật.</div>
+      </div>
+
+      <div class="tl-item tl-plan" style="margin-top:20px">
+        <div class="tl-dot tl-dot-plan"></div>
+        <div class="tl-label">Bước 3 — 3 tháng</div>
+        <div class="tl-title">Migrate sang Firebase / Supabase</div>
+        <div class="tl-desc">Khi Sheets bắt đầu chậm (thường trên 10,000 rows). Real-time listener cho notifications thật. Không thay đổi UI — chỉ thay backend. Chi phí Firebase: ~0đ đến 5 triệu/tháng tuỳ traffic.</div>
+      </div>
+
+      <div class="tl-item tl-plan" style="margin-top:20px">
+        <div class="tl-dot tl-dot-plan"></div>
+        <div class="tl-label">Bước 4 — 6–12 tháng</div>
+        <div class="tl-title">Full Platform với tài khoản người dùng</div>
+        <div class="tl-desc">Hồ sơ tổng hợp xuyên suốt nhiều race và nhiều thành phố. AI Coach dùng lịch sử dữ liệu thật. Multi-sport BIB. White-label cho BTC khác. Payment gateway tích hợp.</div>
+      </div>
+    </div>
+
+    <div style="margin-top:28px">
+      <div class="callout c-a">
+        <strong>Khuyến nghị cho giải 21/03:</strong> Chạy hệ thống hiện tại — Sheets + localStorage là đủ cho 500–1,000 người một race. Sau giải này, mình sẽ giúp bạn build Bước 1 và 2 để chuẩn bị cho nhiều race tiếp theo.
+      </div>
+      <div class="callout c-v">
+        <strong>Câu hỏi quan trọng nhất trước khi nâng cấp:</strong> Bạn muốn dùng số điện thoại hay Google login? Đây là lựa chọn quyết định toàn bộ kiến trúc auth — SĐT phổ biến hơn ở VN, Google login đơn giản hơn để build.
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+function showTab(id, el) {
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('on'));
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('on'));
+  document.getElementById('panel-' + id).classList.add('on');
+  el.classList.add('on');
+}
+</script>
+</body>
+</html>

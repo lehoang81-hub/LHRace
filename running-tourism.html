@@ -1,0 +1,835 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HLRace Tourism — Chạy cùng người địa phương</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Outfit:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#07080C;--bg2:#0D0E14;--bg3:#12131A;--surf:#181A22;
+  --ink:#F2F0E8;--ink2:#B8B4CC;--muted:#565268;
+  --amber:#FF8C00;--amber2:#CC7000;--v:#4A1FFF;
+  --green:#00A86B;--red:#FF2D6B;--cyan:#00C5CC;
+  --br:rgba(255,140,0,.12);--br2:rgba(255,255,255,.06);
+}
+body{background:var(--bg);color:var(--ink);font-family:'Outfit',sans-serif;min-height:100vh;overflow-x:hidden}
+body::before{content:'';position:fixed;inset:0;background:
+  radial-gradient(ellipse 60% 40% at 10% 20%,rgba(255,140,0,.06),transparent 55%),
+  radial-gradient(ellipse 50% 50% at 90% 80%,rgba(74,31,255,.05),transparent 55%);
+  pointer-events:none;z-index:0}
+
+/* NAV */
+.nav{position:sticky;top:0;z-index:100;background:rgba(7,8,12,.94);backdrop-filter:blur(18px);border-bottom:1px solid var(--br);height:50px;display:flex;align-items:center;justify-content:space-between;padding:0 16px}
+.nl{display:flex;align-items:center;gap:10px}
+.nav-logo{font-family:'Syne';font-size:16px;font-weight:800;letter-spacing:1px;color:var(--amber)}
+.nav-slash{color:var(--muted);font-size:14px}
+.nav-page{font-size:11px;font-weight:700;color:var(--ink2)}
+.nav-tabs{display:flex;height:50px;overflow-x:auto;scrollbar-width:none;gap:0}
+.nav-tabs::-webkit-scrollbar{display:none}
+.nt{display:flex;align-items:center;padding:0 12px;font-size:10px;font-weight:700;letter-spacing:.8px;color:var(--muted);cursor:pointer;border-bottom:2px solid transparent;transition:all .2s;white-space:nowrap;text-decoration:none}
+.nt:hover{color:var(--ink)}.nt.on{color:var(--amber);border-bottom-color:var(--amber)}
+
+/* VIEWS */
+.view{display:none;position:relative;z-index:1}.view.active{display:block}
+.wrap{max-width:1100px;margin:0 auto;padding:20px 14px 80px}
+
+/* HERO */
+.hero{padding:36px 20px 28px;text-align:center;position:relative;z-index:1}
+.hero-eyebrow{display:inline-flex;align-items:center;gap:6px;padding:5px 14px;border-radius:20px;border:1px solid rgba(255,140,0,.3);background:rgba(255,140,0,.06);font-family:'JetBrains Mono';font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--amber);margin-bottom:14px}
+.hero-h{font-family:'Syne';font-size:clamp(36px,7vw,72px);font-weight:800;letter-spacing:-1px;line-height:.9;margin-bottom:10px}
+.hero-h .line2{background:linear-gradient(135deg,var(--amber),var(--red));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.hero-sub{font-size:12px;color:var(--muted);max-width:500px;margin:0 auto 24px;line-height:1.8}
+.hero-stats{display:flex;gap:20px;justify-content:center;flex-wrap:wrap;margin-bottom:24px}
+.hstat{text-align:center}
+.hstat-n{font-family:'Syne';font-size:28px;font-weight:800;color:var(--amber);line-height:1}
+.hstat-l{font-size:9px;font-family:'JetBrains Mono';letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);margin-top:2px}
+
+/* CARD */
+.card{background:var(--bg2);border:1px solid var(--br2);border-radius:13px;overflow:hidden;margin-bottom:14px}
+.ch{padding:13px 16px;border-bottom:1px solid var(--br2);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px}
+.ct{font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--muted);display:flex;align-items:center;gap:6px}
+.ct::before{content:'';width:3px;height:11px;background:var(--amber);border-radius:2px;display:inline-block}
+.cb{padding:16px}
+
+/* GUEST SEARCH FORM */
+.search-panel{background:linear-gradient(135deg,rgba(255,140,0,.06),rgba(74,31,255,.04));border:1px solid var(--br);border-radius:14px;padding:22px;margin-bottom:18px}
+.sp-title{font-family:'Syne';font-size:18px;font-weight:800;margin-bottom:3px}
+.sp-sub{font-size:11px;color:var(--muted);margin-bottom:18px;line-height:1.7}
+.sp-grid{display:grid;grid-template-columns:1fr 1fr;gap:11px;margin-bottom:14px}
+@media(max-width:600px){.sp-grid{grid-template-columns:1fr}}
+.sf{display:flex;flex-direction:column;gap:5px}
+.sf label{font-size:9px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);font-family:'JetBrains Mono'}
+.sf input,.sf select{background:var(--bg3);border:1.5px solid var(--br2);border-radius:8px;color:var(--ink);font-family:'Outfit';font-size:13px;padding:10px 12px;outline:none;transition:border-color .2s}
+.sf input:focus,.sf select:focus{border-color:rgba(255,140,0,.4)}
+.sf input::placeholder{color:var(--muted)}
+.sf select option{background:var(--bg3)}
+.sf-full{grid-column:1/-1}
+
+/* MAP PLACEHOLDER */
+.map-zone{background:var(--bg3);border:1.5px dashed rgba(255,140,0,.2);border-radius:11px;height:240px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;margin-bottom:14px;position:relative;overflow:hidden;cursor:pointer;transition:border-color .2s}
+.map-zone:hover{border-color:rgba(255,140,0,.4)}
+.map-dots{position:absolute;inset:0}
+.mdot{position:absolute;width:10px;height:10px;border-radius:50%;background:var(--amber);box-shadow:0 0 8px var(--amber);animation:pulse 2s ease-in-out infinite}
+@keyframes pulse{0%,100%{opacity:.4;transform:scale(1)}50%{opacity:1;transform:scale(1.4)}}
+.map-lbl{font-family:'JetBrains Mono';font-size:10px;color:var(--muted);letter-spacing:2px;text-transform:uppercase;position:relative;z-index:1}
+.map-sub{font-size:11px;color:var(--muted);position:relative;z-index:1}
+.map-routes{display:flex;gap:6px;flex-wrap:wrap;position:relative;z-index:1;margin-top:4px}
+.mr-pill{padding:4px 10px;border-radius:12px;font-size:9px;font-weight:700;background:rgba(255,140,0,.08);border:1px solid rgba(255,140,0,.2);color:var(--amber);cursor:pointer;transition:all .2s}
+.mr-pill:hover,.mr-pill.on{background:rgba(255,140,0,.15);border-color:var(--amber)}
+
+/* RUNNER CARDS FOR TOURISM */
+.trc{background:var(--bg2);border:1.5px solid var(--br2);border-radius:13px;overflow:hidden;transition:all .3s;cursor:pointer;position:relative}
+.trc:hover{border-color:rgba(255,140,0,.35);transform:translateY(-2px);box-shadow:0 8px 28px rgba(255,140,0,.08)}
+.trc-head{padding:14px;background:linear-gradient(135deg,rgba(255,140,0,.04),transparent)}
+.trc-top{display:flex;gap:11px;align-items:flex-start;margin-bottom:10px}
+.trc-av{width:50px;height:50px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0;position:relative}
+.trc-online{position:absolute;bottom:1px;right:1px;width:9px;height:9px;border-radius:50%;background:var(--green);border:2px solid var(--bg2)}
+.trc-name{font-size:13px;font-weight:800;margin-bottom:2px}
+.trc-handle{font-size:9px;color:var(--muted);margin-bottom:4px;font-family:'JetBrains Mono'}
+.trc-lang{display:flex;gap:4px;flex-wrap:wrap}
+.lang-flag{font-size:14px;filter:saturate(.8)}
+.trc-body{padding:0 14px 13px}
+.trc-routes{margin-bottom:9px}
+.tr-lbl{font-size:9px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--muted);margin-bottom:5px;font-family:'JetBrains Mono'}
+.route-pills{display:flex;gap:4px;flex-wrap:wrap}
+.rp{font-size:8px;font-weight:700;padding:2px 7px;border-radius:4px;background:rgba(255,140,0,.07);color:var(--amber);border:1px solid rgba(255,140,0,.15)}
+.trc-stats{display:grid;grid-template-columns:1fr 1fr 1fr;gap:5px;margin-bottom:8px}
+.trcs{text-align:center;padding:6px;background:rgba(255,255,255,.02);border-radius:5px}
+.trcs-val{font-family:'Syne';font-size:16px;font-weight:800;line-height:1}
+.trcs-lbl{font-size:7px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--muted)}
+.trc-bio{font-size:10px;color:var(--muted);line-height:1.6;margin-bottom:9px}
+.trc-rating{display:flex;align-items:center;gap:6px;margin-bottom:9px}
+.stars{color:var(--amber);font-size:12px;letter-spacing:1px}
+.rating-num{font-size:11px;font-weight:700;color:var(--amber)}
+.rating-count{font-size:9px;color:var(--muted)}
+.trc-price{display:flex;justify-content:space-between;align-items:center;padding:8px 10px;background:rgba(255,140,0,.06);border:1px solid rgba(255,140,0,.15);border-radius:7px;margin-bottom:8px}
+.tp-label{font-size:10px;color:var(--muted)}
+.tp-price{font-family:'Syne';font-size:20px;font-weight:800;color:var(--amber)}
+.trc-actions{display:flex;gap:6px}
+.ta{flex:1;padding:8px;border-radius:7px;border:none;cursor:pointer;font-family:'Outfit';font-size:10px;font-weight:700;transition:all .2s}
+.ta-primary{background:var(--amber);color:#000}
+.ta-primary:hover{background:var(--amber2);transform:scale(1.02)}
+.ta-ghost{background:rgba(255,255,255,.04);border:1px solid var(--br2);color:var(--muted)}
+.ta-ghost:hover{border-color:var(--amber);color:var(--amber)}
+
+/* LOCK OV */
+.lock-ov{position:absolute;inset:0;backdrop-filter:blur(5px);background:rgba(7,8,12,.55);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:7px;z-index:5;border-radius:13px;opacity:0;transition:opacity .25s}
+.trc:hover .lock-ov.show{opacity:1}
+.lo-btn{padding:7px 16px;border-radius:7px;border:none;cursor:pointer;font-family:'Outfit';font-size:10px;font-weight:800;background:var(--amber);color:#000;transition:all .2s}
+
+/* AI CHAT */
+.ai-panel{position:sticky;top:58px;height:calc(100vh - 76px);display:flex;flex-direction:column;background:rgba(12,12,18,.94);border:1px solid var(--br);border-radius:14px;overflow:hidden;backdrop-filter:blur(10px)}
+.aih{padding:13px 15px;border-bottom:1px solid var(--br);flex-shrink:0}
+.aih-top{display:flex;gap:9px;align-items:center;margin-bottom:5px}
+.ai-av{width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,var(--amber),var(--red));display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0;box-shadow:0 0 0 2px rgba(255,140,0,.25)}
+.ai-name{font-size:12px;font-weight:800}
+.ai-status{font-size:9px;color:var(--muted)}
+.ai-dot{width:6px;height:6px;border-radius:50%;background:var(--green);display:inline-block;animation:blink 2s infinite;margin-right:4px}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
+.ai-ctx{font-size:9px;color:var(--muted);font-style:italic}
+.ai-msgs{flex:1;overflow-y:auto;padding:12px;display:flex;flex-direction:column;gap:9px;scrollbar-width:thin;scrollbar-color:rgba(255,255,255,.05) transparent}
+.msg{display:flex;gap:7px;animation:msgIn .3s ease}
+@keyframes msgIn{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:translateY(0)}}
+.msg-ai{flex-direction:row}.msg-user{flex-direction:row-reverse}
+.bbl{max-width:90%;padding:9px 12px;font-size:11px;line-height:1.65;border-radius:9px}
+.msg-ai .bbl{background:rgba(255,140,0,.05);border:1px solid rgba(255,140,0,.12);color:var(--ink);border-radius:3px 9px 9px 9px}
+.msg-user .bbl{background:rgba(74,31,255,.07);border:1px solid rgba(74,31,255,.12);color:var(--ink2);border-radius:9px 3px 9px 9px}
+.msg-time{font-size:8px;color:var(--muted);margin-top:2px}
+
+/* RUNNER CARD IN CHAT */
+.chat-runner{background:rgba(255,140,0,.04);border:1px solid rgba(255,140,0,.15);border-radius:9px;padding:10px;margin-top:7px;cursor:pointer;transition:border-color .2s}
+.chat-runner:hover{border-color:rgba(255,140,0,.35)}
+
+/* ROUTE CARD IN CHAT */
+.route-card{background:rgba(0,168,107,.04);border:1px solid rgba(0,168,107,.15);border-radius:9px;padding:10px;margin-top:7px}
+.rc-head{font-size:10px;font-weight:800;color:var(--green);margin-bottom:7px}
+.rc-item{display:flex;align-items:flex-start;gap:7px;padding:5px 0;border-bottom:1px solid rgba(0,168,107,.07);font-size:10px;line-height:1.6}
+.rc-item:last-child{border:none}
+.rc-icon{font-size:14px;flex-shrink:0}
+.rc-meta{color:var(--muted);font-size:9px;margin-top:1px}
+
+/* QP */
+.qp-row{padding:7px 12px;border-top:1px solid var(--br);display:flex;gap:5px;flex-wrap:wrap;flex-shrink:0}
+.qp{padding:4px 9px;border-radius:11px;border:1px solid var(--br2);background:rgba(255,255,255,.02);font-family:'Outfit';font-size:9px;font-weight:700;cursor:pointer;color:var(--muted);transition:all .2s;white-space:nowrap}
+.qp:hover{border-color:var(--amber);color:var(--amber)}
+.ai-inp{padding:10px 12px;border-top:1px solid var(--br);flex-shrink:0;background:rgba(7,8,12,.6)}
+.ai-row{display:flex;gap:6px}
+.ai-ta{flex:1;background:rgba(18,19,26,.9);border:1.5px solid var(--br2);border-radius:7px;color:var(--ink);font-family:'Outfit';font-size:12px;padding:8px 11px;outline:none;resize:none;min-height:37px;max-height:88px;transition:border-color .2s;line-height:1.5}
+.ai-ta:focus{border-color:rgba(255,140,0,.4)}
+.ai-ta::placeholder{color:var(--muted)}
+.ai-send{width:35px;height:35px;border-radius:7px;border:none;flex-shrink:0;background:var(--amber);color:#000;font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .2s;font-weight:900}
+.ai-send:hover{background:var(--amber2);transform:scale(1.06)}
+.ai-send:disabled{opacity:.4;cursor:not-allowed;transform:none}
+.tdots{display:flex;align-items:center;gap:4px;padding:6px 10px}
+.td{width:5px;height:5px;border-radius:50%;background:var(--muted);animation:td .9s ease-in-out infinite}
+.td:nth-child(2){animation-delay:.15s}.td:nth-child(3){animation-delay:.3s}
+@keyframes td{0%,80%,100%{transform:scale(1);opacity:.4}40%{transform:scale(1.3);opacity:1}}
+
+/* MODAL */
+.mo{position:fixed;inset:0;background:rgba(0,0,0,.8);z-index:500;display:none;align-items:center;justify-content:center;padding:14px}
+.mo.open{display:flex}
+.mod{background:var(--bg2);border:1px solid var(--br2);border-radius:14px;max-width:480px;width:100%;max-height:86vh;overflow-y:auto}
+.mod-h{padding:15px 18px;border-bottom:1px solid var(--br2);display:flex;justify-content:space-between;align-items:center}
+.mod-x{background:none;border:none;color:var(--muted);font-size:17px;cursor:pointer}
+.mod-b{padding:17px}
+
+/* BUTTONS */
+.btn{padding:10px 18px;border-radius:8px;font-family:'Outfit';font-size:11px;font-weight:700;border:none;cursor:pointer;transition:all .2s;display:inline-flex;align-items:center;gap:6px}
+.btn-amber{background:var(--amber);color:#000}.btn-amber:hover{background:var(--amber2);transform:translateY(-1px)}
+.btn-ghost{background:rgba(255,255,255,.04);border:1.5px solid var(--br2);color:var(--muted)}.btn-ghost:hover{border-color:var(--amber);color:var(--amber)}
+.btn-full{width:100%;justify-content:center}
+.btn-green{background:var(--green);color:#fff}.btn-green:hover{transform:translateY(-1px)}
+
+/* NOTICE */
+.note{padding:10px 13px;border-radius:8px;font-size:11px;line-height:1.7;margin-bottom:11px}
+.na{background:rgba(255,140,0,.06);border:1px solid rgba(255,140,0,.18);color:var(--muted)}.na strong{color:var(--amber)}
+.ng{background:rgba(0,168,107,.06);border:1px solid rgba(0,168,107,.18);color:var(--muted)}.ng strong{color:var(--green)}
+
+/* FLDS */
+.fld{margin-bottom:10px}
+.fld label{display:block;font-size:9px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);margin-bottom:4px;font-family:'JetBrains Mono'}
+.fld input,.fld select,.fld textarea{width:100%;background:var(--bg3);border:1.5px solid var(--br2);border-radius:7px;color:var(--ink);font-family:'Outfit';font-size:13px;padding:9px 12px;outline:none;transition:border-color .2s}
+.fld input:focus,.fld select:focus{border-color:rgba(255,140,0,.4)}
+.f2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+
+/* LAYOUT */
+.two-col{display:grid;grid-template-columns:1fr 340px;gap:14px}
+@media(max-width:880px){.two-col{grid-template-columns:1fr}}
+.three-col{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:11px}
+
+/* REGISTER SECTION */
+.reg-section{background:linear-gradient(135deg,rgba(255,140,0,.05),rgba(74,31,255,.03));border:1px solid var(--br);border-radius:14px;padding:22px;text-align:center;margin-bottom:18px}
+.rs-icon{font-size:40px;margin-bottom:10px}
+.rs-title{font-family:'Syne';font-size:20px;font-weight:800;margin-bottom:5px}
+.rs-sub{font-size:11px;color:var(--muted);margin-bottom:18px;line-height:1.7;max-width:420px;margin-left:auto;margin-right:auto}
+.rs-perks{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-bottom:18px}
+.rs-perk{font-size:10px;font-weight:700;padding:5px 12px;border-radius:8px;background:rgba(255,140,0,.08);border:1px solid rgba(255,140,0,.18);color:var(--amber)}
+
+/* NOTIFICATION SETTINGS */
+.notif-row{display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--br2);gap:12px}
+.notif-row:last-child{border:none}
+.nr-info{flex:1}
+.nr-label{font-size:12px;font-weight:700;margin-bottom:2px}
+.nr-sub{font-size:10px;color:var(--muted)}
+.toggle{width:40px;height:22px;background:var(--muted);border-radius:11px;cursor:pointer;position:relative;transition:background .2s;flex-shrink:0;border:none}
+.toggle.on{background:var(--amber)}
+.toggle::after{content:'';position:absolute;width:16px;height:16px;border-radius:50%;background:#fff;top:3px;left:3px;transition:left .2s}
+.toggle.on::after{left:21px}
+</style>
+</head>
+<body>
+
+<nav class="nav">
+  <div class="nl">
+    <div class="nav-logo">VRACE</div>
+    <div class="nav-slash">/</div>
+    <div class="nav-page">RUNNING TOURISM</div>
+  </div>
+  <div class="nav-tabs">
+    <div class="nt on" onclick="showV('find',this)">🔍 Tìm runner</div>
+    <div class="nt" onclick="showV('routes',this)">🗺️ Bản đồ chạy</div>
+    <div class="nt" onclick="showV('register',this)">🏃 Đăng ký local runner</div>
+    <div class="nt" onclick="showV('notifs',this)">🔔 Thông báo</div>
+    <a class="nt" href="runner-connect.html">🤝 Connect</a>
+    <a class="nt" href="platform-map.html">🗺️ Platform</a>
+  </div>
+</nav>
+
+<!-- ═══ VIEW: FIND ═══ -->
+<div class="view active" id="view-find">
+<div class="wrap">
+  <div class="hero">
+    <div class="hero-eyebrow">✈️ Running Tourism · HLRace</div>
+    <div class="hero-h">CHẠY CÙNG<br><span class="line2">NGƯỜI ĐỊA PHƯƠNG</span></div>
+    <p class="hero-sub">Tìm runner Hà Nội biết đường, biết chỗ, nói được ngôn ngữ của bạn. AI match theo địa điểm, pace và phong cách.</p>
+    <div class="hero-stats">
+      <div class="hstat"><div class="hstat-n" id="statRunners">24</div><div class="hstat-l">Local Runners</div></div>
+      <div class="hstat"><div class="hstat-n">12</div><div class="hstat-l">Đường chạy</div></div>
+      <div class="hstat"><div class="hstat-n">70k</div><div class="hstat-l">VNĐ / match</div></div>
+      <div class="hstat"><div class="hstat-n">4.8★</div><div class="hstat-l">Rating TB</div></div>
+    </div>
+  </div>
+
+  <div class="two-col">
+    <!-- LEFT -->
+    <div>
+      <!-- SEARCH FORM -->
+      <div class="search-panel">
+        <div class="sp-title">🔍 Tìm runner phù hợp</div>
+        <div class="sp-sub">Nhập thông tin chuyến chạy — AI sẽ match ngay với local runner tốt nhất cho bạn</div>
+        <div class="sp-grid">
+          <div class="sf">
+            <label>Địa điểm muốn chạy</label>
+            <select id="sArea" onchange="filterRunners()">
+              <option value="">— Chọn khu vực —</option>
+              <option>Hồ Hoàn Kiếm & Phố cổ</option>
+              <option>Hồ Tây · Tây Hồ</option>
+              <option>Sông Hồng · Long Biên</option>
+              <option>Hồ Trúc Bạch · Ba Đình</option>
+              <option>Công viên Thống Nhất</option>
+              <option>Hà Nội tổng hợp</option>
+            </select>
+          </div>
+          <div class="sf">
+            <label>Pace của bạn</label>
+            <select id="sPace" onchange="filterRunners()">
+              <option value="">— Pace của bạn —</option>
+              <option>Dưới 5:00/km (nhanh)</option>
+              <option>5:00–6:00/km</option>
+              <option>6:00–7:00/km (trung bình)</option>
+              <option>Trên 7:00/km (thoải mái)</option>
+            </select>
+          </div>
+          <div class="sf">
+            <label>Cự ly muốn chạy</label>
+            <select id="sDist" onchange="filterRunners()">
+              <option value="">— Cự ly —</option>
+              <option>3–5 km (ngắn · tham quan)</option>
+              <option>5–10 km (trung bình)</option>
+              <option>10–15 km (dài)</option>
+              <option>Tuỳ runner đề xuất</option>
+            </select>
+          </div>
+          <div class="sf">
+            <label>Ngôn ngữ giao tiếp</label>
+            <select id="sLang" onchange="filterRunners()">
+              <option value="">— Ngôn ngữ —</option>
+              <option>Tiếng Việt</option>
+              <option>English</option>
+              <option>中文 (Chinese)</option>
+              <option>한국어 (Korean)</option>
+              <option>日本語 (Japanese)</option>
+            </select>
+          </div>
+          <div class="sf sf-full">
+            <label>Ngày & giờ muốn chạy</label>
+            <input type="text" id="sDate" placeholder="VD: 22/03/2026 lúc 6:00 sáng, hoặc 'cuối tuần này'">
+          </div>
+        </div>
+        <button class="btn btn-amber btn-full" onclick="searchRunners()" style="font-size:12px">🤖 AI tìm runner phù hợp</button>
+      </div>
+
+      <!-- RUNNERS GRID -->
+      <div class="ch" style="background:var(--bg2);border:1px solid var(--br2);border-radius:13px 13px 0 0;padding:12px 16px">
+        <div class="ct">Local Runners</div>
+        <span id="runnerCountLbl" style="font-size:10px;color:var(--muted)">Tất cả</span>
+      </div>
+      <div class="three-col" id="runnersGrid" style="padding:11px;background:var(--bg2);border:1px solid var(--br2);border-top:none;border-radius:0 0 13px 13px;margin-bottom:0"></div>
+    </div>
+
+    <!-- RIGHT: AI TOUR GUIDE -->
+    <div class="ai-panel">
+      <div class="aih">
+        <div class="aih-top">
+          <div class="ai-av">🧭</div>
+          <div><div class="ai-name">Compass — AI Tour Guide</div><div class="ai-status"><span class="ai-dot"></span>Sẵn sàng dẫn đường</div></div>
+        </div>
+        <div class="ai-ctx" id="aiCtx">Hỏi về đường chạy, runner, hoặc lịch trình tại Hà Nội</div>
+      </div>
+      <div class="ai-msgs" id="aiMsgs">
+        <div class="msg msg-ai">
+          <div class="ai-av" style="width:24px;height:24px;font-size:11px;flex-shrink:0">🧭</div>
+          <div><div class="bbl">Chào! Mình là <strong>Compass</strong> — AI dẫn đường cho runner du lịch tại Hà Nội 🏙️<br><br>Hãy cho mình biết bạn muốn chạy <strong>ở đâu</strong>, <strong>mấy km</strong>, và <strong>mức pace</strong> — mình sẽ tìm local runner phù hợp nhất và kể cho bạn nghe về những con đường đẹp nhất Hà Nội.</div><div class="msg-time">Vừa xong</div></div>
+        </div>
+      </div>
+      <div class="qp-row">
+        <div class="qp" onclick="aiQ('Đường chạy đẹp nhất quanh Hồ Hoàn Kiếm là gì?')">🗺️ Hồ Hoàn Kiếm</div>
+        <div class="qp" onclick="aiQ('Tôi chạy pace 6:30/km, tìm runner cùng Hồ Tây')">👟 Hồ Tây 6:30</div>
+        <div class="qp" onclick="aiQ('Buổi sáng sớm ở Hà Nội nên chạy đâu?')">🌅 Sáng sớm</div>
+        <div class="qp" onclick="aiQ('Tôi có 3 ngày ở Hà Nội, lên kế hoạch chạy cho tôi')">📅 3 ngày</div>
+        <div class="qp" onclick="aiQ('Runner nào có thể dẫn tôi chạy và giới thiệu văn hoá địa phương?')">🍜 Văn hoá</div>
+      </div>
+      <div class="ai-inp">
+        <div class="ai-row">
+          <textarea class="ai-ta" id="aiInput" placeholder="Hỏi về đường chạy, runner, lịch trình..." rows="1"
+            onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();aiSend()}"
+            oninput="this.style.height='auto';this.style.height=Math.min(this.scrollHeight,88)+'px'"></textarea>
+          <button class="ai-send" id="aiSendBtn" onclick="aiSend()">↑</button>
+        </div>
+        <div style="font-size:8px;color:var(--muted);margin-top:4px;text-align:center">Compass · Claude AI · Dữ liệu đường chạy Hà Nội</div>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- ═══ VIEW: ROUTES ═══ -->
+<div class="view" id="view-routes">
+<div class="wrap">
+  <div style="margin-bottom:18px">
+    <div style="font-family:'Syne';font-size:28px;font-weight:800;margin-bottom:4px">🗺️ Bản đồ đường chạy</div>
+    <p style="font-size:12px;color:var(--muted)">Đường chạy được runner địa phương chia sẻ. Bạn cũng có thể đóng góp đường chạy yêu thích.</p>
+  </div>
+
+  <div class="map-zone" onclick="showToast('🗺️ Bản đồ thật sẽ dùng Mapbox / Google Maps API — hiện đang demo')">
+    <div class="map-dots">
+      <div class="mdot" style="top:35%;left:45%;animation-delay:.3s"></div>
+      <div class="mdot" style="top:25%;left:52%;animation-delay:.9s;background:var(--green);box-shadow:0 0 8px var(--green)"></div>
+      <div class="mdot" style="top:55%;left:38%;animation-delay:.6s"></div>
+      <div class="mdot" style="top:45%;left:60%;animation-delay:1.2s;background:var(--cyan);box-shadow:0 0 8px var(--cyan)"></div>
+      <div class="mdot" style="top:30%;left:35%;animation-delay:1.5s;background:var(--red);box-shadow:0 0 8px var(--red)"></div>
+    </div>
+    <div class="map-lbl">Bản đồ tương tác · Hà Nội</div>
+    <div class="map-sub" style="color:var(--muted)">12 đường chạy được chia sẻ · Click để xem chi tiết</div>
+    <div class="map-routes">
+      <span class="mr-pill on">Hồ Hoàn Kiếm</span>
+      <span class="mr-pill">Hồ Tây</span>
+      <span class="mr-pill">Sông Hồng</span>
+      <span class="mr-pill">Trúc Bạch</span>
+      <span class="mr-pill">CV Thống Nhất</span>
+    </div>
+  </div>
+
+  <div class="three-col" id="routesList"></div>
+
+  <div style="margin-top:18px;text-align:center">
+    <div style="font-family:'Syne';font-size:16px;font-weight:800;margin-bottom:6px">Đóng góp đường chạy của bạn</div>
+    <p style="font-size:11px;color:var(--muted);margin-bottom:14px">Chia sẻ đường chạy yêu thích để runner du lịch khắp nơi được khám phá Hà Nội qua góc nhìn của bạn</p>
+    <button class="btn btn-amber" onclick="openShareRoute()">📍 Chia sẻ đường chạy</button>
+  </div>
+</div>
+</div>
+
+<!-- ═══ VIEW: REGISTER AS LOCAL RUNNER ═══ -->
+<div class="view" id="view-register">
+<div class="wrap">
+  <div class="reg-section">
+    <div class="rs-icon">🏃‍♂️</div>
+    <div class="rs-title">Trở thành Local Running Guide</div>
+    <div class="rs-sub">Chia sẻ đam mê chạy bộ với du khách quốc tế. Dẫn họ khám phá Hà Nội qua đôi chân — và kiếm thêm thu nhập từ điều bạn yêu thích.</div>
+    <div class="rs-perks">
+      <span class="rs-perk">💰 70k/match · Runner nhận 85%</span>
+      <span class="rs-perk">🌍 Kết nối runner quốc tế</span>
+      <span class="rs-perk">📍 Chia sẻ đường chạy yêu thích</span>
+      <span class="rs-perk">⭐ Xây dựng uy tín · Rating</span>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="ch"><div class="ct">Đăng ký làm Local Running Guide</div></div>
+    <div class="cb">
+      <div class="note na"><strong>Lưu ý:</strong> Thông tin bạn điền sẽ hiển thị cho du khách. Số điện thoại chỉ được chia sẻ sau khi cả hai đồng ý match.</div>
+      <div class="f2">
+        <div class="fld"><label>Họ và tên</label><input type="text" id="rgName" placeholder="Nguyễn Văn A"></div>
+        <div class="fld"><label>Pace trung bình</label><input type="text" id="rgPace" placeholder="5:45/km"></div>
+      </div>
+      <div class="f2">
+        <div class="fld"><label>Khu vực chạy sở trường</label>
+          <select id="rgArea"><option>Hồ Hoàn Kiếm</option><option>Hồ Tây</option><option>Sông Hồng</option><option>Hà Nội tổng hợp</option></select>
+        </div>
+        <div class="fld"><label>Lịch sẵn sàng dẫn</label>
+          <select id="rgSched"><option>Sáng sớm 5-7h</option><option>Tối 6-8h</option><option>Cuối tuần</option><option>Linh hoạt</option></select>
+        </div>
+      </div>
+      <div class="fld"><label>Ngôn ngữ có thể giao tiếp</label>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:4px" id="langCheckboxes">
+          <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:12px"><input type="checkbox" value="vi" checked> 🇻🇳 Tiếng Việt</label>
+          <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:12px"><input type="checkbox" value="en"> 🇺🇸 English</label>
+          <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:12px"><input type="checkbox" value="zh"> 🇨🇳 中文</label>
+          <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:12px"><input type="checkbox" value="ko"> 🇰🇷 한국어</label>
+          <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:12px"><input type="checkbox" value="ja"> 🇯🇵 日本語</label>
+        </div>
+      </div>
+      <div class="fld"><label>Giới thiệu bản thân (khách sẽ đọc)</label>
+        <textarea id="rgBio" style="width:100%;background:var(--bg3);border:1.5px solid var(--br2);border-radius:7px;color:var(--ink);font-family:'Outfit';font-size:12px;padding:9px 12px;outline:none;min-height:80px;resize:vertical" placeholder="Runner 5 năm tại Hà Nội. Mình biết từng góc đường quanh Hồ Hoàn Kiếm và có thể dẫn bạn qua phố cổ lúc bình minh..."></textarea>
+      </div>
+      <div class="fld"><label>Đường chạy yêu thích (mô tả cho khách)</label>
+        <textarea id="rgRoutes" style="width:100%;background:var(--bg3);border:1.5px solid var(--br2);border-radius:7px;color:var(--ink);font-family:'Outfit';font-size:12px;padding:9px 12px;outline:none;min-height:60px;resize:vertical" placeholder="VD: Vòng Hồ Hoàn Kiếm 1.8km → qua Tháp Rùa → Cầu Thê Húc..."></textarea>
+      </div>
+      <button class="btn btn-amber btn-full" onclick="submitGuide()" style="font-size:12px">✅ Đăng ký làm Local Running Guide</button>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- ═══ VIEW: NOTIFICATIONS ═══ -->
+<div class="view" id="view-notifs">
+<div class="wrap">
+  <div style="margin-bottom:18px">
+    <div style="font-family:'Syne';font-size:28px;font-weight:800;margin-bottom:4px">🔔 Cài đặt thông báo</div>
+    <p style="font-size:12px;color:var(--muted)">Quản lý khi nào và bằng cách nào bạn nhận được thông báo về match, nhóm chạy và cộng đồng.</p>
+  </div>
+
+  <div class="card" style="margin-bottom:14px">
+    <div class="ch"><div class="ct">Tourism Match</div></div>
+    <div class="cb">
+      <div class="note na"><strong>Runner địa phương:</strong> Nhận thông báo ngay khi có khách muốn chạy cùng bạn.</div>
+      <div class="notif-row"><div class="nr-info"><div class="nr-label">Khách tìm match</div><div class="nr-sub">Khi có khách du lịch request chạy cùng bạn</div></div><button class="toggle on" onclick="this.classList.toggle('on')" id="n1"></button></div>
+      <div class="notif-row"><div class="nr-info"><div class="nr-label">Nhắc lịch chạy</div><div class="nr-sub">1 tiếng trước giờ hẹn</div></div><button class="toggle on" onclick="this.classList.toggle('on')" id="n2"></button></div>
+      <div class="notif-row"><div class="nr-info"><div class="nr-label">Đánh giá mới</div><div class="nr-sub">Khi khách để lại review sau chuyến chạy</div></div><button class="toggle on" onclick="this.classList.toggle('on')" id="n3"></button></div>
+    </div>
+  </div>
+
+  <div class="card" style="margin-bottom:14px">
+    <div class="ch"><div class="ct">Runner Connect</div></div>
+    <div class="cb">
+      <div class="notif-row"><div class="nr-info"><div class="nr-label">Lời mời kết nối</div><div class="nr-sub">Khi runner khác gửi lời mời</div></div><button class="toggle on" onclick="this.classList.toggle('on')"></button></div>
+      <div class="notif-row"><div class="nr-info"><div class="nr-label">Nhóm chạy mới</div><div class="nr-sub">Khi có nhóm cùng race của bạn được tạo</div></div><button class="toggle on" onclick="this.classList.toggle('on')"></button></div>
+      <div class="notif-row"><div class="nr-info"><div class="nr-label">Lịch luyện tập</div><div class="nr-sub">Nhắc buổi chạy nhóm 2 tiếng trước</div></div><button class="toggle" onclick="this.classList.toggle('on')"></button></div>
+    </div>
+  </div>
+
+  <div class="card" style="margin-bottom:14px">
+    <div class="ch"><div class="ct">Community & Race</div></div>
+    <div class="cb">
+      <div class="notif-row"><div class="nr-info"><div class="nr-label">Race Ocean mở cửa</div><div class="nr-sub">Khi Flash window bắt đầu cho race bạn đã ĐK</div></div><button class="toggle on" onclick="this.classList.toggle('on')"></button></div>
+      <div class="notif-row"><div class="nr-info"><div class="nr-label">Chiến dịch Community Good</div><div class="nr-sub">AI đề xuất chiến dịch mới phù hợp với bạn</div></div><button class="toggle" onclick="this.classList.toggle('on')"></button></div>
+      <div class="notif-row"><div class="nr-info"><div class="nr-label">Điểm cống hiến</div><div class="nr-sub">Khi được cộng điểm hoặc lên cấp bậc mới</div></div><button class="toggle on" onclick="this.classList.toggle('on')"></button></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="ch"><div class="ct">Kênh nhận thông báo</div></div>
+    <div class="cb">
+      <div class="notif-row"><div class="nr-info"><div class="nr-label">🔔 Push notification</div><div class="nr-sub">Trên trình duyệt / ứng dụng</div></div><button class="toggle on" onclick="this.classList.toggle('on')"></button></div>
+      <div class="notif-row"><div class="nr-info"><div class="nr-label">📱 Zalo OA</div><div class="nr-sub">Nhắn tin qua Zalo Official Account HLRace</div></div><button class="toggle" onclick="this.classList.toggle('on')"></button></div>
+      <div class="notif-row"><div class="nr-info"><div class="nr-label">📧 Email</div><div class="nr-sub">Tổng hợp hàng ngày lúc 7:00 sáng</div></div><button class="toggle" onclick="this.classList.toggle('on')"></button></div>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- MODAL: Runner detail -->
+<div class="mo" id="runnerMo">
+  <div class="mod">
+    <div class="mod-h"><div style="font-size:13px;font-weight:800" id="rmH">Local Runner</div><button class="mod-x" onclick="closeM('runnerMo')">✕</button></div>
+    <div class="mod-b" id="rmB"></div>
+  </div>
+</div>
+
+<!-- MODAL: Book runner -->
+<div class="mo" id="bookMo">
+  <div class="mod">
+    <div class="mod-h"><div style="font-size:13px;font-weight:800" id="bookH">Đặt lịch chạy</div><button class="mod-x" onclick="closeM('bookMo')">✕</button></div>
+    <div class="mod-b" id="bookB"></div>
+  </div>
+</div>
+
+<script src="race-config.js"></script>
+<script>
+// ═══ DATA ═══
+const LOCAL_RUNNERS = [
+  {id:'lr1',emoji:'🏃‍♀️',name:'Minh Anh',fullName:'Trần Minh Anh',gender:'Nữ',
+   pace:'5:45/km',area:'Hồ Tây · Tây Hồ',online:true,
+   langs:['🇻🇳','🇺🇸'],langNames:['Tiếng Việt','English'],
+   races:12,tourCount:28,rating:4.9,ratingCount:26,
+   sched:'Sáng 5-7h · Cuối tuần',
+   routes:['Hồ Tây 6km','Hồ Tây + Trúc Bạch 9km','Tây Hồ sáng sớm 4km'],
+   bio:'Runner 3 năm tại Hà Nội. Biết từng góc đường quanh Hồ Tây. Có thể chạy và giới thiệu văn hoá, ẩm thực địa phương bằng tiếng Anh.',
+   specialty:'Đường chạy ven hồ · Bình minh Hà Nội',locked:false},
+  {id:'lr2',emoji:'🏃',name:'Hoàng Long',fullName:'Nguyễn Hoàng Long',gender:'Nam',
+   pace:'6:10/km',area:'Hồ Hoàn Kiếm · Phố cổ',online:true,
+   langs:['🇻🇳','🇺🇸','🇰🇷'],langNames:['Tiếng Việt','English','한국어'],
+   races:7,tourCount:14,rating:4.8,ratingCount:13,
+   sched:'Tối 6-8h · Cuối tuần sáng',
+   routes:['Vòng Hồ Gươm 1.8km','Hồ Gươm + Phố cổ 5km','Ba Đình tour 8km'],
+   bio:'TNV đội Pacer HLRace. Chuyên dẫn đường quanh phố cổ và Hồ Gươm. Nói được tiếng Hàn — nhiều khách Hàn Quốc rất thích.',
+   specialty:'Phố cổ · Lịch sử Hà Nội · Khách Hàn',locked:true},
+  {id:'lr3',emoji:'🏃‍♀️',name:'Thanh Tâm',fullName:'Đỗ Thanh Tâm',gender:'Nữ',
+   pace:'6:00/km',area:'Hồ Hoàn Kiếm · Ba Đình',online:false,
+   langs:['🇻🇳','🇺🇸'],langNames:['Tiếng Việt','English'],
+   races:9,tourCount:8,rating:4.7,ratingCount:7,
+   sched:'Sáng + Cuối tuần',
+   routes:['Hồ Gươm sáng sớm 3km','Phố cổ khám phá 6km'],
+   bio:'Runner người Hà Nội gốc. Thích dẫn khách qua những con phố nhỏ ít người biết. Hay dừng ăn sáng Hà Nội sau chạy.',
+   specialty:'Ẩm thực sáng · Phố nhỏ · Authentic Hanoi',locked:false},
+  {id:'lr4',emoji:'🏃',name:'Minh Khoa',fullName:'Vũ Minh Khoa',gender:'Nam',
+   pace:'5:50/km',area:'Hồ Tây · Sông Hồng',online:true,
+   langs:['🇻🇳','🇺🇸','🇨🇳'],langNames:['Tiếng Việt','English','中文'],
+   races:15,tourCount:19,rating:4.9,ratingCount:18,
+   sched:'Sáng cuối tuần · Thứ 2/4/6 tối',
+   routes:['Sông Hồng bờ Bắc 8km','Hồ Tây full 17km','Đê sông Hồng 12km'],
+   bio:'Runner trail và đường phẳng. Biết tiếng Trung — nhiều đoàn khách Trung Quốc. Thích chụp ảnh đường chạy, mỗi buổi đều có ảnh kỷ niệm đẹp.',
+   specialty:'Sông Hồng · Cảnh bình minh · Khách Trung Quốc',locked:true},
+  {id:'lr5',emoji:'🏃',name:'Văn Tuấn',fullName:'Lê Văn Tuấn',gender:'Nam',
+   pace:'5:20/km',area:'Hà Nội tổng hợp',online:true,
+   langs:['🇻🇳','🇺🇸'],langNames:['Tiếng Việt','English'],
+   races:28,tourCount:45,rating:5.0,ratingCount:41,
+   sched:'Sáng + tối linh hoạt',
+   routes:['Hồ Hoàn Kiếm 1.8km','Hồ Tây 6km','Long Biên 10km','Custom theo khách'],
+   bio:'Pacer chuyên nghiệp 5 năm. Hướng dẫn viên du lịch chạy bộ không chính thức. Đã dẫn runner từ 30+ quốc gia. Pace có thể điều chỉnh linh hoạt theo khách.',
+   specialty:'Chuyên nghiệp nhất · 30+ quốc gia · Mọi cự ly',locked:true},
+  {id:'lr6',emoji:'🏃‍♀️',name:'Thu Hương',fullName:'Phạm Thu Hương',gender:'Nữ',
+   pace:'6:45/km',area:'Cầu Giấy · Mỹ Đình',online:false,
+   langs:['🇻🇳','🇯🇵'],langNames:['Tiếng Việt','日本語'],
+   races:4,tourCount:5,rating:4.6,ratingCount:5,
+   sched:'Cuối tuần sáng',
+   routes:['Mỹ Đình công viên 4km','Cầu Giấy morning 5km'],
+   bio:'Runner mới 8 tháng nhưng nhiệt tình. Nói được tiếng Nhật — phục vụ tốt khách Nhật Bản. Pace chậm phù hợp người mới chạy hoặc muốn thưởng thức phong cảnh.',
+   specialty:'Khách Nhật · Pace thoải mái · Beginner-friendly',locked:false},
+];
+
+const ROUTES_DATA = [
+  {name:'Hồ Hoàn Kiếm vòng quanh',dist:'1.8km',ele:'Bằng phẳng',start:'Đinh Tiên Hoàng',end:'Vòng lại',diff:'Dễ',highlights:'Tháp Rùa · Cầu Thê Húc · Bình minh',by:'Hoàng Long'},
+  {name:'Hồ Tây full loop',dist:'17km',ele:'Nhẹ nhàng',start:'Nghi Tàm',end:'Vòng lại',diff:'Trung bình',highlights:'Bình minh Hồ Tây · Đền Trấn Quốc · Hoa sen',by:'Minh Khoa'},
+  {name:'Phố cổ buổi sáng',dist:'5.2km',ele:'Bằng phẳng',start:'Hồ Gươm',end:'Đồng Xuân',diff:'Dễ',highlights:'Phố Hàng Đào · 36 phố phường · Ít xe buổi sáng',by:'Thanh Tâm'},
+  {name:'Sông Hồng bờ Bắc',dist:'8.5km',ele:'Nhẹ',start:'Cầu Long Biên',end:'Bãi giữa',diff:'Trung bình',highlights:'Bãi giữa · Hoa dại · View thành phố',by:'Minh Khoa'},
+  {name:'Hồ Tây + Trúc Bạch',dist:'9km',ele:'Bằng phẳng',start:'Quan Thánh',end:'Vòng lại',diff:'Trung bình',highlights:'2 hồ liền · Đền Quán Thánh · View đẹp',by:'Minh Anh'},
+  {name:'Ba Đình buổi sáng',dist:'7km',ele:'Rất nhẹ',start:'Lăng Bác',end:'Vườn Bách Thảo',diff:'Dễ',highlights:'Lăng Bác · Bảo tàng · Công viên Bách Thảo',by:'Hoàng Long'},
+];
+
+let chatH = [], isTyping = false;
+
+document.addEventListener('DOMContentLoaded', () => {
+  renderRunners(LOCAL_RUNNERS);
+  renderRoutes();
+  setTimeout(aiWelcome, 900);
+});
+
+// VIEWS
+function showV(v, btn) {
+  document.querySelectorAll('.view').forEach(x => x.classList.remove('active'));
+  document.getElementById('view-' + v).classList.add('active');
+  document.querySelectorAll('.nt').forEach(x => x.classList.remove('on'));
+  if (btn) btn.classList.add('on');
+}
+
+// RUNNERS
+function filterRunners() { searchRunners(); }
+
+function searchRunners() {
+  const area = document.getElementById('sArea').value;
+  const pace = document.getElementById('sPace').value;
+  const lang = document.getElementById('sLang').value;
+  let list = [...LOCAL_RUNNERS];
+  if (area) list = list.filter(r => r.area.includes(area.split('·')[0].trim()) || area.includes('tổng hợp') || r.area.includes('tổng hợp'));
+  if (lang === 'Tiếng Việt') list = list.filter(r => r.langNames.includes('Tiếng Việt'));
+  else if (lang === 'English') list = list.filter(r => r.langNames.includes('English'));
+  else if (lang === '中文 (Chinese)') list = list.filter(r => r.langNames.includes('中文'));
+  else if (lang === '한국어 (Korean)') list = list.filter(r => r.langNames.includes('한국어'));
+  else if (lang === '日本語 (Japanese)') list = list.filter(r => r.langNames.includes('日本語'));
+  document.getElementById('runnerCountLbl').textContent = list.length + ' runner phù hợp';
+  renderRunners(list);
+  if (area || pace || lang) {
+    const ctx = [area, pace, lang].filter(Boolean).join(' · ');
+    aiAppend('ai', `🔍 Đang lọc: <strong>${ctx}</strong><br>Tìm thấy <strong>${list.length} runner</strong>. ${list.length > 0 ? 'Những người này có thể phù hợp với bạn:' : 'Thử bỏ bớt filter để tìm thêm.'}`);
+  }
+}
+
+function renderRunners(list) {
+  document.getElementById('runnersGrid').innerHTML = list.map(r => {
+    const stars = '★'.repeat(Math.floor(r.rating)) + (r.rating % 1 >= .5 ? '½' : '');
+    return `<div class="trc" onclick="openRunner('${r.id}')">
+      <div class="trc-head">
+        <div class="trc-top">
+          <div class="trc-av" style="background:linear-gradient(135deg,${r.gender==='Nữ'?'#FF8C00,#FF2D6B':'#4A1FFF,#00C5CC'})">
+            ${r.emoji}${r.online?'<div class="trc-online"></div>':''}
+          </div>
+          <div style="flex:1;min-width:0">
+            <div class="trc-name">${r.name}</div>
+            <div class="trc-handle">@${r.fullName.toLowerCase().replace(/\s+/g,'')} · ${r.area.split('·')[0].trim()}</div>
+            <div class="trc-lang">${r.langs.map(l=>`<span class="lang-flag">${l}</span>`).join('')}</div>
+          </div>
+        </div>
+        <div class="trc-routes">
+          <div class="tr-lbl">Đường chạy quen</div>
+          <div class="route-pills">${r.routes.slice(0,2).map(rt=>`<span class="rp">${rt}</span>`).join('')}</div>
+        </div>
+      </div>
+      <div class="trc-body">
+        <div class="trc-stats">
+          <div class="trcs"><div class="trcs-val" style="color:var(--amber)">${r.tourCount}</div><div class="trcs-lbl">Tours</div></div>
+          <div class="trcs"><div class="trcs-val" style="color:var(--green)">${r.races}</div><div class="trcs-lbl">Races</div></div>
+          <div class="trcs"><div class="trcs-val" style="color:var(--cyan)">${r.pace.split(':')[0]+':'+r.pace.split(':')[1]}</div><div class="trcs-lbl">Pace</div></div>
+        </div>
+        <div class="trc-bio">${r.bio.substring(0,85)}${r.bio.length>85?'...':''}</div>
+        <div class="trc-rating"><span class="stars">${'★'.repeat(Math.floor(r.rating))}</span><span class="rating-num">${r.rating}</span><span class="rating-count">(${r.ratingCount} reviews)</span></div>
+        <div class="trc-price"><span class="tp-label">Phí match</span><div><span class="tp-price">70k</span><span style="font-size:9px;color:var(--muted)">/lần chạy</span></div></div>
+        <div class="trc-actions">
+          <button class="ta ta-primary" onclick="event.stopPropagation();openBook('${r.id}')">📅 Đặt lịch</button>
+          <button class="ta ta-ghost" onclick="event.stopPropagation();aiAbout('${r.id}')">🧭 Hỏi AI</button>
+        </div>
+      </div>
+      ${r.locked?`<div class="lock-ov show"><div style="font-size:22px">🔒</div><div style="font-size:10px;font-weight:700;color:var(--ink);text-align:center;padding:0 12px;line-height:1.5">Xem đầy đủ sau khi thanh toán 70k</div><button class="lo-btn" onclick="event.stopPropagation();openBook('${r.id}')">📅 Đặt lịch · 70k</button></div>`:''}
+    </div>`;
+  }).join('') || `<div style="grid-column:1/-1;text-align:center;padding:32px;color:var(--muted)">Không tìm thấy runner phù hợp. Thử bỏ bớt filter.</div>`;
+}
+
+function openRunner(id) {
+  const r = LOCAL_RUNNERS.find(x => x.id === id); if (!r) return;
+  const stars = '★'.repeat(Math.floor(r.rating));
+  document.getElementById('rmH').textContent = r.fullName + ' — Local Runner';
+  document.getElementById('rmB').innerHTML = `
+    <div style="text-align:center;margin-bottom:16px">
+      <div style="width:64px;height:64px;border-radius:50%;background:linear-gradient(135deg,${r.gender==='Nữ'?'#FF8C00,#FF2D6B':'#4A1FFF,#00C5CC'});display:flex;align-items:center;justify-content:center;font-size:28px;margin:0 auto 8px">${r.emoji}</div>
+      <div style="font-size:18px;font-weight:800">${r.fullName}</div>
+      <div style="font-size:10px;color:var(--muted);margin-top:3px">${r.area} · ${r.online?'🟢 Online ngay':'⚫ Offline'}</div>
+      <div style="display:flex;gap:5px;justify-content:center;flex-wrap:wrap;margin-top:8px">${r.langs.map((l,i)=>`<span style="font-size:12px">${l}</span> <span style="font-size:10px;color:var(--muted)">${r.langNames[i]}</span>`).join(' · ')}</div>
+    </div>
+    <div class="note na"><strong>⭐ Chuyên môn:</strong> ${r.specialty}</div>
+    <div style="font-size:12px;color:var(--muted);line-height:1.7;margin-bottom:14px">${r.bio}</div>
+    <div style="margin-bottom:14px"><div style="font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:8px;font-family:'JetBrains Mono'">Đường chạy quen</div>${r.routes.map(rt=>`<div style="font-size:11px;padding:5px 0;border-bottom:1px solid var(--br2);color:var(--ink2)">🗺️ ${rt}</div>`).join('')}</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:14px;text-align:center">
+      <div style="padding:10px;background:rgba(255,255,255,.02);border:1px solid var(--br2);border-radius:7px"><div style="font-family:'Syne';font-size:22px;font-weight:800;color:var(--amber)">${r.tourCount}</div><div style="font-size:8px;color:var(--muted);text-transform:uppercase;letter-spacing:1px">Tours</div></div>
+      <div style="padding:10px;background:rgba(255,255,255,.02);border:1px solid var(--br2);border-radius:7px"><div style="font-size:14px;color:var(--amber)">${stars}</div><div style="font-family:'Syne';font-size:16px;font-weight:800;color:var(--amber)">${r.rating}</div></div>
+      <div style="padding:10px;background:rgba(255,255,255,.02);border:1px solid var(--br2);border-radius:7px"><div style="font-family:'Syne';font-size:22px;font-weight:800;color:var(--green)">${r.races}</div><div style="font-size:8px;color:var(--muted);text-transform:uppercase;letter-spacing:1px">Races</div></div>
+    </div>
+    <div style="display:flex;gap:8px">
+      <button class="btn btn-amber" style="flex:1;justify-content:center" onclick="closeM('runnerMo');openBook('${r.id}')">📅 Đặt lịch · 70,000đ</button>
+      <button class="btn btn-ghost" onclick="aiAbout('${r.id}');closeM('runnerMo')">🧭 Hỏi AI</button>
+    </div>`;
+  openM('runnerMo');
+}
+
+function openBook(id) {
+  const r = LOCAL_RUNNERS.find(x => x.id === id); if (!r) return;
+  document.getElementById('bookH').textContent = 'Đặt lịch chạy với ' + r.name;
+  document.getElementById('bookB').innerHTML = `
+    <div class="note ng"><strong>Quy trình:</strong> Thanh toán 70k → ${r.name} nhận thông báo → Xác nhận lịch → Chạy cùng nhau ✓</div>
+    <div class="fld"><label>Ngày muốn chạy</label><input type="date" id="bkDate" min="${new Date().toISOString().split('T')[0]}"></div>
+    <div class="f2">
+      <div class="fld"><label>Giờ khởi hành</label><select id="bkTime"><option>5:30 sáng</option><option>6:00 sáng</option><option>6:30 sáng</option><option>17:00 chiều</option><option>18:00 tối</option></select></div>
+      <div class="fld"><label>Đường chạy</label><select id="bkRoute">${r.routes.map(rt=>`<option>${rt}</option>`).join('')}</select></div>
+    </div>
+    <div class="fld"><label>Ghi chú cho runner</label><textarea id="bkNote" style="width:100%;background:var(--bg3);border:1.5px solid var(--br2);border-radius:7px;color:var(--ink);font-family:'Outfit';font-size:12px;padding:8px 11px;outline:none;min-height:60px;resize:vertical" placeholder="Pace mong muốn, điều đặc biệt bạn muốn thấy, hay bất cứ điều gì..."></textarea></div>
+    <div style="background:rgba(255,140,0,.06);border:1px solid rgba(255,140,0,.2);border-radius:8px;padding:12px;margin-bottom:14px;display:flex;justify-content:space-between;align-items:center">
+      <div><div style="font-size:12px;font-weight:700">Phí match</div><div style="font-size:10px;color:var(--muted)">Runner nhận 85% · HLRace 15%</div></div>
+      <div style="font-family:'Syne';font-size:28px;font-weight:800;color:var(--amber)">70,000đ</div>
+    </div>
+    <button class="btn btn-amber btn-full" onclick="confirmBook('${r.id}')" style="font-size:12px">✅ Xác nhận đặt lịch · Thanh toán 70k</button>`;
+  openM('bookMo');
+}
+
+function confirmBook(id) {
+  const r = LOCAL_RUNNERS.find(x => x.id === id);
+  closeM('bookMo');
+  showToast(`✅ Đã gửi yêu cầu tới ${r?.name}! Họ sẽ xác nhận trong 2 tiếng.`);
+  aiAppend('ai', `🎉 Đặt lịch thành công với <strong>${r?.name}</strong>! Mình sẽ nhắc bạn 1 tiếng trước giờ chạy. Cần chuẩn bị gì cho buổi chạy ở Hà Nội không?`);
+}
+
+// ROUTES
+function renderRoutes() {
+  document.getElementById('routesList').innerHTML = ROUTES_DATA.map(r => `
+    <div style="background:var(--bg2);border:1.5px solid var(--br2);border-radius:12px;padding:14px;transition:all .2s;cursor:pointer" onmouseover="this.style.borderColor='rgba(255,140,0,.3)'" onmouseout="this.style.borderColor='rgba(255,255,255,.06)'">
+      <div style="display:flex;justify-content:space-between;margin-bottom:8px">
+        <div style="font-size:13px;font-weight:800">${r.name}</div>
+        <div style="font-family:'Syne';font-size:18px;font-weight:800;color:var(--amber)">${r.dist}</div>
+      </div>
+      <div style="font-size:10px;color:var(--muted);margin-bottom:8px;line-height:1.6">🏁 ${r.start} → ${r.end}<br>⛰️ ${r.ele} · Độ khó: ${r.diff}</div>
+      <div style="font-size:10px;color:var(--green);margin-bottom:8px">✨ ${r.highlights}</div>
+      <div style="font-size:9px;color:var(--muted)">Chia sẻ bởi: ${r.by}</div>
+    </div>`).join('');
+}
+
+function openShareRoute() {
+  showToast('🗺️ Tính năng chia sẻ đường chạy đang hoàn thiện — sớm ra mắt!');
+}
+
+// REGISTER AS GUIDE
+function submitGuide() {
+  const name = document.getElementById('rgName').value.trim();
+  if (!name) { showToast('⚠️ Nhập tên đầy đủ!'); return; }
+  showToast(`✅ Đăng ký thành công! HLRace sẽ liên hệ ${name} để xác minh trong 24h.`);
+  showV('find', document.querySelector('.nt'));
+}
+
+// AI COMPASS
+function aiQ(text) {
+  document.getElementById('aiInput').value = text;
+  aiSend();
+}
+function aiAbout(id) {
+  const r = LOCAL_RUNNERS.find(x => x.id === id);
+  aiQ(`Phân tích ${r?.name || 'runner'} — có phù hợp với tôi không?`);
+}
+function aiWelcome() {
+  aiAppend('ai', `Chào mừng đến Hà Nội! Thành phố này có những con đường chạy tuyệt đẹp — từ vòng quanh <strong>Hồ Hoàn Kiếm</strong> lúc bình minh, đến <strong>Hồ Tây 17km</strong> khi mặt trời mọc.<br><br>Có <strong>${LOCAL_RUNNERS.length} local runner</strong> sẵn sàng dẫn đường, biết nhiều ngôn ngữ. Bạn muốn chạy ở đâu, mấy km?`);
+}
+
+async function aiSend() {
+  const inp = document.getElementById('aiInput');
+  const text = inp.value.trim();
+  if (!text || isTyping) return;
+  inp.value = ''; inp.style.height = 'auto';
+  aiAppend('user', text);
+  chatH.push({role:'user',content:text});
+  showTyping(); isTyping = true;
+  document.getElementById('aiSendBtn').disabled = true;
+
+  try {
+    const apiKey = localStorage.getItem('race_api_key') || '';
+    if (!apiKey) {
+      hideTyping();
+      aiAppend('ai', `⚙️ Cần Claude API Key trong <a href="admin.html" style="color:var(--amber)">Admin → Cài đặt</a>.`);
+      isTyping = false; document.getElementById('aiSendBtn').disabled = false;
+      return;
+    }
+    const sys = buildSys();
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method:'POST',
+      headers:{'Content-Type':'application/json','x-api-key':apiKey,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
+      body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:700,system:sys,messages:chatH.slice(-12)})
+    });
+    const data = await res.json();
+    const reply = data.content?.[0]?.text || 'Lỗi phản hồi.';
+    chatH.push({role:'assistant',content:reply});
+    hideTyping();
+    processReply(reply);
+  } catch(e) { hideTyping(); aiAppend('ai','🔴 Lỗi kết nối.'); }
+  isTyping = false; document.getElementById('aiSendBtn').disabled = false;
+}
+
+function buildSys() {
+  const rl = LOCAL_RUNNERS.map(r =>
+    `[${r.id}] ${r.fullName} | Pace:${r.pace} | ${r.area} | Langs:${r.langNames.join(',')} | Tours:${r.tourCount} | Rating:${r.rating} | ${r.online?'Online':'Offline'} | Routes:${r.routes.join('/')} | ${r.specialty}`
+  ).join('\n');
+  return `Bạn là COMPASS — AI hướng dẫn du lịch chạy bộ tại Hà Nội, trên nền tảng HLRace.
+
+LOCAL RUNNERS:
+${rl}
+
+ĐƯỜNG CHẠY NỔI BẬT:
+${ROUTES_DATA.map(r=>`${r.name} | ${r.dist} | ${r.diff} | ${r.highlights}`).join('\n')}
+
+NHIỆM VỤ:
+1. Match khách với local runner dựa trên: (1) địa điểm/khu vực, (2) pace, (3) ngôn ngữ — cân bằng cả 3
+2. Giải thích LÝ DO cụ thể tại sao runner X phù hợp với khách này
+3. Kể về đường chạy — điểm đẹp, thời gian tốt nhất, lưu ý an toàn
+4. Đề xuất lịch trình nếu khách có nhiều ngày
+5. Phí 70k/match — runner nhận 85%, HLRace 15%
+6. Trả lời bằng ngôn ngữ khách dùng (Việt/Anh/Trung/Hàn/Nhật)
+
+Thân thiện, nhiệt tình như người Hà Nội thật sự.`;
+}
+
+function processReply(text) {
+  let html = text.replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>').replace(/\n/g,'<br>');
+  const mentioned = LOCAL_RUNNERS.filter(r => text.includes(r.fullName) || text.includes(r.name));
+  if (mentioned.length > 0 && mentioned.length <= 3) {
+    mentioned.forEach(r => {
+      html += `<div class="chat-runner" onclick="openRunner('${r.id}')">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:5px">
+          <div style="font-size:18px">${r.emoji}</div>
+          <div style="flex:1"><div style="font-size:11px;font-weight:800">${r.fullName}</div><div style="font-size:9px;color:var(--muted)">${r.pace} · ${r.area.split('·')[0].trim()} · ${r.langs.join('')}</div></div>
+          <div style="text-align:right;flex-shrink:0"><div style="font-size:13px;font-weight:800;color:var(--amber)">${r.rating}★</div><div style="font-size:8px;color:var(--muted)">${r.tourCount} tours</div></div>
+        </div>
+        <div style="display:flex;gap:5px">
+          <button onclick="event.stopPropagation();openBook('${r.id}')" style="flex:1;padding:5px;border-radius:5px;border:none;background:var(--amber);color:#000;font-family:'Outfit';font-size:9px;font-weight:800;cursor:pointer">📅 Đặt · 70k</button>
+          <button onclick="event.stopPropagation();openRunner('${r.id}')" style="padding:5px 10px;border-radius:5px;border:1px solid var(--br2);background:none;color:var(--muted);font-family:'Outfit';font-size:9px;font-weight:700;cursor:pointer">👤 Xem</button>
+        </div>
+      </div>`;
+    });
+  }
+  aiAppend('ai', html);
+}
+
+function aiAppend(role, html) {
+  const wrap = document.getElementById('aiMsgs');
+  const now = new Date().toLocaleTimeString('vi-VN',{hour:'2-digit',minute:'2-digit'});
+  const d = document.createElement('div');
+  d.className = 'msg msg-' + role;
+  d.innerHTML = role === 'ai'
+    ? `<div class="ai-av" style="width:24px;height:24px;font-size:11px;flex-shrink:0">🧭</div><div><div class="bbl">${html}</div><div class="msg-time">${now}</div></div>`
+    : `<div><div class="bbl">${html}</div><div class="msg-time" style="text-align:right">${now}</div></div>`;
+  wrap.appendChild(d); wrap.scrollTop = wrap.scrollHeight;
+}
+function showTyping(){const w=document.getElementById('aiMsgs');const d=document.createElement('div');d.className='msg msg-ai';d.id='typ';d.innerHTML=`<div class="ai-av" style="width:24px;height:24px;font-size:11px;flex-shrink:0">🧭</div><div class="bbl" style="padding:7px 11px"><div class="tdots">${[1,2,3].map(()=>'<div class="td"></div>').join('')}</div></div>`;w.appendChild(d);w.scrollTop=w.scrollHeight;}
+function hideTyping(){document.getElementById('typ')?.remove()}
+function openM(id){document.getElementById(id).classList.add('open')}
+function closeM(id){document.getElementById(id).classList.remove('open')}
+function showToast(msg){const t=document.createElement('div');t.textContent=msg;t.style.cssText='position:fixed;bottom:22px;left:50%;transform:translateX(-50%);background:#181A22;border:1px solid rgba(255,140,0,.25);color:#F2F0E8;padding:9px 16px;border-radius:7px;font-size:12px;font-weight:600;z-index:600;white-space:nowrap;box-shadow:0 4px 18px rgba(0,0,0,.4)';document.body.appendChild(t);setTimeout(()=>t.remove(),2700);}
+</script>
+</body>
+</html>

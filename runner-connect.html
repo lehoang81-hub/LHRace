@@ -1,0 +1,1166 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Runner Connect — Cùng chạy · HLRace</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#08080E;--bg2:#0E0E1A;--bg3:#131320;--surface:#181828;
+  --ink:#F0EEF8;--ink2:#B8B4D0;--muted:#5C5870;
+  --v:#7C3AED;--v2:#5B21B6;--pk:#EC4899;--gold:#F59E0B;
+  --green:#10B981;--cyan:#06B6D4;--red:#F43F5E;
+  --br:rgba(124,58,237,.14);
+}
+body{background:var(--bg);color:var(--ink);font-family:'Outfit',sans-serif;min-height:100vh;overflow-x:hidden}
+body::before{content:'';position:fixed;inset:0;background:
+  radial-gradient(ellipse 70% 50% at 15% 15%,rgba(124,58,237,.07),transparent 60%),
+  radial-gradient(ellipse 60% 60% at 85% 85%,rgba(236,72,153,.05),transparent 60%);
+  pointer-events:none;z-index:0}
+
+/* NAV */
+.nav{position:sticky;top:0;z-index:100;background:rgba(8,8,14,.93);backdrop-filter:blur(18px);border-bottom:1px solid var(--br);height:50px;display:flex;align-items:center;justify-content:space-between;padding:0 16px;gap:10px}
+.nav-logo{font-family:'Bebas Neue';font-size:17px;letter-spacing:3px;background:linear-gradient(135deg,var(--v),var(--pk));-webkit-background-clip:text;-webkit-text-fill-color:transparent;flex-shrink:0}
+.nav-tabs{display:flex;height:50px;overflow-x:auto;scrollbar-width:none;gap:0}
+.nav-tabs::-webkit-scrollbar{display:none}
+.nt{display:flex;align-items:center;padding:0 12px;font-size:10px;font-weight:700;letter-spacing:.8px;color:var(--muted);cursor:pointer;border-bottom:2px solid transparent;transition:all .2s;white-space:nowrap;text-decoration:none}
+.nt:hover{color:var(--ink)}.nt.on{color:var(--v);border-bottom-color:var(--v)}
+.nav-r{display:flex;align-items:center;gap:7px;flex-shrink:0}
+.plan-tag{padding:4px 10px;border-radius:16px;font-size:9px;font-weight:800;border:1px solid var(--br);color:var(--muted);cursor:pointer;transition:all .2s}
+.plan-tag:hover{border-color:var(--v);color:var(--v)}
+.plan-tag.pro{background:rgba(124,58,237,.1);border-color:var(--v);color:var(--v)}
+.plan-tag.elite{background:rgba(245,158,11,.1);border-color:var(--gold);color:var(--gold)}
+
+/* VIEWS */
+.view{display:none;position:relative;z-index:1}.view.active{display:block}
+.wrap{max-width:1160px;margin:0 auto;padding:18px 14px 80px}
+
+/* CARDS */
+.card{background:var(--bg2);border:1px solid var(--br);border-radius:13px;overflow:hidden;margin-bottom:13px}
+.ch{padding:13px 16px;border-bottom:1px solid var(--br);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px}
+.ct{font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--muted);display:flex;align-items:center;gap:6px}
+.ct::before{content:'';width:3px;height:11px;background:var(--v);border-radius:2px;display:inline-block}
+.cb{padding:16px}
+
+/* PAGE HEADER */
+.pg-head{text-align:center;padding:22px 20px 18px}
+.pg-eyebrow{display:inline-flex;align-items:center;gap:6px;padding:4px 12px;border-radius:16px;border:1px solid rgba(124,58,237,.3);background:rgba(124,58,237,.07);font-size:8px;font-weight:700;letter-spacing:2.5px;text-transform:uppercase;color:var(--v);margin-bottom:10px}
+.pg-h{font-family:'Bebas Neue';font-size:clamp(32px,6vw,60px);letter-spacing:2px;line-height:.92;margin-bottom:7px}
+.pg-sub{font-size:11px;color:var(--muted);max-width:480px;margin:0 auto;line-height:1.7}
+
+/* RACE REGISTRATION INPUT */
+.race-reg-form{background:linear-gradient(135deg,var(--bg3),var(--surface));border:1px solid var(--br);border-radius:13px;padding:18px;margin-bottom:16px}
+.rrf-title{font-size:11px;font-weight:800;margin-bottom:4px}
+.rrf-sub{font-size:10px;color:var(--muted);margin-bottom:14px}
+.race-tags{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px}
+.race-tag{display:inline-flex;align-items:center;gap:5px;padding:5px 11px;border-radius:7px;background:rgba(124,58,237,.08);border:1px solid rgba(124,58,237,.2);font-size:10px;font-weight:700;color:var(--v);cursor:default}
+.race-tag .rt-del{background:none;border:none;color:var(--muted);cursor:pointer;font-size:12px;padding:0 0 0 4px;transition:color .2s}
+.race-tag .rt-del:hover{color:var(--red)}
+.add-race-row{display:flex;gap:8px;flex-wrap:wrap}
+.race-input{flex:1;min-width:160px;background:var(--bg);border:1.5px solid var(--br);border-radius:7px;color:var(--ink);font-family:'Outfit';font-size:12px;padding:8px 11px;outline:none;transition:border-color .2s}
+.race-input:focus{border-color:rgba(124,58,237,.4)}
+.race-input::placeholder{color:var(--muted)}
+.race-select{background:var(--bg);border:1.5px solid var(--br);border-radius:7px;color:var(--ink);font-family:'Outfit';font-size:12px;padding:8px 11px;outline:none;cursor:pointer}
+.race-select option{background:var(--bg3)}
+
+/* MY RACES PANEL */
+.my-races-list{display:flex;flex-direction:column;gap:8px}
+.mrl-item{background:var(--bg3);border:1px solid var(--br);border-radius:10px;padding:13px 14px;cursor:pointer;transition:all .2s;position:relative}
+.mrl-item:hover{border-color:rgba(124,58,237,.3);background:rgba(124,58,237,.03)}
+.mrl-item.active-race{border-color:var(--v);background:rgba(124,58,237,.05)}
+.mrl-item.active-race::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--v);border-radius:3px 0 0 3px}
+.mri-top{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;margin-bottom:8px}
+.mri-name{font-size:12px;font-weight:800}
+.mri-meta{font-size:9px;color:var(--muted);margin-top:2px}
+.mri-right{text-align:right;flex-shrink:0}
+.mri-dist{font-family:'Bebas Neue';font-size:20px;color:var(--v)}
+.mri-date{font-size:9px;color:var(--muted)}
+.mri-bottom{display:flex;align-items:center;gap:8px}
+.mri-avatars{display:flex}
+.mri-av{width:22px;height:22px;border-radius:50%;border:2px solid var(--bg2);font-size:11px;display:flex;align-items:center;justify-content:center;margin-left:-6px;background:linear-gradient(135deg,var(--v),var(--pk))}
+.mri-av:first-child{margin-left:0}
+.mri-match-count{font-size:10px;font-weight:700;color:var(--v)}
+.mri-match-lbl{font-size:10px;color:var(--muted)}
+
+/* LAYOUT */
+.two-col{display:grid;grid-template-columns:320px 1fr;gap:14px}
+@media(max-width:860px){.two-col{grid-template-columns:1fr}}
+.three-col{display:grid;grid-template-columns:1fr 1fr 1fr;gap:11px}
+@media(max-width:900px){.three-col{grid-template-columns:1fr 1fr}}
+@media(max-width:560px){.three-col{grid-template-columns:1fr}}
+
+/* RUNNER MATCH CARD */
+.rmc{background:var(--bg2);border:1.5px solid var(--br);border-radius:12px;overflow:hidden;transition:all .3s;position:relative}
+.rmc:hover{border-color:rgba(124,58,237,.35);transform:translateY(-2px);box-shadow:0 8px 28px rgba(124,58,237,.1)}
+.rmc-head{padding:13px 13px 0}
+.rmc-top{display:flex;gap:10px;align-items:flex-start;margin-bottom:10px}
+.rmc-av{width:46px;height:46px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;position:relative}
+.rmc-online{position:absolute;bottom:1px;right:1px;width:9px;height:9px;border-radius:50%;background:var(--green);border:2px solid var(--bg2)}
+.rmc-name{font-size:13px;font-weight:800;margin-bottom:2px}
+.rmc-pace{font-size:9px;font-weight:700;color:var(--v)}
+.rmc-area{font-size:9px;color:var(--muted);margin-top:1px}
+.rmc-tags{display:flex;gap:3px;flex-wrap:wrap;margin-bottom:10px}
+.rmc-tag{font-size:7px;font-weight:700;padding:2px 6px;border-radius:4px;background:rgba(124,58,237,.07);color:var(--v);border:1px solid rgba(124,58,237,.12)}
+.rmc-body{padding:0 13px 12px}
+
+/* SHARED RACES PILLS */
+.shared-races{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:9px}
+.sr-pill{display:inline-flex;align-items:center;gap:4px;padding:4px 9px;border-radius:6px;font-size:9px;font-weight:700;background:rgba(16,185,129,.07);border:1px solid rgba(16,185,129,.2);color:var(--green)}
+
+/* COMPAT */
+.compat-row{margin-bottom:8px}
+.compat-lbl{font-size:9px;font-weight:700;display:flex;justify-content:space-between;margin-bottom:3px}
+.cbar{height:5px;background:rgba(255,255,255,.05);border-radius:3px;overflow:hidden}
+.cfill{height:100%;border-radius:3px;background:linear-gradient(90deg,var(--v),var(--pk));transition:width .8s}
+
+/* ACTIONS */
+.rmc-actions{display:flex;gap:5px}
+.rma{flex:1;padding:7px;border-radius:6px;border:none;cursor:pointer;font-family:'Outfit';font-size:9px;font-weight:700;transition:all .2s}
+.rma-primary{background:rgba(124,58,237,.1);border:1px solid rgba(124,58,237,.25);color:var(--v)}
+.rma-primary:hover{background:var(--v);color:#fff}
+.rma-ghost{background:rgba(255,255,255,.03);border:1px solid var(--br);color:var(--muted)}
+.rma-ghost:hover{border-color:var(--muted);color:var(--ink)}
+.rma-green{background:rgba(16,185,129,.08);border:1px solid rgba(16,185,129,.2);color:var(--green)}
+.rma-green:hover{background:var(--green);color:#fff}
+
+/* LOCK */
+.lock-ov{position:absolute;inset:0;backdrop-filter:blur(5px);background:rgba(8,8,14,.55);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;z-index:5;border-radius:12px;opacity:0;transition:opacity .25s}
+.rmc:hover .lock-ov.show{opacity:1}
+.lb{padding:6px 15px;border-radius:6px;border:none;cursor:pointer;font-family:'Outfit';font-size:9px;font-weight:800;background:linear-gradient(135deg,var(--v),var(--pk));color:#fff;transition:all .2s}
+.lb:hover{transform:scale(1.05)}
+
+/* PROFILE HERO */
+.ph{background:linear-gradient(135deg,var(--bg3),var(--surface));border-radius:13px;padding:20px;margin-bottom:14px;border:1px solid var(--br);position:relative;overflow:hidden}
+.ph::before{content:'';position:absolute;top:-40px;right:-40px;width:180px;height:180px;background:radial-gradient(circle,rgba(124,58,237,.13),transparent 70%)}
+.ph-top{display:flex;gap:14px;align-items:flex-start;flex-wrap:wrap;position:relative}
+.ph-av{width:68px;height:68px;border-radius:50%;background:linear-gradient(135deg,var(--v),var(--pk));display:flex;align-items:center;justify-content:center;font-size:26px;flex-shrink:0;box-shadow:0 0 0 3px rgba(124,58,237,.25)}
+.ph-name{font-size:18px;font-weight:800;margin-bottom:3px}
+.ph-sub{font-size:10px;color:var(--muted);margin-bottom:7px}
+.ph-tags{display:flex;gap:4px;flex-wrap:wrap}
+.ph-tag{font-size:8px;font-weight:600;padding:3px 8px;border-radius:8px;border:1px solid var(--br);color:var(--muted)}
+.ph-tag.hl{background:rgba(124,58,237,.08);border-color:var(--v);color:var(--v)}
+.ph-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:14px}
+@media(max-width:480px){.ph-stats{grid-template-columns:repeat(2,1fr)}}
+.phs{text-align:center;padding:9px;background:rgba(255,255,255,.02);border-radius:7px;border:1px solid var(--br)}
+.phs-n{font-family:'Bebas Neue';font-size:22px;line-height:1}
+.phs-l{font-size:7px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);margin-top:2px}
+
+/* GROUP CARD */
+.grp-card{background:var(--bg2);border:1.5px solid var(--br);border-radius:12px;padding:14px;transition:all .2s;cursor:pointer}
+.grp-card:hover{border-color:rgba(16,185,129,.3);transform:translateY(-1px)}
+.grp-av-row{display:flex;margin-bottom:10px}
+.grp-av{width:32px;height:32px;border-radius:50%;border:2px solid var(--bg2);font-size:14px;display:flex;align-items:center;justify-content:center;margin-left:-8px;background:linear-gradient(135deg,var(--v),var(--pk))}
+.grp-av:first-child{margin-left:0}
+.grp-name{font-size:12px;font-weight:800;margin-bottom:3px}
+.grp-race{font-size:10px;font-weight:700;color:var(--green);margin-bottom:4px}
+.grp-meta{font-size:9px;color:var(--muted)}
+.grp-pace{font-size:10px;font-weight:700;color:var(--v);margin-top:5px;padding:4px 8px;background:rgba(124,58,237,.07);border-radius:5px;display:inline-block}
+
+/* AI PANEL */
+.ai-panel{position:sticky;top:58px;height:calc(100vh - 76px);display:flex;flex-direction:column;background:rgba(13,13,22,.93);border:1px solid var(--br);border-radius:13px;overflow:hidden;backdrop-filter:blur(8px)}
+.aih{padding:12px 14px;border-bottom:1px solid var(--br);flex-shrink:0;background:linear-gradient(180deg,rgba(124,58,237,.05),transparent)}
+.aih-inner{display:flex;gap:8px;align-items:center;margin-bottom:4px}
+.ai-av{width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,var(--v),var(--pk));display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;box-shadow:0 0 0 2px rgba(124,58,237,.2)}
+.ai-name{font-size:12px;font-weight:800}
+.ai-status{font-size:9px;color:var(--muted)}
+.ai-dot{width:6px;height:6px;border-radius:50%;background:var(--green);display:inline-block;animation:blink 2s infinite;margin-right:4px}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
+.ai-ctx{font-size:9px;color:var(--muted);font-style:italic;margin-top:2px}
+
+.ai-msgs{flex:1;overflow-y:auto;padding:12px;display:flex;flex-direction:column;gap:9px;scrollbar-width:thin;scrollbar-color:var(--surface) transparent}
+.ai-msgs::-webkit-scrollbar{width:3px}
+.ai-msgs::-webkit-scrollbar-thumb{background:var(--surface);border-radius:2px}
+.msg{display:flex;gap:7px;animation:msgIn .3s ease}
+@keyframes msgIn{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:translateY(0)}}
+.msg-ai{flex-direction:row}.msg-user{flex-direction:row-reverse}
+.bbl{max-width:88%;padding:8px 11px;font-size:11px;line-height:1.6;border-radius:9px}
+.msg-ai .bbl{background:rgba(124,58,237,.06);border:1px solid rgba(124,58,237,.12);color:var(--ink);border-radius:3px 9px 9px 9px}
+.msg-user .bbl{background:rgba(244,63,94,.07);border:1px solid rgba(244,63,94,.12);color:var(--ink2);border-radius:9px 3px 9px 9px}
+.msg-time{font-size:8px;color:var(--muted);margin-top:2px}
+
+/* MINI RUNNER IN CHAT */
+.chat-runner{background:rgba(124,58,237,.05);border:1px solid rgba(124,58,237,.14);border-radius:8px;padding:9px;margin-top:6px;cursor:pointer;transition:all .2s}
+.chat-runner:hover{border-color:rgba(124,58,237,.3)}
+.cr-top{display:flex;align-items:center;gap:8px;margin-bottom:5px}
+.cr-av{font-size:18px;width:28px;text-align:center}
+.cr-name{font-size:11px;font-weight:800}
+.cr-pace{font-size:9px;color:var(--v)}
+.cr-pills{display:flex;gap:4px;flex-wrap:wrap}
+.cr-pill{font-size:8px;padding:2px 7px;border-radius:4px;background:rgba(16,185,129,.07);color:var(--green);border:1px solid rgba(16,185,129,.15)}
+.cr-acts{display:flex;gap:5px;margin-top:6px}
+.cr-btn{flex:1;padding:5px;border-radius:5px;border:none;cursor:pointer;font-family:'Outfit';font-size:9px;font-weight:700;transition:all .2s}
+.cr-btn-p{background:rgba(124,58,237,.1);border:1px solid rgba(124,58,237,.2);color:var(--v)}
+.cr-btn-p:hover{background:var(--v);color:#fff}
+.cr-btn-g{background:rgba(255,255,255,.03);border:1px solid var(--br);color:var(--muted)}
+
+/* PRICE SUGGEST IN CHAT */
+.price-suggest{background:linear-gradient(135deg,rgba(124,58,237,.07),rgba(236,72,153,.04));border:1px solid rgba(124,58,237,.2);border-radius:9px;padding:10px;margin-top:6px}
+.ps-head{font-size:10px;font-weight:800;color:var(--v);margin-bottom:6px}
+.ps-plan{display:flex;justify-content:space-between;align-items:center;padding:7px 9px;border:1.5px solid var(--br);border-radius:6px;cursor:pointer;transition:all .2s;margin-bottom:4px}
+.ps-plan:hover{border-color:var(--v);background:rgba(124,58,237,.05)}
+.ps-plan.rec{border-color:var(--v);background:rgba(124,58,237,.07)}
+.ps-name{font-size:11px;font-weight:700}
+.ps-desc{font-size:8px;color:var(--muted);margin-top:1px}
+.ps-price{font-family:'Bebas Neue';font-size:19px;color:var(--v)}
+.ps-rec{font-size:7px;font-weight:800;padding:2px 5px;background:var(--v);color:#fff;border-radius:3px;margin-left:5px}
+
+/* QP */
+.qp-row{padding:7px 12px;border-top:1px solid var(--br);display:flex;gap:5px;flex-wrap:wrap;flex-shrink:0}
+.qp{padding:4px 9px;border-radius:11px;border:1px solid var(--br);background:rgba(255,255,255,.02);font-family:'Outfit';font-size:9px;font-weight:700;cursor:pointer;color:var(--muted);transition:all .2s;white-space:nowrap}
+.qp:hover{border-color:var(--v);color:var(--v)}
+
+/* AI INPUT */
+.ai-inp{padding:10px 12px;border-top:1px solid var(--br);flex-shrink:0;background:rgba(8,8,14,.5)}
+.ai-row{display:flex;gap:6px}
+.ai-ta{flex:1;background:rgba(19,19,32,.9);border:1.5px solid var(--br);border-radius:7px;color:var(--ink);font-family:'Outfit';font-size:12px;padding:8px 10px;outline:none;resize:none;min-height:37px;max-height:88px;transition:border-color .2s;line-height:1.5}
+.ai-ta:focus{border-color:rgba(124,58,237,.38)}
+.ai-ta::placeholder{color:var(--muted)}
+.ai-send{width:35px;height:35px;border-radius:7px;border:none;flex-shrink:0;background:linear-gradient(135deg,var(--v),var(--pk));color:#fff;font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .2s}
+.ai-send:hover{transform:scale(1.06);box-shadow:0 4px 14px rgba(124,58,237,.38)}
+.ai-send:disabled{opacity:.4;cursor:not-allowed;transform:none}
+.tdots{display:flex;align-items:center;gap:4px;padding:6px 10px}
+.td{width:5px;height:5px;border-radius:50%;background:var(--muted);animation:td .9s ease-in-out infinite}
+.td:nth-child(2){animation-delay:.15s}.td:nth-child(3){animation-delay:.3s}
+@keyframes td{0%,80%,100%{transform:scale(1);opacity:.4}40%{transform:scale(1.3);opacity:1}}
+
+/* BUTTONS */
+.btn{padding:9px 18px;border-radius:7px;font-family:'Outfit';font-size:11px;font-weight:700;border:none;cursor:pointer;transition:all .2s;display:inline-flex;align-items:center;gap:6px}
+.btn-v{background:linear-gradient(135deg,var(--v),var(--v2));color:#fff}.btn-v:hover{transform:translateY(-1px);box-shadow:0 5px 18px rgba(124,58,237,.32)}
+.btn-pk{background:linear-gradient(135deg,var(--pk),#be185d);color:#fff}.btn-pk:hover{transform:translateY(-1px)}
+.btn-gold{background:linear-gradient(135deg,var(--gold),#d97706);color:#000}
+.btn-gh{background:rgba(255,255,255,.04);border:1.5px solid var(--br);color:var(--muted)}.btn-gh:hover{border-color:var(--v);color:var(--v)}
+.btn-full{width:100%;justify-content:center}
+
+/* MODAL */
+.mo{position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:500;display:none;align-items:center;justify-content:center;padding:14px}
+.mo.open{display:flex}
+.mod{background:var(--bg2);border:1px solid var(--br);border-radius:14px;max-width:460px;width:100%;max-height:86vh;overflow-y:auto}
+.mod-h{padding:15px 18px;border-bottom:1px solid var(--br);display:flex;justify-content:space-between;align-items:center}
+.mod-x{background:none;border:none;color:var(--muted);font-size:17px;cursor:pointer}
+.mod-b{padding:17px}
+
+/* FORM */
+.fld{margin-bottom:10px}
+.fld label{display:block;font-size:9px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);margin-bottom:4px}
+.fld input,.fld select,.fld textarea{width:100%;background:var(--bg3);border:1.5px solid var(--br);border-radius:7px;color:var(--ink);font-family:'Outfit';font-size:13px;padding:8px 11px;outline:none;transition:border-color .2s}
+.fld input:focus,.fld select:focus{border-color:rgba(124,58,237,.38)}
+.fld select option{background:var(--bg3)}
+.f2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+@media(max-width:480px){.f2{grid-template-columns:1fr}}
+
+/* NOTICE */
+.note{padding:10px 13px;border-radius:8px;font-size:11px;line-height:1.7;margin-bottom:11px}
+.nv{background:rgba(124,58,237,.06);border:1px solid rgba(124,58,237,.17);color:var(--muted)}.nv strong{color:var(--v)}
+.ng{background:rgba(16,185,129,.06);border:1px solid rgba(16,185,129,.17);color:var(--muted)}.ng strong{color:var(--green)}
+
+/* BADGE */
+.bdg{display:inline-flex;align-items:center;gap:3px;padding:2px 7px;border-radius:4px;font-size:8px;font-weight:700}
+.bv{background:rgba(124,58,237,.1);color:var(--v)}.bg{background:rgba(16,185,129,.1);color:var(--green)}.bgold{background:rgba(245,158,11,.1);color:var(--gold)}
+
+/* PREMIUM GATE */
+.pgat{background:linear-gradient(135deg,rgba(124,58,237,.08),rgba(236,72,153,.05));border:1px solid rgba(124,58,237,.22);border-radius:11px;padding:18px;text-align:center}
+</style>
+</head>
+<body>
+
+<nav class="nav">
+  <div class="nav-logo">RUNNER CONNECT</div>
+  <div class="nav-tabs">
+    <div class="nt on" onclick="showV('races',this)">🏁 Race của tôi</div>
+    <div class="nt" onclick="showV('discover',this)">🔍 Tìm bạn chạy</div>
+    <div class="nt" onclick="showV('groups',this)">👥 Nhóm luyện tập</div>
+    <div class="nt" onclick="showV('profile',this)">👤 Hồ sơ</div>
+    <a class="nt" href="race-ocean.html">🌊 Ocean</a>
+    <a class="nt" href="index.html">📋 Đăng ký</a>
+  </div>
+  <div class="nav-r">
+    <div class="plan-tag" id="planTag" onclick="showUpgrade()">🔒 Free</div>
+    <div class="plan-tag" id="userTag" style="font-size:9px">BIB #001</div>
+  </div>
+</nav>
+<div id="ds-bar" style="padding:7px 18px;background:rgba(0,200,122,.06);border-bottom:1px solid rgba(0,200,122,.15);display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap">
+  <div style="font-size:10px;font-weight:700;color:#00CC7A;font-family:'JetBrains Mono'">🔬 NGUỒN DỮ LIỆU</div>
+  <div style="display:flex;gap:6px">
+    <button id="ds-btn-mock" onclick="switchRCSource('mock')" style="padding:4px 12px;border-radius:5px;font-size:10px;font-weight:700;cursor:pointer;border:1.5px solid;font-family:'Outfit';background:rgba(0,200,122,.12);border-color:rgba(0,200,122,.3);color:#00CC7A;transition:all .2s">📦 Data mẫu (test)</button>
+    <button id="ds-btn-real" onclick="switchRCSource('sheets')" style="padding:4px 12px;border-radius:5px;font-size:10px;font-weight:700;cursor:pointer;border:1.5px solid;font-family:'Outfit';background:rgba(107,63,255,.08);border-color:rgba(107,63,255,.14);color:#52506A;transition:all .2s">📊 Google Sheets (thật)</button>
+  </div>
+</div>
+
+<!-- ═══════════ VIEW: MY RACES ═══════════ -->
+<div class="view active" id="view-races">
+<div class="wrap">
+  <div class="pg-head">
+    <div class="pg-eyebrow">🏁 Danh sách race đã đăng ký</div>
+    <div class="pg-h">CÁC GIẢI<br><span style="background:linear-gradient(135deg,var(--v),var(--pk));-webkit-background-clip:text;-webkit-text-fill-color:transparent">SẮP CHẠY</span></div>
+    <p class="pg-sub">Thêm các race bạn đã đăng ký. Hệ thống sẽ tìm runner khác cùng tham gia để bạn có thể lập nhóm luyện tập.</p>
+  </div>
+
+  <div style="display:grid;grid-template-columns:1fr 340px;gap:14px">
+    <!-- LEFT -->
+    <div>
+      <!-- ADD RACE FORM -->
+      <div class="race-reg-form">
+        <div class="rrf-title">➕ Thêm race bạn đã đăng ký</div>
+        <div class="rrf-sub">Chọn từ danh sách hoặc nhập tên giải bất kỳ</div>
+        <div class="race-tags" id="myRaceTags"></div>
+        <div class="add-race-row">
+          <select class="race-select" id="raceSelectDrop">
+            <option value="">— Chọn từ danh sách HLRace —</option>
+            <option value="Giải Chạy Chào Mừng 80 Năm TDTT · 21/03/2026 · HK">🏅 Giải Chạy 80 Năm TDTT · 21/03</option>
+            <option value="Giải Chạy HK Tháng 5/2026 · 17/05/2026 · HK">🏅 Giải Chạy HK Tháng 5</option>
+            <option value="VPBank Hanoi Marathon · 08/11/2026 · HN">🏃 VPBank Hanoi Marathon 2026</option>
+            <option value="Garmin Run 2026 · 07/06/2026 · HN">⌚ Garmin Run 2026</option>
+            <option value="Mekong Delta Marathon · 15/08/2026 · CL">🌊 Mekong Delta Marathon</option>
+            <option value="VMM Trail 2026 · 20/09/2026 · SA">🏔 VMM Trail 2026</option>
+          </select>
+          <input class="race-input" id="raceCustomInput" placeholder="Hoặc nhập tên giải khác..." style="max-width:220px">
+          <button class="btn btn-v" onclick="addMyRace()" style="padding:8px 16px;font-size:10px;white-space:nowrap">+ Thêm</button>
+        </div>
+        <div style="margin-top:8px">
+          <div class="fld" style="margin-bottom:0">
+            <label>Cự ly sẽ chạy</label>
+            <select id="raceDistSelect" style="background:var(--bg);border:1.5px solid var(--br);border-radius:7px;color:var(--ink);font-family:'Outfit';font-size:12px;padding:7px 11px;outline:none;width:100%">
+              <option>1.5km</option><option>3km</option><option selected>5km</option><option>10km</option><option>21km</option><option>42km</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <!-- MY RACES LIST -->
+      <div class="card">
+        <div class="ch"><div class="ct">Race đã đăng ký</div><span id="raceCountBadge" style="font-size:10px;color:var(--muted)">0 race</span></div>
+        <div class="cb">
+          <div class="my-races-list" id="myRacesList">
+            <div style="text-align:center;padding:24px;color:var(--muted);font-size:12px">Chưa có race. Thêm race để tìm bạn chạy.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- RIGHT: AI PANEL -->
+    <div class="ai-panel">
+      <div class="aih">
+        <div class="aih-inner">
+          <div class="ai-av">🤖</div>
+          <div><div class="ai-name">Mây — AI kết nối Runner</div><div class="ai-status"><span class="ai-dot"></span>Sẵn sàng phân tích</div></div>
+        </div>
+        <div class="ai-ctx" id="aiCtxRace">Thêm race để Mây tìm bạn chạy cho bạn</div>
+      </div>
+      <div class="ai-msgs" id="aiMsgsRace">
+        <div class="msg msg-ai">
+          <div class="ai-av" style="width:24px;height:24px;font-size:10px;flex-shrink:0">🤖</div>
+          <div><div class="bbl">Chào! Thêm các race bạn đã đăng ký vào bên trái — mình sẽ ngay lập tức tìm những runner khác <strong>cùng tham gia race đó</strong> để bạn có thể lập nhóm luyện tập hoặc rủ đi cùng race ngày 🏃</div><div class="msg-time">Vừa xong</div></div>
+        </div>
+      </div>
+      <div class="qp-row">
+        <div class="qp" onclick="aiQ('race','Ai cùng chạy với tôi race sắp tới nhất?')">👥 Cùng race</div>
+        <div class="qp" onclick="aiQ('race','Tôi nên lập nhóm luyện tập với ai?')">💪 Lập nhóm</div>
+        <div class="qp" onclick="aiQ('race','Ai có pace gần nhất với tôi trong danh sách?')">⚡ Cùng pace</div>
+        <div class="qp" onclick="aiQ('race','Phân tích lịch race của tôi năm nay')">📊 Phân tích</div>
+      </div>
+      <div class="ai-inp">
+        <div class="ai-row">
+          <textarea class="ai-ta" id="aiInpRace" placeholder="Hỏi về race, bạn chạy, lịch luyện tập..." rows="1"
+            onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();aiSend('race')}"
+            oninput="this.style.height='auto';this.style.height=Math.min(this.scrollHeight,88)+'px'"></textarea>
+          <button class="ai-send" id="aiSendRace" onclick="aiSend('race')">↑</button>
+        </div>
+        <div style="font-size:8px;color:var(--muted);margin-top:4px;text-align:center">Mây · Claude AI · Phân tích từ dữ liệu cộng đồng HLRace</div>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- ═══════════ VIEW: DISCOVER ═══════════ -->
+<div class="view" id="view-discover">
+<div class="wrap">
+  <div class="pg-head">
+    <div class="pg-eyebrow">🔍 Tìm bạn chạy</div>
+    <div class="pg-h">RUNNER<br><span style="background:linear-gradient(135deg,var(--v),var(--pk));-webkit-background-clip:text;-webkit-text-fill-color:transparent">CÙNG NHỊP</span></div>
+    <p class="pg-sub">Những runner có cùng race, cùng pace hoặc cùng khu vực với bạn. Kết nối để lập nhóm luyện tập.</p>
+  </div>
+
+  <!-- FILTER -->
+  <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px;align-items:center">
+    <button class="qp on" id="disc-f-all" onclick="discFilter('all',this)" style="border-radius:7px;padding:6px 12px">🌊 Tất cả</button>
+    <button class="qp" onclick="discFilter('same-race',this)" style="border-radius:7px;padding:6px 12px">🏁 Cùng race</button>
+    <button class="qp" onclick="discFilter('same-pace',this)" style="border-radius:7px;padding:6px 12px">⚡ Cùng pace</button>
+    <button class="qp" onclick="discFilter('same-area',this)" style="border-radius:7px;padding:6px 12px">📍 Cùng khu vực</button>
+    <button class="qp" onclick="discFilter('tnv',this)" style="border-radius:7px;padding:6px 12px">👥 TNV</button>
+    <input style="flex:1;min-width:150px;background:var(--bg2);border:1.5px solid var(--br);border-radius:7px;color:var(--ink);font-family:'Outfit';font-size:11px;padding:6px 11px;outline:none" placeholder="Tìm tên, pace, khu vực..." oninput="discSearch(this.value)">
+  </div>
+
+  <div class="three-col" id="discGrid"></div>
+</div>
+</div>
+
+<!-- ═══════════ VIEW: GROUPS ═══════════ -->
+<div class="view" id="view-groups">
+<div class="wrap">
+  <div class="pg-head" style="padding-bottom:12px">
+    <div class="pg-eyebrow">👥 Nhóm luyện tập</div>
+    <div class="pg-h">CÙNG<br><span style="background:linear-gradient(135deg,var(--green),var(--cyan));-webkit-background-clip:text;-webkit-text-fill-color:transparent">LUYỆN TẬP</span></div>
+    <p class="pg-sub">Nhóm được tạo tự động khi runners cùng đăng ký một race. Tham gia để lên lịch chạy cùng nhau.</p>
+  </div>
+
+  <div style="display:flex;gap:10px;margin-bottom:14px;flex-wrap:wrap">
+    <button class="btn btn-v" onclick="openCreateGroup()">+ Tạo nhóm mới</button>
+    <button class="btn btn-gh" onclick="openJoinGroup()">🔗 Tham gia bằng mã</button>
+  </div>
+
+  <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:11px" id="groupsGrid"></div>
+</div>
+</div>
+
+<!-- ═══════════ VIEW: PROFILE ═══════════ -->
+<div class="view" id="view-profile">
+<div class="wrap">
+  <div class="ph">
+    <div class="ph-top">
+      <div class="ph-av">🏃</div>
+      <div style="flex:1;min-width:160px">
+        <div class="ph-name" id="prName">Runner</div>
+        <div class="ph-sub" id="prSub">Hà Nội · VĐV · Chạy từ 2022</div>
+        <div class="ph-tags">
+          <span class="ph-tag hl" id="prDist">5km</span>
+          <span class="ph-tag" id="prPace">Pace 6:30/km</span>
+          <span class="ph-tag" id="prPlan">Free</span>
+        </div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:6px">
+        <button class="btn btn-v" style="font-size:10px;padding:8px 14px" onclick="openEditModal()">✏️ Chỉnh sửa</button>
+        <button class="btn btn-gh" style="font-size:10px;padding:7px 14px" onclick="showUpgrade()">⭐ Nâng cấp</button>
+      </div>
+    </div>
+    <div class="ph-stats">
+      <div class="phs"><div class="phs-n" style="color:var(--v)" id="prRaces">0</div><div class="phs-l">Race 2026</div></div>
+      <div class="phs"><div class="phs-n" style="color:var(--gold)" id="prPoints">85</div><div class="phs-l">Điểm CĐ</div></div>
+      <div class="phs"><div class="phs-n" style="color:var(--pk)" id="prConn">0</div><div class="phs-l">Kết nối</div></div>
+      <div class="phs"><div class="phs-n" style="color:var(--green)" id="prKm">47</div><div class="phs-l">km/2026</div></div>
+    </div>
+  </div>
+
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+    @media(max-width:640px){grid-template-columns:1fr}
+    <div class="card">
+      <div class="ch"><div class="ct">Thông tin runner</div></div>
+      <div class="cb">
+        <div class="fld"><label>Pace trung bình</label><input type="text" id="pfPace" placeholder="6:30/km"></div>
+        <div class="f2">
+          <div class="fld"><label>Khu vực</label>
+            <select id="pfArea"><option>HN · Hoàn Kiếm</option><option>HN · Tây Hồ</option><option>HN · Cầu Giấy</option><option>HN · Đống Đa</option><option>TP.HCM</option></select>
+          </div>
+          <div class="fld"><label>Lịch chạy</label>
+            <select id="pfSched"><option>Sáng sớm 5-7h</option><option>Tối 6-8h</option><option>Cuối tuần</option><option>Linh hoạt</option></select>
+          </div>
+        </div>
+        <div class="fld"><label>Mục tiêu 2026</label><input type="text" id="pfGoal" placeholder="Sub-60 cho 10km..."></div>
+        <div class="fld"><label>Giới thiệu</label>
+          <textarea id="pfBio" style="width:100%;background:var(--bg3);border:1.5px solid var(--br);border-radius:7px;color:var(--ink);font-family:'Outfit';font-size:12px;padding:8px 11px;outline:none;min-height:68px;resize:vertical" placeholder="Runner nghiệp dư, thích chạy sáng sớm..."></textarea>
+        </div>
+        <button class="btn btn-v btn-full" onclick="saveProfile()">💾 Lưu hồ sơ</button>
+        <div id="profSaveMsg" style="font-size:11px;color:var(--green);margin-top:7px;display:none;text-align:center">✅ Đã lưu!</div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="ch"><div class="ct">Wishlist sản phẩm</div></div>
+      <div class="cb">
+        <div class="note nv"><strong>Wishlist</strong> lưu sản phẩm từ Race Ocean. Gói Pro+ nhận thông báo khi giá giảm.</div>
+        <div id="wishList">
+          <div style="text-align:center;padding:18px;color:var(--muted);font-size:11px">Wishlist trống. <a href="race-ocean.html" style="color:var(--v)">Vào Race Ocean →</a></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- MODAL: Runner detail -->
+<div class="mo" id="runnerMo">
+  <div class="mod">
+    <div class="mod-h"><div style="font-size:13px;font-weight:800" id="rmH">Hồ sơ Runner</div><button class="mod-x" onclick="closeM('runnerMo')">✕</button></div>
+    <div class="mod-b" id="rmB"></div>
+  </div>
+</div>
+
+<!-- MODAL: Upgrade -->
+<div class="mo" id="upgradeMo">
+  <div class="mod">
+    <div class="mod-h"><div style="font-size:13px;font-weight:800">⭐ Nâng cấp Premium</div><button class="mod-x" onclick="closeM('upgradeMo')">✕</button></div>
+    <div class="mod-b" id="upgradeB"></div>
+  </div>
+</div>
+
+<!-- MODAL: Edit profile -->
+<div class="mo" id="editMo">
+  <div class="mod">
+    <div class="mod-h"><div style="font-size:13px;font-weight:800">✏️ Chỉnh sửa hồ sơ</div><button class="mod-x" onclick="closeM('editMo')">✕</button></div>
+    <div class="mod-b">
+      <div class="fld"><label>Tên</label><input type="text" id="efName"></div>
+      <div class="f2">
+        <div class="fld"><label>Cự ly sở trường</label><select id="efDist"><option>1.5km</option><option>3km</option><option selected>5km</option><option>10km</option><option>21km</option><option>42km</option></select></div>
+        <div class="fld"><label>Pace trung bình</label><input type="text" id="efPace" placeholder="6:30/km"></div>
+      </div>
+      <div class="fld"><label>Mục tiêu 2026</label><input type="text" id="efGoal"></div>
+      <button class="btn btn-v btn-full" onclick="saveEdit()">💾 Lưu</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: Create group -->
+<div class="mo" id="createGrpMo">
+  <div class="mod">
+    <div class="mod-h"><div style="font-size:13px;font-weight:800">+ Tạo nhóm luyện tập</div><button class="mod-x" onclick="closeM('createGrpMo')">✕</button></div>
+    <div class="mod-b">
+      <div class="fld"><label>Tên nhóm</label><input type="text" id="grpName" placeholder="Nhóm chạy Hồ Tây sáng thứ 2..."></div>
+      <div class="fld"><label>Race mục tiêu</label><input type="text" id="grpRace" placeholder="Giải Chạy HK 21/03/2026..."></div>
+      <div class="f2">
+        <div class="fld"><label>Pace target</label><input type="text" id="grpPace" placeholder="5:30 – 6:30/km"></div>
+        <div class="fld"><label>Số thành viên tối đa</label><select id="grpMax"><option>3</option><option selected>5</option><option>8</option><option>10</option></select></div>
+      </div>
+      <div class="fld"><label>Lịch luyện tập</label><input type="text" id="grpSched" placeholder="Sáng sớm T2, T4, T7..."></div>
+      <button class="btn btn-v btn-full" onclick="createGroup()">🏃 Tạo nhóm</button>
+    </div>
+  </div>
+</div>
+
+<script src="mock-data-v3.js"></script>
+<script src="race-config.js"></script>
+<script>
+// ══════════════════════════════════════════════════════════
+// DATA
+// ══════════════════════════════════════════════════════════
+const COMMUNITY = [
+  {id:'r1',emoji:'🏃‍♀️',name:'Trần Minh Anh',gender:'Nữ',dist:'5km',pace:'5:45/km',
+   area:'HN · Tây Hồ',online:true,races:12,pts:280,km:143,role:'vdv',
+   tags:['5km','Morning','Nhanh'],bio:'Chạy 3 năm. Hồ Tây sáng sớm. Sub-28 5km.',
+   goal:'Sub-28 5km',sched:'Sáng 5-7h',
+   myRaces:['Giải Chạy Chào Mừng 80 Năm TDTT · 21/03/2026 · HK','VPBank Hanoi Marathon · 08/11/2026 · HN'],
+   locked:false,compat:92},
+  {id:'r2',emoji:'🏃',name:'Nguyễn Hoàng Long',gender:'Nam',dist:'10km',pace:'6:10/km',
+   area:'HN · Hoàn Kiếm',online:true,races:7,pts:145,km:89,role:'tnv',
+   tags:['10km','TNV','Trail'],bio:'TNV Pacer. Trail cuối tuần. Tìm nhóm luyện.',
+   goal:'Hoàn thành 21km đầu',sched:'Tối 6-8h',
+   myRaces:['Giải Chạy Chào Mừng 80 Năm TDTT · 21/03/2026 · HK','Garmin Run 2026 · 07/06/2026 · HN'],
+   locked:true,compat:78},
+  {id:'r3',emoji:'🏃‍♀️',name:'Phạm Thu Hương',gender:'Nữ',dist:'5km',pace:'6:45/km',
+   area:'HN · Cầu Giấy',online:false,races:4,pts:50,km:31,role:'vdv',
+   tags:['5km','Beginner','Cuối tuần'],bio:'Runner 8 tháng. Muốn lên 10km. Chạy chậm thích tâm sự.',
+   goal:'Chạy 10km không dừng',sched:'Cuối tuần',
+   myRaces:['Giải Chạy Chào Mừng 80 Năm TDTT · 21/03/2026 · HK'],
+   locked:true,compat:65},
+  {id:'r4',emoji:'🏃',name:'Lê Văn Tuấn',gender:'Nam',dist:'21km',pace:'5:20/km',
+   area:'HN · Đống Đa',online:true,races:28,pts:580,km:312,role:'tnv',
+   tags:['HM','Pacer Pro','Elite'],bio:'Pacer chuyên nghiệp 5 năm. Trainer beginner cuối tuần.',
+   goal:'BQ Boston 2027',sched:'Sáng + tối',
+   myRaces:['VPBank Hanoi Marathon · 08/11/2026 · HN','VMM Trail 2026 · 20/09/2026 · SA'],
+   locked:true,compat:55},
+  {id:'r5',emoji:'🏃‍♀️',name:'Đỗ Thanh Tâm',gender:'Nữ',dist:'5km',pace:'6:00/km',
+   area:'HN · Hoàn Kiếm',online:false,races:9,pts:190,km:76,role:'vdv',
+   tags:['5km','3km','Hồ Gươm'],bio:'Chạy để khỏe. Hay chạy quanh Hồ Gươm. Thích ăn sau chạy.',
+   goal:'3 lần/tuần đều đặn',sched:'Sáng + cuối tuần',
+   myRaces:['Giải Chạy Chào Mừng 80 Năm TDTT · 21/03/2026 · HK','Giải Chạy HK Tháng 5/2026 · 17/05/2026 · HK'],
+   locked:false,compat:88},
+  {id:'r6',emoji:'🏃',name:'Vũ Minh Khoa',gender:'Nam',dist:'10km',pace:'5:50/km',
+   area:'HN · Tây Hồ',online:true,races:15,pts:320,km:198,role:'vdv',
+   tags:['Trail','10km','Ảnh chạy'],bio:'Trail T7, đường phẳng T2-6. Thích chụp ảnh dọc đường chạy.',
+   goal:'Hoàn thành VMM 2026',sched:'Sáng cuối tuần',
+   myRaces:['Giải Chạy Chào Mừng 80 Năm TDTT · 21/03/2026 · HK','VMM Trail 2026 · 20/09/2026 · SA','Garmin Run 2026 · 07/06/2026 · HN'],
+   locked:true,compat:71},
+];
+
+const GROUPS = [
+  {id:'g1',name:'Nhóm 5km Hồ Tây Sáng Thứ 2',race:'Giải Chạy 80 Năm TDTT · 21/03',pace:'5:45–6:15/km',members:['🏃‍♀️','🏃','🏃‍♀️'],max:5,sched:'T2, T4, T7 · 5:30 sáng',area:'Hồ Tây'},
+  {id:'g2',name:'VPBank HM Training Group',race:'VPBank Hanoi Marathon · 08/11',pace:'5:20–6:00/km',members:['🏃','🏃‍♀️','🏃','🏃‍♀️'],max:8,sched:'T3, T5 tối + CN sáng',area:'HN'},
+  {id:'g3',name:'Beginner Friendly · Đường HK',race:'Giải Chạy HK Tháng 5',pace:'6:30–7:30/km',members:['🏃‍♀️','🏃‍♀️'],max:5,sched:'Cuối tuần 6:00 sáng',area:'Hoàn Kiếm'},
+];
+
+const PLANS = {
+  starter:{name:'Starter',price:29000,features:['Xem hồ sơ đầy đủ 5 người/ngày','Gửi lời mời kết nối','Wishlist 10 sản phẩm'],rec:false},
+  pro:    {name:'Pro',    price:69000,features:['Xem & kết nối không giới hạn','Số điện thoại runner (sau chấp thuận)','AI phân tích tương thích sâu','Cảnh báo giá wishlist','Chat trực tiếp trong nhóm'],rec:true},
+  elite:  {name:'Elite', price:149000,features:['Tất cả Pro','Badge xác minh Elite','Ưu tiên xuất hiện đầu danh sách','Phân tích cộng đồng hàng tháng từ Mây'],rec:false},
+};
+
+// ══════════════════════════════════════════════════════════
+// STATE
+// ══════════════════════════════════════════════════════════
+let U = {
+  name: localStorage.getItem('reg_fullName') || 'Nguyễn Văn A',
+  bib:  localStorage.getItem('reg_bib')      || '#001',
+  dist: localStorage.getItem('reg_distance') || '5km',
+  pace: localStorage.getItem('rc_pace')      || '6:30/km',
+  area: localStorage.getItem('rc_area')      || 'HN · Hoàn Kiếm',
+  goal: localStorage.getItem('rc_goal')      || '',
+  plan: localStorage.getItem('rc_plan')      || 'free',
+  conn: parseInt(localStorage.getItem('rc_conn') || '0'),
+};
+let myRaces = JSON.parse(localStorage.getItem('rc_my_races') || '[]');
+let groups  = [...GROUPS];
+let chatH   = { race:[], disc:[] };
+let isTyping = false;
+let discF = 'all', discQ = '';
+
+// ══════════════════════════════════════════════════════════
+// INIT
+// ══════════════════════════════════════════════════════════
+document.addEventListener('DOMContentLoaded', () => {
+  renderNav();
+  renderMyRaces();
+  renderDiscover();
+  renderGroups();
+  renderProfile();
+  setTimeout(() => aiWelcomeRace(), 1000);
+});
+
+// ══════════════════════════════════════════════════════════
+// NAV
+// ══════════════════════════════════════════════════════════
+function showV(v, el) {
+  document.querySelectorAll('.view').forEach(x => x.classList.remove('active'));
+  document.getElementById('view-' + v).classList.add('active');
+  document.querySelectorAll('.nt').forEach(x => x.classList.remove('on'));
+  if (el) el.classList.add('on');
+}
+
+function renderNav() {
+  const tag = document.getElementById('planTag');
+  const labels = {free:'🔒 Free',starter:'⭐ Starter',pro:'💜 Pro',elite:'👑 Elite'};
+  tag.textContent = labels[U.plan] || '🔒 Free';
+  if (U.plan !== 'free') tag.classList.add(U.plan === 'elite' ? 'elite' : 'pro');
+  document.getElementById('userTag').textContent = U.name.split(' ').slice(-1)[0] + ' · ' + U.bib;
+}
+
+// ══════════════════════════════════════════════════════════
+// MY RACES
+// ══════════════════════════════════════════════════════════
+function addMyRace() {
+  const drop = document.getElementById('raceSelectDrop').value;
+  const custom = document.getElementById('raceCustomInput').value.trim();
+  const dist = document.getElementById('raceDistSelect').value;
+  const raceName = drop || (custom ? `${custom} · ${dist}` : '');
+  if (!raceName) { showToast('⚠️ Chọn hoặc nhập tên race!'); return; }
+  if (myRaces.find(r => r.name === raceName)) { showToast('Race này đã có trong danh sách'); return; }
+  const parts = raceName.split('·');
+  myRaces.push({name: raceName, displayName: parts[0].trim(), date: parts[1]?.trim() || '', location: parts[2]?.trim() || '', dist});
+  localStorage.setItem('rc_my_races', JSON.stringify(myRaces));
+  document.getElementById('raceSelectDrop').value = '';
+  document.getElementById('raceCustomInput').value = '';
+  renderMyRaces();
+  // AI responds to new race addition
+  const matched = getMatchedRunners(raceName);
+  aiAppend('race', 'ai', `🎉 Đã thêm <strong>${parts[0].trim()}</strong>!<br><br>Mình tìm thấy <strong>${matched.length} runner</strong> cũng đăng ký race này. ${matched.length > 0 ? 'Xem dưới đây:' : 'Chưa có ai khác — nhưng khi họ thêm race, bạn sẽ được thông báo.'}`);
+  matched.slice(0,2).forEach(r => appendRunnerCard('race', r, raceName));
+}
+
+function renderMyRaceTags() {
+  document.getElementById('myRaceTags').innerHTML = myRaces.map(r =>
+    `<div class="race-tag">🏅 ${r.displayName}<button class="rt-del" onclick="delMyRace('${r.name}')">×</button></div>`
+  ).join('');
+}
+
+function delMyRace(name) {
+  myRaces = myRaces.filter(r => r.name !== name);
+  localStorage.setItem('rc_my_races', JSON.stringify(myRaces));
+  renderMyRaces();
+}
+
+function getMatchedRunners(raceName) {
+  return COMMUNITY.filter(r => r.myRaces.includes(raceName));
+}
+
+function renderMyRaces() {
+  renderMyRaceTags();
+  document.getElementById('raceCountBadge').textContent = myRaces.length + ' race';
+  if (myRaces.length === 0) {
+    document.getElementById('myRacesList').innerHTML = `<div style="text-align:center;padding:24px;color:var(--muted);font-size:12px">Chưa có race. Thêm race để tìm bạn chạy.</div>`;
+    document.getElementById('aiCtxRace').textContent = 'Thêm race để Mây tìm bạn chạy cho bạn';
+    return;
+  }
+  document.getElementById('aiCtxRace').textContent = `${myRaces.length} race đã đăng ký · ${myRaces.reduce((s,r) => s + getMatchedRunners(r.name).length, 0)} runner tiềm năng`;
+
+  document.getElementById('myRacesList').innerHTML = myRaces.map(r => {
+    const matched = getMatchedRunners(r.name);
+    return `<div class="mrl-item" onclick="focusRaceMatch('${r.name}')">
+      <div class="mri-top">
+        <div>
+          <div class="mri-name">🏅 ${r.displayName}</div>
+          <div class="mri-meta">📅 ${r.date} · 📍 ${r.location || 'VN'} · ${r.dist}</div>
+        </div>
+        <div class="mri-right">
+          <div class="mri-dist">${r.dist}</div>
+          <button onclick="event.stopPropagation();delMyRace('${r.name}')" style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:10px">× Xoá</button>
+        </div>
+      </div>
+      <div class="mri-bottom">
+        <div class="mri-avatars">${matched.slice(0,4).map(m=>`<div class="mri-av">${m.emoji}</div>`).join('')}</div>
+        <span class="mri-match-count">${matched.length > 0 ? matched.length + ' runner' : 'Chưa có ai'}</span>
+        <span class="mri-match-lbl">${matched.length > 0 ? 'cùng đăng ký' : 'trong cộng đồng'}</span>
+        ${matched.length > 0 ? '<span class="bdg bg" style="margin-left:auto">Tìm bạn ▸</span>' : ''}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function focusRaceMatch(raceName) {
+  const matched = getMatchedRunners(raceName);
+  if (matched.length === 0) { aiAppend('race','ai','Chưa có runner nào khác đăng ký race này trong cộng đồng. Mình sẽ thông báo khi có!'); return; }
+  aiAppend('race','ai',`🏁 Trong race <strong>${raceName.split('·')[0].trim()}</strong>, tìm thấy <strong>${matched.length} runner</strong>:`);
+  matched.forEach(r => appendRunnerCard('race', r, raceName));
+}
+
+// ══════════════════════════════════════════════════════════
+// DISCOVER
+// ══════════════════════════════════════════════════════════
+function discFilter(f, btn) {
+  discF = f;
+  document.querySelectorAll('[id^="disc-f"],.view#view-discover button.qp').forEach(b => b.classList.remove('on'));
+  btn.classList.add('on');
+  renderDiscover();
+}
+function discSearch(q) { discQ = q.toLowerCase(); renderDiscover(); }
+function renderDiscover() {
+  let list = [...COMMUNITY];
+  if (discF === 'same-race') list = list.filter(r => myRaces.some(mr => r.myRaces.includes(mr.name)));
+  else if (discF === 'same-pace') list = list.filter(r => {
+    const rp = parseFloat(r.pace); const up = parseFloat(U.pace);
+    return Math.abs(rp - up) <= 0.5;
+  });
+  else if (discF === 'same-area') list = list.filter(r => r.area.includes('HN') && U.area.includes('HN'));
+  else if (discF === 'tnv') list = list.filter(r => r.role === 'tnv');
+  if (discQ) list = list.filter(r => r.name.toLowerCase().includes(discQ) || r.area.toLowerCase().includes(discQ) || r.pace.includes(discQ));
+  list.sort((a,b) => b.compat - a.compat);
+
+  const isPro = ['pro','elite'].includes(U.plan);
+  document.getElementById('discGrid').innerHTML = list.map(r => {
+    const shared = myRaces.filter(mr => r.myRaces.includes(mr.name));
+    const needLock = r.locked && !isPro;
+    const cc = r.compat >= 85 ? 'var(--green)' : r.compat >= 70 ? 'var(--v)' : 'var(--muted)';
+    return `<div class="rmc">
+      <div class="rmc-head">
+        <div class="rmc-top">
+          <div class="rmc-av" style="background:linear-gradient(135deg,${r.gender==='Nữ'?'var(--pk),var(--v)':'var(--v),var(--cyan)'})">
+            ${r.emoji}${r.online?'<div class="rmc-online"></div>':''}
+          </div>
+          <div style="flex:1;min-width:0">
+            <div class="rmc-name">${r.name}</div>
+            <div class="rmc-pace">⚡ ${r.pace}</div>
+            <div class="rmc-area">📍 ${r.area}</div>
+          </div>
+          <div style="font-family:'Bebas Neue';font-size:18px;color:${cc};flex-shrink:0">${r.compat}%</div>
+        </div>
+        <div class="rmc-tags">${r.tags.map(t=>`<span class="rmc-tag">${t}</span>`).join('')}</div>
+        ${shared.length > 0 ? `<div class="shared-races">${shared.map(s=>`<span class="sr-pill">🏁 ${s.displayName}</span>`).join('')}</div>` : ''}
+      </div>
+      <div class="rmc-body">
+        <div class="rmc-bio">${r.bio.substring(0,75)}${r.bio.length>75?'...':''}</div>
+        <div class="compat-row">
+          <div class="compat-lbl"><span style="color:var(--muted)">Tương thích</span><span style="color:${cc};font-weight:800">${r.compat}%</span></div>
+          <div class="cbar"><div class="cfill" style="width:${r.compat}%;background:linear-gradient(90deg,var(--v),${cc})"></div></div>
+        </div>
+        <div class="rmc-actions">
+          <button class="rma rma-primary" onclick="openRunner('${r.id}')">👤 Hồ sơ</button>
+          ${shared.length > 0 && !needLock ? `<button class="rma rma-green" onclick="inviteGroup('${r.id}')">🏃 Lập nhóm</button>` : ''}
+          <button class="rma rma-ghost" onclick="aiAbout('${r.id}')">🤖 AI</button>
+        </div>
+      </div>
+      ${needLock ? `<div class="lock-ov show"><div style="font-size:24px">🔒</div><div style="font-size:10px;font-weight:700;color:var(--ink);text-align:center;padding:0 12px;line-height:1.5">Mở khoá để xem đầy đủ & kết nối</div><button class="lb" onclick="event.stopPropagation();showUpgrade()">Nâng cấp</button></div>` : ''}
+    </div>`;
+  }).join('') || `<div style="grid-column:1/-1;text-align:center;padding:40px;color:var(--muted)">Không tìm thấy runner phù hợp.</div>`;
+}
+
+// ══════════════════════════════════════════════════════════
+// GROUPS
+// ══════════════════════════════════════════════════════════
+function renderGroups() {
+  document.getElementById('groupsGrid').innerHTML = groups.map(g => `
+    <div class="grp-card" onclick="joinGroupConfirm('${g.id}')">
+      <div class="grp-av-row">${g.members.map(m=>`<div class="grp-av">${m}</div>`).join('')}<div class="grp-av" style="background:var(--surface);color:var(--muted);font-size:12px;font-weight:700">+${g.max - g.members.length}</div></div>
+      <div class="grp-name">${g.name}</div>
+      <div class="grp-race">🏁 ${g.race}</div>
+      <div class="grp-meta">📍 ${g.area} · ${g.members.length}/${g.max} thành viên</div>
+      <div class="grp-meta" style="margin-top:3px">🕐 ${g.sched}</div>
+      <div class="grp-pace">⚡ Pace: ${g.pace}</div>
+    </div>`).join('') || `<div style="grid-column:1/-1;text-align:center;padding:40px;color:var(--muted)">Chưa có nhóm nào. Tạo nhóm đầu tiên!</div>`;
+}
+
+function openCreateGroup() { openM('createGrpMo'); }
+function openJoinGroup() {
+  const code = prompt('Nhập mã nhóm:');
+  if (code) showToast('✅ Đã gửi yêu cầu tham gia nhóm #' + code);
+}
+function joinGroupConfirm(id) {
+  const g = groups.find(x => x.id === id);
+  if (!g) return;
+  if (confirm(`Tham gia nhóm "${g.name}"?\n📍 ${g.area} · 🕐 ${g.sched}`)) {
+    showToast(`✅ Đã tham gia nhóm "${g.name}"!`);
+    U.conn++;
+    localStorage.setItem('rc_conn', U.conn);
+    document.getElementById('prConn').textContent = U.conn;
+  }
+}
+function inviteGroup(runnerId) {
+  const r = COMMUNITY.find(x => x.id === runnerId);
+  if (!r) return;
+  const shared = myRaces.filter(mr => r.myRaces.includes(mr.name));
+  if (shared.length === 0) { showToast('Không có race chung để lập nhóm'); return; }
+  const raceName = shared[0].displayName;
+  document.getElementById('grpName').value = `Nhóm ${raceName} · ${r.name} + Tôi`;
+  document.getElementById('grpRace').value = raceName;
+  document.getElementById('grpPace').value = r.pace;
+  openM('createGrpMo');
+}
+function createGroup() {
+  const name = document.getElementById('grpName').value.trim();
+  if (!name) { showToast('Nhập tên nhóm!'); return; }
+  groups.unshift({
+    id: 'g_' + Date.now(), name,
+    race: document.getElementById('grpRace').value || 'TBD',
+    pace: document.getElementById('grpPace').value || U.pace,
+    members:['🏃'], max: parseInt(document.getElementById('grpMax').value),
+    sched: document.getElementById('grpSched').value || 'TBD', area: U.area
+  });
+  closeM('createGrpMo');
+  renderGroups();
+  showToast('✅ Tạo nhóm thành công!');
+}
+
+// ══════════════════════════════════════════════════════════
+// RUNNER MODAL
+// ══════════════════════════════════════════════════════════
+function openRunner(id) {
+  const r = COMMUNITY.find(x => x.id === id); if (!r) return;
+  const isPro = ['pro','elite'].includes(U.plan);
+  const canSee = !r.locked || isPro;
+  const shared = myRaces.filter(mr => r.myRaces.includes(mr.name));
+  document.getElementById('rmH').textContent = r.name + ' · ' + r.area;
+  document.getElementById('rmB').innerHTML = `
+    <div style="text-align:center;margin-bottom:14px">
+      <div style="width:60px;height:60px;border-radius:50%;background:linear-gradient(135deg,${r.gender==='Nữ'?'var(--pk),var(--v)':'var(--v),var(--cyan)'});display:flex;align-items:center;justify-content:center;font-size:26px;margin:0 auto 8px">${r.emoji}</div>
+      <div style="font-size:17px;font-weight:800">${r.name}</div>
+      <div style="font-size:10px;color:var(--muted);margin-top:3px">${r.area} · ${r.online?'🟢 Online':'⚫ Offline'} · ${r.dist}</div>
+      <div style="display:flex;gap:5px;justify-content:center;flex-wrap:wrap;margin-top:7px">${r.tags.map(t=>`<span class="bdg bv">${t}</span>`).join('')}</div>
+    </div>
+    ${shared.length > 0 ? `<div class="note ng"><strong>🏁 Cùng race với bạn:</strong> ${shared.map(s=>s.displayName).join(' · ')}</div>` : ''}
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin-bottom:13px;text-align:center">
+      <div style="padding:9px;background:rgba(255,255,255,.02);border:1px solid var(--br);border-radius:7px"><div style="font-family:'Bebas Neue';font-size:20px;color:var(--v)">${r.races}</div><div style="font-size:8px;color:var(--muted);text-transform:uppercase;letter-spacing:1px">Races</div></div>
+      <div style="padding:9px;background:rgba(255,255,255,.02);border:1px solid var(--br);border-radius:7px"><div style="font-family:'Bebas Neue';font-size:20px;color:var(--gold)">${r.pts}</div><div style="font-size:8px;color:var(--muted);text-transform:uppercase;letter-spacing:1px">Điểm</div></div>
+      <div style="padding:9px;background:rgba(255,255,255,.02);border:1px solid var(--br);border-radius:7px"><div style="font-family:'Bebas Neue';font-size:20px;color:var(--green)">${r.km}km</div><div style="font-size:8px;color:var(--muted);text-transform:uppercase;letter-spacing:1px">2026</div></div>
+    </div>
+    <div style="font-size:11px;color:var(--muted);line-height:1.7;margin-bottom:12px">${r.bio}</div>
+    ${canSee ? `
+      <div style="background:rgba(255,255,255,.02);border:1px solid var(--br);border-radius:8px;padding:11px;margin-bottom:12px;font-size:11px;line-height:2">
+        ⚡ <strong>Pace:</strong> ${r.pace} · 🎯 <strong>Mục tiêu:</strong> ${r.goal}<br>
+        🕐 <strong>Lịch chạy:</strong> ${r.sched}<br>
+        🏁 <strong>Races đã ĐK:</strong> ${r.myRaces.map(x=>x.split('·')[0].trim()).join(', ')}
+      </div>
+      <div style="display:flex;gap:7px;flex-wrap:wrap">
+        ${shared.length > 0 ? `<button class="btn btn-v" style="flex:1;justify-content:center;font-size:10px" onclick="inviteGroup('${r.id}');closeM('runnerMo')">🏃 Lập nhóm cùng chạy</button>` : ''}
+        <button class="btn" style="flex:1;justify-content:center;background:rgba(16,185,129,.1);border:1px solid rgba(16,185,129,.25);color:var(--green);font-size:10px" onclick="connect('${r.id}');closeM('runnerMo')">🤝 Kết nối</button>
+        <button class="btn btn-gh" style="font-size:10px" onclick="aiAbout('${r.id}');closeM('runnerMo')">🤖 Hỏi Mây</button>
+      </div>` : `
+      <div class="pgat">
+        <div style="font-size:28px;margin-bottom:7px">🔒</div>
+        <div style="font-size:14px;font-weight:800;margin-bottom:3px">Cần nâng cấp để xem thêm</div>
+        <div style="font-size:11px;color:var(--muted);margin-bottom:12px;line-height:1.6">Gói Pro mở khoá: xem đầy đủ hồ sơ, số điện thoại (sau khi đồng ý), lập nhóm và chat trực tiếp.</div>
+        <div style="display:flex;gap:7px;justify-content:center;flex-wrap:wrap">
+          <button class="btn btn-v" onclick="closeM('runnerMo');showUpgrade()">⭐ Nâng cấp Pro</button>
+          <button class="btn btn-gh" onclick="aiAbout('${r.id}');closeM('runnerMo')">🤖 Hỏi Mây trước</button>
+        </div>
+      </div>`}`;
+  openM('runnerMo');
+}
+
+function connect(id) {
+  U.conn++;
+  localStorage.setItem('rc_conn', U.conn);
+  document.getElementById('prConn').textContent = U.conn;
+  showToast('✅ Đã gửi lời mời kết nối!');
+}
+
+// ══════════════════════════════════════════════════════════
+// UPGRADE
+// ══════════════════════════════════════════════════════════
+function showUpgrade() {
+  const raceCount = myRaces.length;
+  const lockCount = COMMUNITY.filter(r => r.locked).length;
+  const rec = raceCount >= 2 || lockCount >= 3 ? 'pro' : 'starter';
+  document.getElementById('upgradeB').innerHTML = `
+    <div class="note nv">
+      <strong>Mây phân tích:</strong> Bạn có <strong>${raceCount} race</strong> và <strong>${lockCount} runner chưa xem được</strong>. Gói <strong>${PLANS[rec].name}</strong> phù hợp nhất.
+    </div>
+    <div style="display:flex;flex-direction:column;gap:9px">
+      ${Object.entries(PLANS).map(([k,p]) => `
+        <div style="border:${k===rec?'2px solid var(--v)':'1.5px solid var(--br)'};border-radius:10px;padding:13px;cursor:pointer;transition:all .2s;${k===rec?'background:rgba(124,58,237,.04)':''}" onclick="choosePlan('${k}')">
+          <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:7px">
+            <div><div style="font-size:13px;font-weight:800;${k===rec?'color:var(--v)':''}">${p.name}${k===rec?' <span style="font-size:8px;background:var(--v);color:#fff;padding:2px 6px;border-radius:3px;margin-left:4px">Gợi ý</span>':''}</div></div>
+            <div style="font-family:'Bebas Neue';font-size:24px;${k===rec?'color:var(--v)':''}">${p.price.toLocaleString('vi-VN')}đ<span style="font-size:12px;font-weight:400;color:var(--muted)">/tháng</span></div>
+          </div>
+          <div style="display:flex;flex-wrap:wrap;gap:4px">${p.features.map(f=>`<span style="font-size:9px;padding:2px 7px;border-radius:8px;border:1px solid var(--br);color:var(--muted)">✓ ${f}</span>`).join('')}</div>
+        </div>`).join('')}
+    </div>
+    <div style="font-size:10px;color:var(--muted);text-align:center;margin-top:11px;line-height:1.7">💜 Phí hỗ trợ tổ chức giải chạy miễn phí hàng tháng của HLRace. Huỷ bất kỳ lúc nào.</div>`;
+  openM('upgradeMo');
+}
+
+function choosePlan(plan) {
+  U.plan = plan; localStorage.setItem('rc_plan', plan);
+  closeM('upgradeMo');
+  renderNav(); renderDiscover();
+  showToast(`🎉 Đã nâng cấp lên ${PLANS[plan].name}!`);
+  aiAppend('race','ai',`🎉 Chào mừng lên <strong>${PLANS[plan].name}</strong>! Tất cả hồ sơ giờ đã mở khoá. Muốn mình tìm nhóm luyện phù hợp nhất với race của bạn không?`);
+}
+
+// ══════════════════════════════════════════════════════════
+// PROFILE
+// ══════════════════════════════════════════════════════════
+function renderProfile() {
+  document.getElementById('prName').textContent = U.name;
+  document.getElementById('prSub').textContent = U.area + ' · VĐV · Chạy từ 2022';
+  document.getElementById('prDist').textContent = U.dist;
+  document.getElementById('prPace').textContent = 'Pace ' + U.pace;
+  document.getElementById('prPlan').textContent = {free:'Free',starter:'⭐ Starter',pro:'💜 Pro',elite:'👑 Elite'}[U.plan];
+  document.getElementById('prRaces').textContent = myRaces.length;
+  document.getElementById('prConn').textContent = U.conn;
+  document.getElementById('pfPace').value = U.pace;
+  document.getElementById('pfGoal').value = U.goal;
+}
+
+function saveProfile() {
+  U.pace = document.getElementById('pfPace').value || U.pace;
+  U.goal = document.getElementById('pfGoal').value;
+  U.area = document.getElementById('pfArea').value;
+  localStorage.setItem('rc_pace', U.pace);
+  localStorage.setItem('rc_goal', U.goal);
+  localStorage.setItem('rc_area', U.area);
+  const msg = document.getElementById('profSaveMsg');
+  msg.style.display = 'block';
+  setTimeout(() => msg.style.display = 'none', 2500);
+  renderProfile();
+}
+
+function openEditModal() {
+  document.getElementById('efName').value = U.name;
+  document.getElementById('efPace').value = U.pace;
+  document.getElementById('efGoal').value = U.goal;
+  openM('editMo');
+}
+function saveEdit() {
+  const n = document.getElementById('efName').value.trim();
+  if (n) { U.name = n; localStorage.setItem('reg_fullName', n); }
+  U.dist = document.getElementById('efDist').value;
+  U.pace = document.getElementById('efPace').value || U.pace;
+  U.goal = document.getElementById('efGoal').value;
+  localStorage.setItem('rc_pace', U.pace);
+  closeM('editMo'); renderProfile(); renderNav();
+  showToast('✅ Đã cập nhật hồ sơ!');
+}
+
+// ══════════════════════════════════════════════════════════
+// AI CHAT
+// ══════════════════════════════════════════════════════════
+function aiWelcomeRace() {
+  const total = COMMUNITY.reduce((s,r) => {
+    return s + (r.myRaces.includes('Giải Chạy Chào Mừng 80 Năm TDTT · 21/03/2026 · HK') ? 1 : 0);
+  }, 0);
+  aiAppend('race','ai',`Chào <strong>${U.name.split(' ').slice(-1)[0]}</strong>! Trong cộng đồng HLRace hiện có <strong>${COMMUNITY.length} runner</strong> đã chia sẻ lịch race.<br><br>Giải <strong>21/03/2026</strong> đang có <strong>${total} người</strong> đăng ký. Thêm race của bạn để mình tìm người cùng chạy và đề xuất nhóm luyện tập nhé 🏃`);
+}
+
+function aiQ(channel, text) {
+  document.getElementById('aiInp' + (channel === 'race' ? 'Race' : 'Disc')).value = text;
+  aiSend(channel);
+}
+function aiAbout(id) {
+  const r = COMMUNITY.find(x => x.id === id); if (!r) return;
+  showV('races', document.querySelector('.nt'));
+  aiQ('race', `Phân tích ${r.name} — tôi có nên kết nối để lập nhóm chạy không?`);
+}
+
+async function aiSend(channel) {
+  const inp = document.getElementById('aiInp' + (channel === 'race' ? 'Race' : 'Disc'));
+  const text = inp.value.trim();
+  if (!text || isTyping) return;
+  inp.value = ''; inp.style.height = 'auto';
+  aiAppend(channel,'user', text);
+  chatH[channel].push({role:'user',content:text});
+  showTyping(channel); isTyping = true;
+  document.getElementById('aiSend' + (channel === 'race' ? 'Race' : 'Disc')).disabled = true;
+
+  try {
+    const apiKey = localStorage.getItem('race_api_key') || '';
+    if (!apiKey) {
+      hideTyping(channel);
+      aiAppend(channel,'ai',`⚙️ Cần cài đặt Claude API Key trong <a href="admin.html" style="color:var(--v)">Admin → Cài đặt</a> để Mây hoạt động.`);
+      isTyping = false; document.getElementById('aiSend' + (channel==='race'?'Race':'Disc')).disabled = false;
+      return;
+    }
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method:'POST',
+      headers:{'Content-Type':'application/json','x-api-key':apiKey,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
+      body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:700,system:buildSys(),messages:chatH[channel].slice(-12)})
+    });
+    const data = await res.json();
+    const reply = data.content?.[0]?.text || '🤖 Lỗi phản hồi.';
+    chatH[channel].push({role:'assistant',content:reply});
+    hideTyping(channel);
+    processReply(channel, reply, text);
+  } catch(e) {
+    hideTyping(channel);
+    aiAppend(channel,'ai','🔴 Lỗi kết nối.');
+  }
+  isTyping = false; document.getElementById('aiSend' + (channel==='race'?'Race':'Disc')).disabled = false;
+}
+
+function buildSys() {
+  const rList = COMMUNITY.map(r =>
+    `[${r.id}] ${r.name} | ${r.dist} | Pace:${r.pace} | ${r.area} | ${r.online?'Online':'Offline'} | ${r.races} races | ${r.pts}pts | Races:${r.myRaces.map(x=>x.split('·')[0].trim()).join(',')} | Bio:${r.bio.substring(0,60)}`
+  ).join('\n');
+  return `Bạn là MÂY — AI kết nối runner cộng đồng HLRace, Hà Nội.
+
+USER:
+- Tên: ${U.name} | Cự ly: ${U.dist} | Pace: ${U.pace} | Khu vực: ${U.area} | Plan: ${U.plan}
+- Races đã ĐK: ${myRaces.map(r=>r.displayName).join(', ') || 'Chưa có'}
+- Mục tiêu: ${U.goal || 'Chưa đặt'}
+
+CỘNG ĐỒNG:
+${rList}
+
+NHIỆM VỤ:
+1. Matching dựa trên RACE CHUNG là ưu tiên số 1 — ai cùng đăng ký race → phù hợp nhất
+2. Sau đó: cùng pace ±30s, cùng khu vực, cùng lịch chạy
+3. Khi gợi ý lập nhóm, đề xuất cụ thể: ai + race nào + lịch tập
+4. Gợi ý nâng cấp tự nhiên khi user muốn xem hồ sơ đã khoá
+5. Gợi ý gói phí dựa trên số race và nhu cầu cụ thể của user
+6. Trả lời ngắn gọn, thân thiện như bạn runner
+7. Dùng markdown bold cho tên người và race
+
+Tiếng Việt. Không bịa thông tin.`;
+}
+
+function processReply(ch, text, question) {
+  let html = text.replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>').replace(/\n/g,'<br>');
+  const mentioned = COMMUNITY.filter(r => text.includes(r.name));
+  const isPro = ['pro','elite'].includes(U.plan);
+  if (mentioned.length > 0 && mentioned.length <= 3) {
+    mentioned.forEach(r => { html += buildChatRunnerCard(r, isPro); });
+  }
+  const suggestUpgrade = /nâng cấp|Pro|Starter|mở khoá|phí/i.test(text) && U.plan === 'free';
+  if (suggestUpgrade) {
+    const rec = myRaces.length >= 2 ? 'pro' : 'starter';
+    const p = PLANS[rec];
+    html += `<div class="price-suggest"><div class="ps-head">💡 Gói Mây gợi ý</div><div class="ps-plan rec" onclick="choosePlan('${rec}')"><div><div class="ps-name">${p.name}<span class="ps-rec">Phù hợp nhất</span></div><div class="ps-desc">${p.features[0]}</div></div><div class="ps-price">${p.price.toLocaleString('vi-VN')}đ/tháng</div></div><button onclick="choosePlan('${rec}')" style="width:100%;padding:7px;border-radius:6px;border:none;background:linear-gradient(135deg,var(--v),var(--v2));color:#fff;font-family:'Outfit';font-size:10px;font-weight:700;cursor:pointer;margin-top:4px">🔓 Mở khoá ${p.name}</button></div>`;
+  }
+  aiAppend(ch, 'ai', html);
+}
+
+function appendRunnerCard(ch, r, raceName) {
+  const isPro = ['pro','elite'].includes(U.plan);
+  aiAppend(ch, 'ai', buildChatRunnerCard(r, isPro, raceName));
+}
+
+function buildChatRunnerCard(r, isPro, highlightRace) {
+  const canConnect = !r.locked || isPro;
+  return `<div class="chat-runner" onclick="openRunner('${r.id}')">
+    <div class="cr-top">
+      <div class="cr-av">${r.emoji}</div>
+      <div style="flex:1"><div class="cr-name">${r.name}</div><div class="cr-pace">⚡ ${r.pace} · 📍 ${r.area}</div></div>
+      <div style="font-size:13px;font-weight:800;color:var(--v)">${r.compat}%</div>
+    </div>
+    <div class="cr-pills">
+      ${highlightRace ? `<span class="cr-pill">🏁 ${highlightRace.split('·')[0].trim()}</span>` : ''}
+      ${r.tags.slice(0,2).map(t=>`<span style="font-size:8px;padding:2px 6px;border-radius:4px;background:rgba(124,58,237,.07);color:var(--v);border:1px solid rgba(124,58,237,.12)">${t}</span>`).join('')}
+    </div>
+    <div class="cr-acts">
+      <button class="cr-btn cr-btn-p" onclick="event.stopPropagation();openRunner('${r.id}')">👤 Hồ sơ</button>
+      ${canConnect ? `<button class="cr-btn cr-btn-g" onclick="event.stopPropagation();inviteGroup('${r.id}')">🏃 Lập nhóm</button>` : `<button class="cr-btn cr-btn-g" onclick="event.stopPropagation();showUpgrade()" style="color:var(--v)">🔒 Mở khoá</button>`}
+    </div>
+  </div>`;
+}
+
+// ══════════════════════════════════════════════════════════
+// CHAT UI
+// ══════════════════════════════════════════════════════════
+function aiAppend(ch, role, html) {
+  const el = document.getElementById('aiMsgs' + (ch==='race'?'Race':'Disc') || 'aiMsgsRace');
+  const wrap = document.getElementById('aiMsgsRace'); // default to race panel
+  const now = new Date().toLocaleTimeString('vi-VN',{hour:'2-digit',minute:'2-digit'});
+  const div = document.createElement('div');
+  div.className = 'msg msg-' + role;
+  div.innerHTML = role === 'ai'
+    ? `<div class="ai-av" style="width:24px;height:24px;font-size:10px;flex-shrink:0">🤖</div><div><div class="bbl">${html}</div><div class="msg-time">${now}</div></div>`
+    : `<div><div class="bbl">${html}</div><div class="msg-time" style="text-align:right">${now}</div></div>`;
+  wrap.appendChild(div); wrap.scrollTop = wrap.scrollHeight;
+}
+
+function showTyping(ch) {
+  const wrap = document.getElementById('aiMsgsRace');
+  const d = document.createElement('div');
+  d.className='msg msg-ai';d.id='typ_'+ch;
+  d.innerHTML=`<div class="ai-av" style="width:24px;height:24px;font-size:10px;flex-shrink:0">🤖</div><div class="bbl" style="padding:6px 10px"><div class="tdots">${[1,2,3].map(()=>'<div class="td"></div>').join('')}</div></div>`;
+  wrap.appendChild(d);wrap.scrollTop=wrap.scrollHeight;
+}
+function hideTyping(ch){document.getElementById('typ_'+ch)?.remove()}
+
+// ══════════════════════════════════════════════════════════
+// UTILS
+// ══════════════════════════════════════════════════════════
+function openM(id){document.getElementById(id).classList.add('open')}
+function closeM(id){document.getElementById(id).classList.remove('open')}
+function showToast(msg){
+  const t=document.createElement('div');t.textContent=msg;
+  t.style.cssText='position:fixed;bottom:22px;left:50%;transform:translateX(-50%);background:var(--surface);border:1px solid var(--br);color:var(--ink);padding:9px 16px;border-radius:7px;font-size:12px;font-weight:600;z-index:600;white-space:nowrap;box-shadow:0 4px 18px rgba(0,0,0,.4)';
+  document.body.appendChild(t);setTimeout(()=>t.remove(),2700);
+}
+</script>
+
+// ═══ DATA SOURCE PATCH — Runner Connect ═══
+function switchRCSource(mode) {
+  setDataSource(mode);
+  const isMock = mode === 'mock';
+  document.getElementById('ds-btn-mock').style.background = isMock ? '#00CC7A' : 'rgba(0,200,122,.12)';
+  document.getElementById('ds-btn-mock').style.color = isMock ? '#000' : '#00CC7A';
+  document.getElementById('ds-btn-real').style.background = isMock ? 'rgba(107,63,255,.08)' : '#6B3FFF';
+  document.getElementById('ds-btn-real').style.color = isMock ? '#52506A' : '#fff';
+  loadCommunity();
+}
+
+async function loadCommunity() {
+  if (getDataSource() === 'mock') {
+    // Convert MOCK_RUNNER_PROFILES to COMMUNITY format
+    COMMUNITY.length = 0;
+    MOCK_RUNNER_PROFILES.forEach(r => {
+      COMMUNITY.push({
+        id: r.userId, name: r.fullName, pace: r.pace, area: r.area,
+        goal: r.goal, gender: r.gender, level: r.level, points: r.points,
+        myRaces: r.races, connected: r.connected,
+        bio: `Runner ${r.area} · ${r.pace} · Mục tiêu: ${r.goal}`,
+        joinDate: '2026-01', avatar: r.fullName.split(' ').map(w=>w[0]).slice(-2).join('').toUpperCase()
+      });
+    });
+  } else {
+    // Load from Sheets PROFILES tab
+    const res = await vfetch('getRunnerProfiles');
+    if (res.data && res.data.length) {
+      COMMUNITY.length = 0;
+      res.data.forEach(r => COMMUNITY.push({
+        id: r.userId||r.id, name: r.fullName, pace: r.pace, area: r.area,
+        goal: r.goal, gender: r.gender, level: r.level, points: Number(r.points)||0,
+        myRaces: r.races ? (typeof r.races === 'string' ? r.races.split(',') : r.races) : [],
+        connected: r.connected === 'true' || r.connected === true,
+        bio: r.bio || `Runner ${r.area||''} · ${r.pace||''}`, joinDate: r.joinDate||'',
+        avatar: (r.fullName||'?').split(' ').map(w=>w[0]).slice(-2).join('').toUpperCase()
+      }));
+    }
+  }
+}
+
+// Init: auto-load mock data on start
+window.addEventListener('DOMContentLoaded', () => {
+  // Sync toggle buttons
+  switchRCSource(getDataSource() || 'mock');
+});
+
+</body>
+</html>

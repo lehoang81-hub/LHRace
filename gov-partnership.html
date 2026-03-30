@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HLRace — Hợp tác Chính quyền</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,600;0,700;1,500&family=Geist:wght@300;400;500;600&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#F5F3EF;--card:#FFFFFF;--s1:#EDEAE3;--s2:#E2DED5;
+  --ink:#1A1816;--ink2:#5A5548;--muted:#9A9080;
+  --navy:#1A3A5C;--navy2:#274E7A;--gold:#8A6E00;
+  --green:#2A5C3F;--red:#8A2A2A;--teal:#1A5C5A;
+  --br:rgba(26,24,22,.07);--br2:rgba(26,24,22,.13);
+  --r:14px;--r-sm:8px;
+}
+body{background:var(--bg);color:var(--ink);font-family:'Geist',sans-serif;font-size:14px;min-height:100vh}
+
+.hdr{background:linear-gradient(135deg,var(--navy) 0%,#0A2440 100%);padding:32px 24px 28px;position:relative;overflow:hidden}
+.hdr::before{content:'';position:absolute;top:-40px;right:-40px;width:200px;height:200px;border-radius:50%;background:rgba(255,255,255,.03)}
+.hdr::after{content:'';position:absolute;bottom:-1px;left:0;right:0;height:24px;background:var(--bg);border-radius:24px 24px 0 0}
+.hdr-badge{display:inline-flex;align-items:center;gap:6px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.15);border-radius:20px;padding:5px 12px;font-family:'Geist Mono';font-size:9px;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,.6);margin-bottom:12px}
+.hdr-title{font-family:'Fraunces';font-size:clamp(22px,5vw,32px);font-weight:700;color:#fff;line-height:1.15;margin-bottom:8px}
+.hdr-sub{font-size:13px;color:rgba(255,255,255,.65);line-height:1.6;max-width:500px}
+
+.wrap{max-width:720px;margin:0 auto;padding:20px 16px 80px}
+.card{background:var(--card);border:1px solid var(--br);border-radius:var(--r);padding:22px;margin-bottom:14px}
+.card-hdr{display:flex;align-items:flex-start;gap:14px;margin-bottom:18px;padding-bottom:14px;border-bottom:1px solid var(--br)}
+.card-icon{width:46px;height:46px;border-radius:var(--r-sm);display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0}
+.ci-navy{background:rgba(26,58,92,.08);border:1px solid rgba(26,58,92,.15)}
+.ci-gold{background:rgba(138,110,0,.08);border:1px solid rgba(138,110,0,.15)}
+.ci-green{background:rgba(42,92,63,.08);border:1px solid rgba(42,92,63,.15)}
+.ci-teal{background:rgba(26,92,90,.08);border:1px solid rgba(26,92,90,.15)}
+.card-title{font-family:'Fraunces';font-size:17px;font-weight:600;margin-bottom:3px}
+.card-sub{font-size:12px;color:var(--muted);line-height:1.5}
+.sec-label{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin-bottom:10px;display:flex;align-items:center;gap:8px}
+.sec-label::after{content:'';flex:1;height:1px;background:var(--br)}
+
+/* TASK TABLE */
+.task-table{width:100%;border-collapse:collapse}
+.task-table th{text-align:left;padding:8px 10px;font-size:11px;font-weight:500;color:var(--muted);text-transform:uppercase;letter-spacing:.3px;background:var(--s1);border-bottom:1px solid var(--br)}
+.task-table td{padding:10px;border-bottom:1px solid var(--br);font-size:13px;vertical-align:top}
+.task-table tr:last-child td{border:none}
+.task-row:hover td{background:rgba(0,0,0,.015)}
+.task-name{font-weight:500;margin-bottom:3px}
+.task-note{font-size:11px;color:var(--muted);line-height:1.5}
+.task-merit{font-family:'Geist Mono';font-size:12px;font-weight:500;color:var(--green);white-space:nowrap}
+.priority-badge{display:inline-block;font-size:9px;font-weight:600;padding:2px 7px;border-radius:20px;letter-spacing:.3px;text-transform:uppercase}
+.pb-high{background:#FBEAE5;color:#8A2A2A;border:1px solid #F0BFBF}
+.pb-mid{background:#FEF5E0;color:#8A6E00;border:1px solid #ECD880}
+.pb-low{background:var(--s1);color:var(--muted);border:1px solid var(--br2)}
+
+/* SCENARIO CARDS */
+.scenario-grid{display:grid;grid-template-columns:1fr;gap:10px}
+@media(min-width:560px){.scenario-grid{grid-template-columns:1fr 1fr}}
+.scenario{border:1.5px solid var(--br2);border-radius:var(--r-sm);padding:14px;cursor:pointer;transition:all .15s;position:relative}
+.scenario:hover{border-color:var(--navy);background:rgba(26,58,92,.03)}
+.scenario.selected{border-color:var(--navy);background:rgba(26,58,92,.05)}
+.sc-head{display:flex;align-items:center;gap:10px;margin-bottom:8px}
+.sc-avatar{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
+.sc-name{font-size:13px;font-weight:500}
+.sc-role{font-size:11px;color:var(--muted)}
+.sc-tags{display:flex;flex-wrap:wrap;gap:4px;margin-top:8px}
+.sc-tag{font-size:10px;padding:3px 8px;border-radius:20px;background:var(--s1);border:1px solid var(--br);color:var(--muted)}
+.sc-merit{position:absolute;top:10px;right:10px;font-family:'Geist Mono';font-size:11px;color:var(--green);font-weight:500}
+
+/* MERIT SUMMARY */
+.merit-summary{background:linear-gradient(135deg,rgba(42,92,63,.06),rgba(26,58,92,.04));border:1px solid rgba(42,92,63,.15);border-radius:var(--r-sm);padding:14px;margin-top:14px}
+.ms-title{font-size:12px;font-weight:500;color:var(--green);margin-bottom:10px;display:flex;align-items:center;gap:6px}
+.ms-rows{display:flex;flex-direction:column;gap:6px}
+.ms-row{display:flex;justify-content:space-between;font-size:12px;padding:6px 0;border-bottom:1px solid rgba(42,92,63,.1)}
+.ms-row:last-child{border:none;font-weight:500}
+.ms-label{color:var(--ink2)}
+.ms-val{font-family:'Geist Mono';color:var(--green)}
+
+/* FLOW DIAGRAM */
+.flow{display:flex;flex-direction:column;gap:0}
+.flow-step{display:flex;gap:14px;padding:12px 0;position:relative}
+.flow-step::before{content:'';position:absolute;left:17px;top:46px;bottom:0;width:1.5px;background:var(--br2)}
+.flow-step:last-child::before{display:none}
+.fs-num{width:34px;height:34px;border-radius:50%;background:var(--navy);color:#fff;display:flex;align-items:center;justify-content:center;font-family:'Geist Mono';font-size:12px;font-weight:500;flex-shrink:0}
+.fs-body{flex:1;padding-top:4px}
+.fs-title{font-size:13px;font-weight:500;margin-bottom:3px}
+.fs-desc{font-size:12px;color:var(--muted);line-height:1.6}
+.fs-tag{display:inline-block;font-size:10px;padding:2px 8px;border-radius:20px;background:rgba(26,58,92,.08);color:var(--navy);border:1px solid rgba(26,58,92,.15);margin-top:5px}
+
+/* PROVINCE TABS */
+.prov-tabs{display:flex;gap:6px;margin-bottom:16px;flex-wrap:wrap}
+.prov-tab{padding:7px 14px;border-radius:20px;font-size:12px;font-weight:500;cursor:pointer;border:1.5px solid var(--br2);background:var(--card);color:var(--muted);transition:all .15s}
+.prov-tab.on{background:var(--navy);border-color:var(--navy);color:#fff}
+
+/* FIELD */
+.field{margin-bottom:12px}
+.field label{display:block;font-size:11px;font-weight:500;text-transform:uppercase;letter-spacing:.4px;color:var(--muted);margin-bottom:5px}
+.field input,.field select,.field textarea{width:100%;padding:10px 12px;border:1px solid var(--br2);border-radius:var(--r-sm);font-size:13px;background:var(--card);color:var(--ink);font-family:'Geist',sans-serif;outline:none;transition:border-color .15s}
+.field input:focus,.field select:focus{border-color:var(--navy)}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.btn{padding:10px 20px;border-radius:var(--r-sm);font-size:13px;font-weight:500;cursor:pointer;border:none;font-family:'Geist',sans-serif;display:inline-flex;align-items:center;gap:7px;transition:all .15s}
+.btn-navy{background:var(--navy);color:#fff}
+.btn-navy:hover{background:var(--navy2)}
+.btn-outline{background:transparent;border:1.5px solid var(--br2);color:var(--ink2)}
+</style>
+</head>
+<body>
+
+<div class="hdr">
+  <div class="hdr-badge">🏛 HLRace × Chính quyền địa phương</div>
+  <div class="hdr-title">Hệ thống hợp tác<br>B2G — Race & Cộng đồng</div>
+  <div class="hdr-sub">Nhân sự chính quyền tham gia hỗ trợ race được ghi nhận điểm công đức — kết nối gần dân nhất có thể.</div>
+</div>
+
+<div class="wrap">
+
+<!-- 1. QUY TRÌNH -->
+<div class="card">
+  <div class="card-hdr">
+    <div class="card-icon ci-navy">🔄</div>
+    <div>
+      <div class="card-title">Quy trình hợp tác</div>
+      <div class="card-sub">Từ BTC đề xuất → Chính quyền phản hồi → Nhân sự vào hệ thống</div>
+    </div>
+  </div>
+  <div class="flow">
+    <div class="flow-step">
+      <div class="fs-num">1</div>
+      <div class="fs-body">
+        <div class="fs-title">BTC gửi bảng nhiệm vụ cần hỗ trợ</div>
+        <div class="fs-desc">HLRace cung cấp template sẵn theo loại race và quy mô. BTC điền thông số thực tế của race mình tổ chức.</div>
+        <span class="fs-tag">BTC thực hiện</span>
+      </div>
+    </div>
+    <div class="flow-step">
+      <div class="fs-num">2</div>
+      <div class="fs-body">
+        <div class="fs-title">Chính quyền xem xét & phản hồi năng lực</div>
+        <div class="fs-desc">Đơn vị chính quyền (Công an, Y tế, UBND xã...) xác nhận có thể hỗ trợ những nhiệm vụ nào, số lượng nhân sự bao nhiêu.</div>
+        <span class="fs-tag">Chính quyền thực hiện</span>
+      </div>
+    </div>
+    <div class="flow-step">
+      <div class="fs-num">3</div>
+      <div class="fs-body">
+        <div class="fs-title">Nhân sự được xác nhận → Tự chọn vào HLRace</div>
+        <div class="fs-desc">Sau khi đơn vị xác nhận công việc thật, từng cá nhân được quyền chọn: có muốn đăng ký thành viên HLRace để tích điểm công đức không? Hoàn toàn tự nguyện.</div>
+        <span class="fs-tag">Cá nhân quyết định</span>
+      </div>
+    </div>
+    <div class="flow-step">
+      <div class="fs-num">4</div>
+      <div class="fs-body">
+        <div class="fs-title">BTC tặng thêm quà / điểm khuyến khích</div>
+        <div class="fs-desc">BTC có thể tặng thêm điểm thưởng hoặc quà vật chất để ghi nhận. HLRace hỗ trợ cơ chế tặng điểm từ BTC cho nhân sự chính quyền đặc biệt.</div>
+        <span class="fs-tag">Tùy BTC quyết định</span>
+      </div>
+    </div>
+    <div class="flow-step">
+      <div class="fs-num">5</div>
+      <div class="fs-body">
+        <div class="fs-title">HLRace tổng hợp báo cáo → Sở ban ngành</div>
+        <div class="fs-desc">Sau race: báo cáo tóm tắt đóng góp của nhân sự địa phương, điểm công đức, phản hồi từ VĐV → gửi Sở làm cơ sở khen thưởng và nhân rộng mô hình.</div>
+        <span class="fs-tag">HLRace thực hiện</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 2. BẢNG NHIỆM VỤ -->
+<div class="card">
+  <div class="card-hdr">
+    <div class="card-icon ci-gold">📋</div>
+    <div>
+      <div class="card-title">Bảng nhiệm vụ cần hỗ trợ</div>
+      <div class="card-sub">BTC gửi cho chính quyền — chính quyền tick vào những gì họ có thể làm</div>
+    </div>
+  </div>
+
+  <div class="sec-label">Race mẫu: Trail 500 VĐV · 2 ngày</div>
+  <div style="overflow-x:auto">
+  <table class="task-table">
+    <thead>
+      <tr>
+        <th style="width:35%">Nhiệm vụ</th>
+        <th>Đơn vị phù hợp</th>
+        <th>Nhân sự tối thiểu</th>
+        <th>Ưu tiên</th>
+        <th>Điểm công đức</th>
+        <th>CQ đáp ứng?</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr class="task-row">
+        <td><div class="task-name">Đảm bảo ATGT trên tuyến đường</div><div class="task-note">Đóng đường 4h–16h ngày race</div></td>
+        <td>Công an giao thông</td><td>8 người</td>
+        <td><span class="priority-badge pb-high">Bắt buộc</span></td>
+        <td class="task-merit">+80 điểm/người</td>
+        <td><input type="checkbox" style="accent-color:var(--navy);width:16px;height:16px"></td>
+      </tr>
+      <tr class="task-row">
+        <td><div class="task-name">Hỗ trợ y tế tại checkpoint</div><div class="task-note">Sơ cứu, phối hợp xe cấp cứu</div></td>
+        <td>Trạm y tế xã/huyện</td><td>4 người + 1 xe</td>
+        <td><span class="priority-badge pb-high">Bắt buộc</span></td>
+        <td class="task-merit">+80 điểm/người</td>
+        <td><input type="checkbox" style="accent-color:var(--navy);width:16px;height:16px"></td>
+      </tr>
+      <tr class="task-row">
+        <td><div class="task-name">Xác nhận & hỗ trợ giấy phép</div><div class="task-note">UBND xã/phường trên tuyến</div></td>
+        <td>UBND xã</td><td>2 người</td>
+        <td><span class="priority-badge pb-high">Bắt buộc</span></td>
+        <td class="task-merit">+50 điểm/người</td>
+        <td><input type="checkbox" style="accent-color:var(--navy);width:16px;height:16px" checked></td>
+      </tr>
+      <tr class="task-row">
+        <td><div class="task-name">Dẫn đường bản làng địa phương</div><div class="task-note">Hướng dẫn đường mòn, kết nối dân bản</div></td>
+        <td>Bộ đội biên phòng / Cán bộ bản</td><td>3 người</td>
+        <td><span class="priority-badge pb-mid">Khuyến nghị</span></td>
+        <td class="task-merit">+60 điểm/người</td>
+        <td><input type="checkbox" style="accent-color:var(--navy);width:16px;height:16px"></td>
+      </tr>
+      <tr class="task-row">
+        <td><div class="task-name">Phòng cháy chữa cháy</div><div class="task-note">Standby tại khu vực tập trung đông người</div></td>
+        <td>Cảnh sát PCCC</td><td>2 người + 1 xe</td>
+        <td><span class="priority-badge pb-mid">Khuyến nghị</span></td>
+        <td class="task-merit">+60 điểm/người</td>
+        <td><input type="checkbox" style="accent-color:var(--navy);width:16px;height:16px"></td>
+      </tr>
+      <tr class="task-row">
+        <td><div class="task-name">Truyền thông địa phương</div><div class="task-note">Đài PT-TH tỉnh, Báo địa phương đưa tin</div></td>
+        <td>Sở TTTT / Đài PT-TH</td><td>1-2 người</td>
+        <td><span class="priority-badge pb-low">Tùy chọn</span></td>
+        <td class="task-merit">+40 điểm/người</td>
+        <td><input type="checkbox" style="accent-color:var(--navy);width:16px;height:16px" checked></td>
+      </tr>
+      <tr class="task-row">
+        <td><div class="task-name">Kết nối đặc sản / làng nghề</div><div class="task-note">Mời VĐV ghé thăm, giới thiệu sản phẩm địa phương</div></td>
+        <td>Sở Du lịch / Hội phụ nữ</td><td>2 người</td>
+        <td><span class="priority-badge pb-low">Tùy chọn</span></td>
+        <td class="task-merit">+40 điểm/người</td>
+        <td><input type="checkbox" style="accent-color:var(--navy);width:16px;height:16px"></td>
+      </tr>
+    </tbody>
+  </table>
+  </div>
+
+  <div class="merit-summary">
+    <div class="ms-title">🌟 Điểm công đức ước tính cho race này</div>
+    <div class="ms-rows">
+      <div class="ms-row"><span class="ms-label">Nhân sự ATGT (8 người × 80)</span><span class="ms-val">+640</span></div>
+      <div class="ms-row"><span class="ms-label">Nhân sự y tế (4 người × 80)</span><span class="ms-val">+320</span></div>
+      <div class="ms-row"><span class="ms-label">Hỗ trợ khác (ước tính)</span><span class="ms-val">+380</span></div>
+      <div class="ms-row"><span class="ms-label">Tổng cộng đồng tích lũy</span><span class="ms-val">+1.340 điểm</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- 3. CÁC KỊCH BẢN NHÂN SỰ -->
+<div class="card">
+  <div class="card-hdr">
+    <div class="card-icon ci-teal">👥</div>
+    <div>
+      <div class="card-title">Các kịch bản nhân sự đa màu</div>
+      <div class="card-sub">Ngoài giờ hành chính, họ cũng là người dân — có thể là VĐV, cổ động viên, hoặc chỉ đơn giản là muốn ghi nhận công sức</div>
+    </div>
+  </div>
+
+  <div class="scenario-grid">
+    <div class="scenario selected">
+      <div class="sc-head">
+        <div class="sc-avatar" style="background:rgba(26,58,92,.1)">👮</div>
+        <div><div class="sc-name">Anh Minh — Công an giao thông</div><div class="sc-role">Trực chốt đóng đường 8 tiếng</div></div>
+      </div>
+      <div style="font-size:12px;color:var(--ink2);line-height:1.6">Đơn vị xác nhận → Anh Minh tự đăng ký HLRace → nhận +80 điểm công đức. Năm sau anh đăng ký chạy 5K cùng con trai.</div>
+      <div class="sc-merit">+80 điểm CĐ</div>
+      <div class="sc-tags">
+        <span class="sc-tag">Đơn vị xác nhận trước</span>
+        <span class="sc-tag">Tự nguyện đăng ký</span>
+        <span class="sc-tag">Thành viên mới</span>
+      </div>
+    </div>
+
+    <div class="scenario">
+      <div class="sc-head">
+        <div class="sc-avatar" style="background:rgba(42,92,63,.1)">👩‍⚕️</div>
+        <div><div class="sc-name">Chị Hương — Y tá trạm xã</div><div class="sc-role">Sơ cứu tại CP2 suốt ngày race</div></div>
+      </div>
+      <div style="font-size:12px;color:var(--ink2);line-height:1.6">Chị đã là runner nghiệp dư. Được BTC tặng thêm 1 BIB free race năm sau + 80 điểm công đức. Chị hào hứng giới thiệu thêm 3 đồng nghiệp tham gia.</div>
+      <div class="sc-merit">+80 điểm CĐ + BIB</div>
+      <div class="sc-tags">
+        <span class="sc-tag">Đã là VĐV</span>
+        <span class="sc-tag">BTC tặng quà</span>
+        <span class="sc-tag">Referral x3</span>
+      </div>
+    </div>
+
+    <div class="scenario">
+      <div class="sc-head">
+        <div class="sc-avatar" style="background:rgba(138,110,0,.1)">🧑‍💼</div>
+        <div><div class="sc-name">Ông Sơn — Chủ tịch UBND xã</div><div class="sc-role">Ký giấy phép + tiếp đón BTC</div></div>
+      </div>
+      <div style="font-size:12px;color:var(--ink2);line-height:1.6">Không muốn đăng ký cá nhân nhưng muốn đơn vị được ghi nhận. HLRace tạo profile "UBND xã Bản Hồ" với tổng điểm công đức của toàn bộ nhân sự — hiển thị trong báo cáo gửi Sở.</div>
+      <div class="sc-merit">Điểm cho đơn vị</div>
+      <div class="sc-tags">
+        <span class="sc-tag">Profile tổ chức</span>
+        <span class="sc-tag">Không cá nhân</span>
+        <span class="sc-tag">Báo cáo Sở</span>
+      </div>
+    </div>
+
+    <div class="scenario">
+      <div class="sc-head">
+        <div class="sc-avatar" style="background:rgba(26,92,90,.1)">🪖</div>
+        <div><div class="sc-name">Trung — Bộ đội biên phòng</div><div class="sc-role">Dẫn đường qua bản, kết nối dân bản</div></div>
+      </div>
+      <div style="font-size:12px;color:var(--ink2);line-height:1.6">Hiểu địa hình hơn ai hết. Được BTC mời làm "Race Ambassador địa phương" — tên xuất hiện trong tài liệu race, được cộng thêm điểm đặc biệt cho vai trò ambassador.</div>
+      <div class="sc-merit">+60 + Ambassador</div>
+      <div class="sc-tags">
+        <span class="sc-tag">Race Ambassador</span>
+        <span class="sc-tag">Chuyên gia địa hình</span>
+        <span class="sc-tag">Tên trong tài liệu</span>
+      </div>
+    </div>
+
+    <div class="scenario">
+      <div class="sc-head">
+        <div class="sc-avatar" style="background:rgba(138,42,42,.1)">👨‍🏫</div>
+        <div><div class="sc-name">Thầy Hiền — Giáo viên THCS</div><div class="sc-role">Tổ chức học sinh cổ vũ tại km 30</div></div>
+      </div>
+      <div style="font-size:12px;color:var(--ink2);line-height:1.6">Không thuộc đơn vị nhà nước nhưng tham gia có tổ chức. Nhận "Community Supporter" badge — được tính điểm công đức và xuất hiện trong review của VĐV.</div>
+      <div class="sc-merit">+40 điểm CĐ</div>
+      <div class="sc-tags">
+        <span class="sc-tag">Cộng đồng</span>
+        <span class="sc-tag">Không chính quyền</span>
+        <span class="sc-tag">Community badge</span>
+      </div>
+    </div>
+
+    <div class="scenario">
+      <div class="sc-head">
+        <div class="sc-avatar" style="background:rgba(42,92,63,.1)">🎗</div>
+        <div><div class="sc-name">Chị Lan — Cán bộ Sở Du lịch</div><div class="sc-role">Dẫn đoàn báo chí, kết nối đặc sản</div></div>
+      </div>
+      <div style="font-size:12px;color:var(--ink2);line-height:1.6">Đại diện Sở tham gia trực tiếp → data race được tích hợp vào báo cáo du lịch tỉnh → Sở có cơ sở tham mưu lãnh đạo về mô hình chạy bộ + du lịch.</div>
+      <div class="sc-merit">+50 điểm CĐ</div>
+      <div class="sc-tags">
+        <span class="sc-tag">Sở Du lịch</span>
+        <span class="sc-tag">Data báo cáo</span>
+        <span class="sc-tag">Mô hình mẫu</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 4. 3 TỈNH PILOT -->
+<div class="card">
+  <div class="card-hdr">
+    <div class="card-icon ci-green">🗺</div>
+    <div>
+      <div class="card-title">Chiến lược 3 tỉnh pilot</div>
+      <div class="card-sub">Mỗi tỉnh thử nghiệm 1 hướng khác nhau dựa trên mức độ quan hệ</div>
+    </div>
+  </div>
+
+  <div class="prov-tabs">
+    <div class="prov-tab on" onclick="showProv('hp',this)">🏙 Hải Phòng</div>
+    <div class="prov-tab" onclick="showProv('cb',this)">🏔 Cao Bằng</div>
+    <div class="prov-tab" onclick="showProv('nb',this)">🌾 Ninh Bình</div>
+  </div>
+
+  <div id="prov-hp">
+    <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px">
+      <span style="padding:4px 12px;border-radius:20px;font-size:11px;background:rgba(42,92,63,.1);color:var(--green);border:1px solid rgba(42,92,63,.2)">Quan hệ: Chặt</span>
+      <span style="padding:4px 12px;border-radius:20px;font-size:11px;background:rgba(26,58,92,.08);color:var(--navy);border:1px solid rgba(26,58,92,.15)">Hướng: Road Race thành phố</span>
+      <span style="padding:4px 12px;border-radius:20px;font-size:11px;background:var(--s1);color:var(--muted);border:1px solid var(--br)">Quy mô: 1,000–3,000 VĐV</span>
+    </div>
+    <div style="font-size:13px;color:var(--ink2);line-height:1.8">
+      <strong style="color:var(--ink)">Thử nghiệm:</strong> Kho văn bản pháp lý đầy tiên — tập hợp toàn bộ thủ tục tổ chức race tại Hải Phòng thành 1 tài liệu chuẩn. Sở Du lịch HP co-sign → làm mẫu cho các tỉnh khác.<br><br>
+      <strong style="color:var(--ink)">Ưu tiên build:</strong> Form phản hồi năng lực hỗ trợ của Công an HP + Y tế HP. Sau đó template này nhân ra các tỉnh.
+    </div>
+  </div>
+  <div id="prov-cb" style="display:none">
+    <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px">
+      <span style="padding:4px 12px;border-radius:20px;font-size:11px;background:rgba(138,110,0,.08);color:var(--gold);border:1px solid rgba(138,110,0,.15)">Quan hệ: Đang phát triển</span>
+      <span style="padding:4px 12px;border-radius:20px;font-size:11px;background:rgba(26,58,92,.08);color:var(--navy);border:1px solid rgba(26,58,92,.15)">Hướng: Trail race biên giới</span>
+      <span style="padding:4px 12px;border-radius:20px;font-size:11px;background:var(--s1);color:var(--muted);border:1px solid var(--br)">Quy mô: 200–500 VĐV</span>
+    </div>
+    <div style="font-size:13px;color:var(--ink2);line-height:1.8">
+      <strong style="color:var(--ink)">Thử nghiệm:</strong> Kịch bản "Bộ đội biên phòng là Race Ambassador" — họ biết địa hình nhất, kết nối được với bản làng. Đây là mô hình chưa ai làm trong cộng đồng chạy bộ VN.<br><br>
+      <strong style="color:var(--ink)">Ưu tiên build:</strong> Profile tổ chức (không cá nhân) cho đơn vị biên phòng. Cơ chế tặng quà đặc sản địa phương thay vì tiền cho nhân sự hỗ trợ.
+    </div>
+  </div>
+  <div id="prov-nb" style="display:none">
+    <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px">
+      <span style="padding:4px 12px;border-radius:20px;font-size:11px;background:rgba(42,92,63,.1);color:var(--green);border:1px solid rgba(42,92,63,.2)">Quan hệ: Tốt</span>
+      <span style="padding:4px 12px;border-radius:20px;font-size:11px;background:rgba(26,58,92,.08);color:var(--navy);border:1px solid rgba(26,58,92,.15)">Hướng: Di sản + Running Tourism</span>
+      <span style="padding:4px 12px;border-radius:20px;font-size:11px;background:var(--s1);color:var(--muted);border:1px solid var(--br)">Quy mô: 500–1,500 VĐV</span>
+    </div>
+    <div style="font-size:13px;color:var(--ink2);line-height:1.8">
+      <strong style="color:var(--ink)">Thử nghiệm:</strong> Kết hợp chạy bộ với di sản Tràng An/Bái Đính. Sở Du lịch Ninh Bình tham gia trực tiếp vào hệ thống → data race = báo cáo du lịch. Mô hình "MOU đầy đủ nhất" để nhân rộng.<br><br>
+      <strong style="color:var(--ink)">Ưu tiên build:</strong> Module báo cáo tự động gửi Sở sau race (PDF có dữ liệu VĐV, điểm tham quan, đặc sản được nhắc đến).
+    </div>
+  </div>
+</div>
+
+</div>
+
+<script>
+function showProv(id,btn){
+  ['hp','cb','nb'].forEach(p=>{document.getElementById('prov-'+p).style.display=p===id?'block':'none';});
+  document.querySelectorAll('.prov-tab').forEach(t=>t.classList.remove('on'));
+  btn.classList.add('on');
+}
+document.querySelectorAll('.scenario').forEach(s=>{
+  s.addEventListener('click',()=>{
+    document.querySelectorAll('.scenario').forEach(x=>x.classList.remove('selected'));
+    s.classList.add('selected');
+  });
+});
+</script>
+</body>
+</html>

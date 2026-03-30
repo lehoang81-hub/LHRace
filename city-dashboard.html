@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>HLRace — Dashboard Lãnh đạo</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Outfit:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{--bg:#0B0C12;--bg2:#13141C;--bg3:#1A1B25;--ink:#F0EEF8;--ink2:#B0AACC;--muted:#52506A;--v:#6B3FFF;--pk:#FF3D7A;--green:#00CC7A;--amber:#FFB020;--cyan:#00C8D4;--brd:rgba(255,255,255,.07)}
+body{background:var(--bg);color:var(--ink);font-family:'Outfit',sans-serif;min-height:100vh}
+.nav{height:50px;background:rgba(11,12,18,.95);backdrop-filter:blur(16px);border-bottom:1px solid rgba(107,63,255,.14);display:flex;align-items:center;justify-content:space-between;padding:0 18px;position:sticky;top:0;z-index:100}
+.nav-logo{font-family:'Syne';font-size:16px;font-weight:800;color:var(--v)}
+.ds-bar{padding:8px 18px;background:rgba(0,200,122,.06);border-bottom:1px solid rgba(0,200,122,.15);display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.ds-label{font-size:10px;font-weight:700;color:var(--green);font-family:'JetBrains Mono'}
+.ds-toggle{display:flex;gap:6px}
+.ds-btn{padding:4px 12px;border-radius:5px;font-size:10px;font-weight:700;cursor:pointer;border:1.5px solid;font-family:'Outfit';transition:all .2s}
+.ds-mock{background:rgba(0,200,122,.12);border-color:rgba(0,200,122,.3);color:var(--green)}.ds-mock.on{background:var(--green);color:#000}
+.ds-real{background:rgba(107,63,255,.08);border-color:rgba(107,63,255,.14);color:var(--muted)}.ds-real.on{background:var(--v);color:#fff;border-color:var(--v)}
+.wrap{max-width:1100px;margin:0 auto;padding:20px 16px 80px}
+.page-title{font-family:'Syne';font-size:24px;font-weight:800;margin-bottom:4px;letter-spacing:-.5px}
+.page-sub{font-size:12px;color:var(--muted);margin-bottom:18px}
+.kpi-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:10px;margin-bottom:18px}
+.kpi{background:var(--bg2);border:1.5px solid var(--brd);border-radius:12px;padding:15px;transition:all .2s}
+.kpi:hover{transform:translateY(-2px);border-color:rgba(107,63,255,.25)}
+.kpi-icon{font-size:22px;margin-bottom:7px}
+.kpi-n{font-family:'Syne';font-size:30px;font-weight:800;line-height:1;margin-bottom:2px}
+.kpi-label{font-size:9px;text-transform:uppercase;letter-spacing:1px;color:var(--muted)}
+.kpi-sub{font-size:10px;margin-top:4px}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px}
+@media(max-width:700px){.row2{grid-template-columns:1fr}}
+.row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:12px}
+@media(max-width:800px){.row3{grid-template-columns:1fr 1fr}}
+@media(max-width:500px){.row3{grid-template-columns:1fr}}
+.card{background:var(--bg2);border:1px solid var(--brd);border-radius:12px;overflow:hidden;margin-bottom:12px}
+.card-h{padding:11px 15px;border-bottom:1px solid var(--brd);display:flex;justify-content:space-between;align-items:center}
+.card-t{font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--muted);display:flex;align-items:center;gap:6px}
+.card-t::before{content:'';width:3px;height:10px;background:var(--v);border-radius:2px}
+.card-b{padding:14px}
+.chart-wrap{position:relative;height:200px}
+/* DISTRICT HEAT MAP */
+.district-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(100px,1fr));gap:5px}
+.district{border-radius:7px;padding:8px 5px;text-align:center;cursor:default;transition:all .2s;border:1px solid transparent}
+.district:hover{transform:scale(1.05);z-index:2}
+.d-name{font-size:9px;font-weight:700;line-height:1.3;margin-bottom:3px}
+.d-n{font-family:'Syne';font-size:18px;font-weight:800;line-height:1}
+.d-sub{font-size:8px;opacity:.7;margin-top:2px}
+/* TOP TNV */
+.rank-list{display:flex;flex-direction:column;gap:6px}
+.rank-item{display:flex;align-items:center;gap:10px;padding:8px 10px;background:var(--bg3);border-radius:8px;border:1px solid var(--brd)}
+.rank-pos{font-family:'Syne';font-size:18px;font-weight:800;width:28px;text-align:center;flex-shrink:0}
+.rank-info{flex:1;min-width:0}
+.rank-name{font-size:12px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rank-role{font-size:10px;color:var(--muted)}
+.rank-pts{font-family:'Syne';font-size:18px;font-weight:800;color:var(--amber);flex-shrink:0}
+/* DIST PIE */
+.dist-list{display:flex;flex-direction:column;gap:8px}
+.dist-item{display:flex;align-items:center;gap:10px}
+.dist-label{font-size:12px;font-weight:700;min-width:50px}
+.dist-bar{flex:1;background:rgba(255,255,255,.05);border-radius:3px;height:8px;overflow:hidden}
+.dist-fill{height:100%;border-radius:3px}
+.dist-count{font-size:11px;font-weight:700;min-width:40px;text-align:right}
+/* CITY TABLE */
+.city-tbl{width:100%;border-collapse:collapse;font-size:11px}
+.city-tbl th{text-align:left;padding:7px 10px;border-bottom:1px solid var(--brd);font-size:8px;letter-spacing:1px;text-transform:uppercase;color:var(--muted);font-weight:700}
+.city-tbl td{padding:7px 10px;border-bottom:1px solid rgba(255,255,255,.03)}
+.city-tbl tr:hover td{background:rgba(255,255,255,.015)}
+</style>
+</head>
+<body>
+<nav class="nav">
+  <div style="display:flex;align-items:center;gap:9px">
+    <div class="nav-logo">VRACE</div>
+    <span style="color:var(--muted)">/</span>
+    <span style="font-size:11px;font-weight:700;color:var(--ink2)">DASHBOARD LÃNH ĐẠO</span>
+  </div>
+  <div style="font-size:10px;color:var(--muted)" id="lastUpdate">—</div>
+</nav>
+<div class="ds-bar">
+  <div class="ds-label">🔬 NGUỒN DỮ LIỆU</div>
+  <div class="ds-toggle">
+    <button class="ds-btn ds-mock" id="btn-mock" onclick="switchSource('mock')">📦 Data mẫu (test)</button>
+    <button class="ds-btn ds-real" id="btn-real" onclick="switchSource('sheets')">📊 Google Sheets (thật)</button>
+  </div>
+</div>
+
+<div class="wrap">
+  <div class="page-title" id="dashTitle">Dashboard</div>
+  <div class="page-sub" id="dashSub">Đang tải dữ liệu...</div>
+
+  <!-- KPI -->
+  <div class="kpi-grid" id="kpiGrid">
+    <div class="kpi"><div class="kpi-icon">⏳</div><div class="kpi-n" style="color:var(--muted)">—</div><div class="kpi-label">Đang tải</div></div>
+  </div>
+
+  <div class="row2">
+    <!-- DIST BREAKDOWN -->
+    <div class="card">
+      <div class="card-h"><div class="card-t">Cự ly tham gia</div></div>
+      <div class="card-b" id="distList"><div style="color:var(--muted);font-size:12px">Đang tải...</div></div>
+    </div>
+    <!-- TOP TNV -->
+    <div class="card">
+      <div class="card-h"><div class="card-t">Top 5 TNV điểm cao nhất</div></div>
+      <div class="card-b" id="topTNV"><div style="color:var(--muted);font-size:12px">Đang tải...</div></div>
+    </div>
+  </div>
+
+  <!-- CHART ROW -->
+  <div class="row2">
+    <div class="card">
+      <div class="card-h"><div class="card-t">Tỷ lệ trạng thái VĐV</div></div>
+      <div class="card-b"><div class="chart-wrap"><canvas id="statusChart"></canvas></div></div>
+    </div>
+    <div class="card">
+      <div class="card-h"><div class="card-t">VĐV theo tỉnh/thành</div></div>
+      <div class="card-b" id="cityList"><div style="color:var(--muted);font-size:12px">Đang tải...</div></div>
+    </div>
+  </div>
+
+  <!-- HEAT MAP -->
+  <div class="card">
+    <div class="card-h">
+      <div class="card-t">Heat map VĐV theo khu vực Hà Nội</div>
+      <div style="font-size:9px;color:var(--muted)">Màu đậm = nhiều VĐV hơn</div>
+    </div>
+    <div class="card-b"><div class="district-grid" id="districtGrid"></div></div>
+  </div>
+
+  <!-- TNV ROLE BREAKDOWN -->
+  <div class="card">
+    <div class="card-h"><div class="card-t">Nhân sự theo vai trò</div></div>
+    <div class="card-b"><div class="chart-wrap" style="height:160px"><canvas id="roleChart"></canvas></div></div>
+  </div>
+</div>
+
+<script src="mock-data-v3.js"></script>
+<script src="race-config.js"></script>
+<script>
+let statusChartInst=null, roleChartInst=null;
+const CHART_COLORS=['#6B3FFF','#FF3D7A','#00CC7A','#FFB020','#00C8D4','#FF6D00','#a78bfa','#34d399'];
+
+// ═══ INIT ═══
+async function init() {
+  syncToggleUI();
+  await loadDashboard();
+}
+
+function syncToggleUI(){
+  const m=getDataSource();
+  document.getElementById('btn-mock').classList.toggle('on',m==='mock');
+  document.getElementById('btn-real').classList.toggle('on',m==='sheets');
+}
+function switchSource(m){setDataSource(m);syncToggleUI();loadDashboard();}
+
+// ═══ LOAD ═══
+async function loadDashboard(){
+  document.getElementById('dashSub').textContent='⏳ Đang tải'+(getDataSource()==='mock'?' (data mẫu)':'')+'...';
+  const res=await vfetch('getDashboardStats');
+  const s=res;
+  renderAll(s);
+  document.getElementById('lastUpdate').textContent='Cập nhật: '+new Date().toLocaleTimeString('vi-VN');
+}
+
+function renderAll(s){
+  // Load config
+  const cfg=JSON.parse(localStorage.getItem('race_config_cache')||'{}');
+  document.getElementById('dashTitle').textContent=cfg.raceName||'HLRace Dashboard';
+  document.getElementById('dashSub').textContent=(cfg.raceDate||'')+(cfg.racePlace?' · '+cfg.racePlace:'')+(getDataSource()==='mock'?' · [DATA MẪU]':'');
+
+  // KPI
+  const pct=s.vdv.total?Math.round(s.vdv.checkedIn/s.vdv.total*100):0;
+  document.getElementById('kpiGrid').innerHTML=[
+    {icon:'🏃',n:s.vdv.total,label:'Tổng VĐV đăng ký',sub:s.vdv.approved+' đã duyệt',c:'var(--v)'},
+    {icon:'✅',n:s.vdv.checkedIn,label:'VĐV nhận BIB',sub:pct+'% tỷ lệ check-in',c:'var(--green)'},
+    {icon:'👥',n:s.tnv.total,label:'Nhân sự / TNV',sub:s.tnv.approved+' đã duyệt',c:'var(--cyan)'},
+    {icon:'⏳',n:s.vdv.total-s.vdv.approved,label:'Chờ duyệt',sub:'Cần xử lý',c:'var(--amber)'},
+    {icon:'💰',n:fmtMoney(s.totalBudget),label:'Tổng ngân sách',sub:'từ hợp đồng',c:'var(--amber)'},
+    {icon:'🏁',n:Object.values(s.distances).reduce((a,b)=>a+b,0),label:'Lượt đăng ký cự ly',sub:'1.5/3/5km',c:'var(--pk)'},
+  ].map(k=>`<div class="kpi"><div class="kpi-icon">${k.icon}</div><div class="kpi-n" style="color:${k.c}">${k.n}</div><div class="kpi-label">${k.label}</div><div class="kpi-sub" style="color:var(--muted)">${k.sub}</div></div>`).join('');
+
+  // Distance breakdown
+  const dists=s.distances;
+  const maxD=Math.max(...Object.values(dists));
+  const dColors={'1.5km':'#00C8D4','3km':'#6B3FFF','5km':'#FF3D7A'};
+  document.getElementById('distList').innerHTML=`<div class="dist-list">`+
+    Object.entries(dists).map(([k,v])=>`<div class="dist-item">
+      <div class="dist-label">${k}</div>
+      <div class="dist-bar"><div class="dist-fill" style="width:${maxD?v/maxD*100:0}%;background:${dColors[k]||'var(--v)'}"></div></div>
+      <div class="dist-count" style="color:${dColors[k]||'var(--v)'}">${v} VĐV</div>
+    </div>`).join('')+`</div>`;
+
+  // Top TNV
+  const posColors=['#FFD700','#C0C0C0','#CD7F32','var(--muted)','var(--muted)'];
+  document.getElementById('topTNV').innerHTML=`<div class="rank-list">`+
+    s.topTNV.map((t,i)=>`<div class="rank-item">
+      <div class="rank-pos" style="color:${posColors[i]||'var(--muted)'}">${['🥇','🥈','🥉','4','5'][i]}</div>
+      <div class="rank-info"><div class="rank-name">${t.fullName}</div><div class="rank-role">${t.roleIcon||''} ${t.roleName}</div></div>
+      <div class="rank-pts">${t.totalPoints}</div>
+    </div>`).join('')+`</div>`;
+
+  // Status pie chart
+  const notCI=s.vdv.approved-s.vdv.checkedIn;
+  const pend=s.vdv.total-s.vdv.approved;
+  if(statusChartInst)statusChartInst.destroy();
+  statusChartInst=new Chart(document.getElementById('statusChart'),{
+    type:'doughnut',
+    data:{labels:['Đã nhận BIB','Đã duyệt (chưa CI)','Chờ duyệt'],datasets:[{data:[s.vdv.checkedIn,Math.max(notCI,0),pend],backgroundColor:['#00CC7A','#6B3FFF','#FFB020'],borderColor:'#13141C',borderWidth:2}]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'right',labels:{color:'#B0AACC',font:{size:10},boxWidth:12}}}}
+  });
+
+  // City table
+  const cities=s.cities.sort((a,b)=>b.count-a.count).slice(0,8);
+  const maxC=cities[0]?.count||1;
+  document.getElementById('cityList').innerHTML=`<table class="city-tbl"><thead><tr><th>Tỉnh/Thành</th><th style="text-align:center">VĐV</th><th>Tỷ lệ</th></tr></thead><tbody>`+
+    cities.map(c=>`<tr><td>${c.city}</td><td style="text-align:center;font-weight:700;color:var(--v)">${c.count}</td><td style="min-width:80px"><div style="background:rgba(255,255,255,.05);border-radius:3px;height:6px;overflow:hidden"><div style="width:${c.count/maxC*100}%;height:100%;border-radius:3px;background:var(--v)"></div></div></td></tr>`).join('')+
+  `</tbody></table>`;
+
+  // Heat map
+  const hanoiDistricts=[
+    'Hoàn Kiếm','Ba Đình','Đống Đa','Hai Bà Trưng','Hoàng Mai','Thanh Xuân','Cầu Giấy',
+    'Tây Hồ','Long Biên','Hà Đông','Nam Từ Liêm','Bắc Từ Liêm','Gia Lâm','Đông Anh',
+    'Sóc Sơn','Mê Linh','Thường Tín','Thanh Trì','Ứng Hoà','Mỹ Đức','Phú Xuyên','Phúc Thọ','Quốc Oai','Thạch Thất'
+  ];
+  const cityCount={};
+  s.cities.forEach(c=>{cityCount[c.city]=(cityCount[c.city]||0)+c.count});
+  const maxH=Math.max(...Object.values(cityCount),1);
+  document.getElementById('districtGrid').innerHTML=hanoiDistricts.map(d=>{
+    const cnt=cityCount[d]||0;
+    const intensity=cnt/maxH;
+    const r=Math.round(107+intensity*(255-107));
+    const g=Math.round(63+intensity*(61-63));
+    const b=Math.round(255+intensity*(122-255));
+    const bg=cnt>0?`rgba(${r},${g},${b},${0.15+intensity*0.55})`:'rgba(255,255,255,.03)';
+    const border=cnt>0?`rgba(${r},${g},${b},.5)`:'rgba(255,255,255,.05)';
+    return `<div class="district" style="background:${bg};border-color:${border}">
+      <div class="d-name">${d}</div>
+      <div class="d-n" style="color:${cnt>0?`rgb(${r},${g},${b})`:'var(--muted)'}">${cnt}</div>
+      <div class="d-sub">VĐV</div>
+    </div>`;
+  }).join('');
+
+  // Role chart
+  const roles={};
+  MOCK_TNV.forEach(t=>{roles[t.roleName]=(roles[t.roleName]||0)+1});
+  if(roleChartInst)roleChartInst.destroy();
+  roleChartInst=new Chart(document.getElementById('roleChart'),{
+    type:'bar',
+    data:{labels:Object.keys(roles),datasets:[{data:Object.values(roles),backgroundColor:CHART_COLORS,borderRadius:6}]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{ticks:{color:'#B0AACC',font:{size:10}},grid:{display:false}},y:{ticks:{color:'#52506A',font:{size:10},stepSize:1},grid:{color:'rgba(255,255,255,.04)'}}}}
+  });
+}
+
+function fmtMoney(n){if(!n)return'0';if(n>=1000000000)return(n/1000000000).toFixed(1)+'B';if(n>=1000000)return Math.round(n/1000000)+'M';return n.toLocaleString();}
+
+init();
+</script>
+</body>
+</html>

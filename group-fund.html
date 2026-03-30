@@ -1,0 +1,567 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HLRace — Quỹ Nhóm Race</title>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Geist:wght@300;400;500;600&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#F7F5F0;--card:#FFFFFF;--s1:#F2EFE8;--s2:#E8E4DB;
+  --ink:#1A1814;--ink2:#6B6455;--muted:#A89E8E;
+  --accent:#2D5A3D;--accent2:#4A8C61;--warm:#C4592A;
+  --gold:#B8860B;--blue:#1B4F8A;
+  --br:rgba(26,24,20,.08);--br2:rgba(26,24,20,.14);
+  --r:12px;--r-sm:8px;
+}
+body{background:var(--bg);color:var(--ink);font-family:'Geist',sans-serif;min-height:100vh;font-size:14px}
+
+/* ── NAV ── */
+.nav{background:var(--card);border-bottom:1px solid var(--br);padding:0 20px;display:flex;align-items:center;height:52px;position:sticky;top:0;z-index:50}
+.nav-logo{font-family:'Instrument Serif';font-size:18px;color:var(--accent);letter-spacing:-.3px;flex:1}
+.nav-badge{font-family:'Geist Mono';font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);background:var(--s1);padding:4px 10px;border-radius:20px;border:1px solid var(--br)}
+
+/* ── TABS ── */
+.tabs{display:flex;overflow-x:auto;scrollbar-width:none;background:var(--card);border-bottom:1px solid var(--br);padding:0 20px;gap:2px}
+.tabs::-webkit-scrollbar{display:none}
+.tab{padding:12px 16px;font-size:12px;font-weight:500;color:var(--muted);cursor:pointer;border:none;background:none;white-space:nowrap;border-bottom:2px solid transparent;margin-bottom:-1px;display:flex;align-items:center;gap:6px;transition:color .15s}
+.tab.on{color:var(--accent);border-bottom-color:var(--accent)}
+.tab-icon{font-size:14px}
+.panel{display:none}.panel.on{display:block}
+
+/* ── LAYOUT ── */
+.wrap{max-width:640px;margin:0 auto;padding:20px 16px 100px}
+.card{background:var(--card);border:1px solid var(--br);border-radius:var(--r);padding:20px;margin-bottom:14px}
+.card-title{font-family:'Instrument Serif';font-size:17px;margin-bottom:4px;color:var(--ink)}
+.card-sub{font-size:12px;color:var(--muted);margin-bottom:16px;line-height:1.6}
+
+/* ── METRICS ── */
+.metrics{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:16px}
+.metric{background:var(--s1);border-radius:var(--r-sm);padding:14px 12px;text-align:center;border:1px solid var(--br)}
+.metric-icon{font-size:18px;margin-bottom:6px}
+.metric-val{font-family:'Geist Mono';font-size:16px;font-weight:500;color:var(--ink);line-height:1.2}
+.metric-val.green{color:var(--accent)}
+.metric-val.red{color:var(--warm)}
+.metric-label{font-size:10px;color:var(--muted);margin-top:3px;letter-spacing:.3px}
+
+/* ── FORM ── */
+.field{margin-bottom:12px}
+.field label{display:block;font-size:11px;font-weight:500;color:var(--muted);margin-bottom:5px;letter-spacing:.3px;text-transform:uppercase}
+.field input,.field select,.field textarea{width:100%;padding:10px 12px;border:1px solid var(--br2);border-radius:var(--r-sm);font-size:13px;background:var(--card);color:var(--ink);font-family:'Geist',sans-serif;transition:border-color .15s;outline:none}
+.field input:focus,.field select:focus,.field textarea:focus{border-color:var(--accent)}
+.field textarea{resize:vertical;min-height:72px;line-height:1.6}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.row3{display:grid;grid-template-columns:2fr 1fr 1fr;gap:8px}
+
+/* ── BUTTONS ── */
+.btn{padding:10px 18px;border-radius:var(--r-sm);font-size:13px;font-weight:500;cursor:pointer;border:none;transition:all .15s;font-family:'Geist',sans-serif;display:inline-flex;align-items:center;gap:6px}
+.btn-primary{background:var(--accent);color:#fff}
+.btn-primary:hover{background:var(--accent2)}
+.btn-outline{background:transparent;border:1px solid var(--br2);color:var(--ink2)}
+.btn-outline:hover{background:var(--s1)}
+.btn-sm{padding:6px 12px;font-size:12px}
+.btn-row{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:4px}
+
+/* ── EXPENSE LIST ── */
+.exp-row{display:flex;align-items:flex-start;gap:12px;padding:12px 0;border-bottom:1px solid var(--br)}
+.exp-row:last-child{border:none}
+.exp-cat-icon{width:36px;height:36px;border-radius:var(--r-sm);background:var(--s1);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;border:1px solid var(--br)}
+.exp-info{flex:1;min-width:0}
+.exp-desc{font-size:13px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.exp-meta{font-size:11px;color:var(--muted);margin-top:2px}
+.exp-amt{font-family:'Geist Mono';font-size:13px;font-weight:500;color:var(--warm);flex-shrink:0}
+.exp-tag{display:inline-block;font-size:10px;padding:2px 7px;border-radius:20px;background:var(--s1);border:1px solid var(--br);color:var(--muted);margin-left:4px}
+
+/* ── MEMBER ROW ── */
+.member-row{display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid var(--br)}
+.member-row:last-child{border:none}
+.avatar{width:38px;height:38px;border-radius:50%;background:var(--accent);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:600;color:#fff;flex-shrink:0}
+.member-info{flex:1}
+.member-name{font-size:13px;font-weight:500}
+.member-bank{font-size:11px;color:var(--muted);margin-top:2px;font-family:'Geist Mono'}
+.balance-pill{font-size:12px;font-weight:500;padding:4px 10px;border-radius:20px;flex-shrink:0}
+.pill-pos{background:#E8F5EC;color:#2D5A3D;border:1px solid #B8D9C4}
+.pill-neg{background:#FBEAE5;color:#C4592A;border:1px solid #F0BFB0}
+.pill-zero{background:var(--s1);color:var(--muted);border:1px solid var(--br)}
+
+/* ── SETTLE ROW ── */
+.settle-row{display:flex;align-items:center;gap:10px;padding:10px 12px;background:var(--s1);border-radius:var(--r-sm);margin-bottom:8px;border:1px solid var(--br)}
+.settle-from{font-size:13px;font-weight:500;flex:1}
+.settle-arrow{color:var(--muted);font-size:18px}
+.settle-to{font-size:13px;font-weight:500;flex:1;text-align:right}
+.settle-amt{font-family:'Geist Mono';font-size:13px;font-weight:500;color:var(--warm);min-width:90px;text-align:right}
+.settle-bank{font-size:10px;color:var(--muted);font-family:'Geist Mono';margin-top:2px}
+
+/* ── DIARY ── */
+.diary-entry{background:var(--s1);border-radius:var(--r-sm);padding:14px;margin-bottom:10px;border:1px solid var(--br);position:relative}
+.diary-type-badge{display:inline-flex;align-items:center;gap:4px;font-size:10px;font-weight:500;padding:3px 8px;border-radius:20px;margin-bottom:8px}
+.dt-memory{background:#E8F0FB;color:#1B4F8A;border:1px solid #BDD0F0}
+.dt-thanks{background:#E8F5EC;color:#2D5A3D;border:1px solid #B8D9C4}
+.dt-skill{background:#FEF5E0;color:#856A00;border:1px solid #E8D080}
+.dt-funny{background:#FBE8F5;color:#7A2D6A;border:1px solid #DFB0D8}
+.diary-text{font-size:13px;line-height:1.7;color:var(--ink)}
+.diary-who{font-size:11px;color:var(--muted);margin-top:8px}
+
+/* ── KEYWORD CHIPS ── */
+.kw-wrap{display:flex;flex-wrap:wrap;gap:6px;margin-top:12px}
+.kw{font-size:11px;padding:4px 10px;border-radius:20px;font-weight:500}
+.kw-leader{background:#FEF5E0;color:#856A00;border:1px solid #E8D080}
+.kw-skill{background:#E8F5EC;color:#2D5A3D;border:1px solid #B8D9C4}
+.kw-community{background:#E8F0FB;color:#1B4F8A;border:1px solid #BDD0F0}
+
+/* ── REPORT ── */
+.report-section{border-left:3px solid var(--accent);padding-left:14px;margin-bottom:20px}
+.report-section-title{font-size:12px;font-weight:500;color:var(--accent);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;display:flex;align-items:center;gap:6px}
+.report-section-title .icon{font-size:14px}
+.report-body{font-size:13px;color:var(--ink2);line-height:1.8}
+.report-table{width:100%;border-collapse:collapse;font-size:12px;margin-top:8px}
+.report-table th{text-align:left;padding:6px 8px;background:var(--s1);font-weight:500;color:var(--muted);border-bottom:1px solid var(--br)}
+.report-table td{padding:8px;border-bottom:1px solid var(--br)}
+.report-table tr:last-child td{border:none}
+.report-highlight{background:var(--s1);border-radius:var(--r-sm);padding:12px 14px;margin-top:10px;border:1px solid var(--br)}
+.report-highlight strong{color:var(--accent)}
+
+/* ── BOTTOM NAV ── */
+.bottom-nav{position:fixed;bottom:0;left:0;right:0;background:var(--card);border-top:1px solid var(--br);display:flex;padding:6px 0 env(safe-area-inset-bottom)}
+.bnav-item{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;padding:6px;cursor:pointer;color:var(--muted);font-size:9px;font-weight:500;letter-spacing:.3px;text-transform:uppercase;border:none;background:none;font-family:'Geist',sans-serif;transition:color .15s}
+.bnav-item.on{color:var(--accent)}
+.bnav-icon{font-size:18px}
+
+/* ── SUMMARY BAR ── */
+.summary-bar{display:flex;align-items:center;gap:8px;padding:10px 14px;background:var(--s1);border-radius:var(--r-sm);border:1px solid var(--br);margin-bottom:14px;font-size:12px;color:var(--ink2)}
+.bar-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+
+/* ── EMPTY ── */
+.empty{text-align:center;padding:2.5rem 1rem;color:var(--muted);font-size:13px}
+.empty-icon{font-size:36px;margin-bottom:10px;opacity:.5}
+</style>
+</head>
+<body>
+
+<div class="nav">
+  <div class="nav-logo">Quỹ Nhóm Race</div>
+  <div class="nav-badge">HLRace · Beta</div>
+</div>
+
+<div class="tabs">
+  <button class="tab on" onclick="showTab('fund',this)"><span class="tab-icon">💰</span>Quỹ & Chi tiêu</button>
+  <button class="tab" onclick="showTab('settle',this)"><span class="tab-icon">⚖️</span>Quyết toán</button>
+  <button class="tab" onclick="showTab('diary',this)"><span class="tab-icon">📖</span>Nhật ký nhóm</button>
+  <button class="tab" onclick="showTab('report',this)"><span class="tab-icon">📊</span>Báo cáo AI</button>
+</div>
+
+<!-- ══ TAB 1: FUND ══ -->
+<div id="tab-fund" class="panel on">
+<div class="wrap">
+
+  <div class="metrics">
+    <div class="metric">
+      <div class="metric-icon">🏦</div>
+      <div class="metric-val green" id="m-pool">2.000.000đ</div>
+      <div class="metric-label">Tổng quỹ</div>
+    </div>
+    <div class="metric">
+      <div class="metric-icon">📤</div>
+      <div class="metric-val red" id="m-spent">0đ</div>
+      <div class="metric-label">Đã chi</div>
+    </div>
+    <div class="metric">
+      <div class="metric-icon">✅</div>
+      <div class="metric-val green" id="m-remain">2.000.000đ</div>
+      <div class="metric-label">Còn lại</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Thêm chi tiêu</div>
+    <div class="card-sub">Trưởng nhóm ghi real-time trong chuyến đi</div>
+    <div class="row3" style="margin-bottom:10px">
+      <div class="field" style="margin:0"><label>Mô tả khoản chi</label><input id="e-desc" placeholder="Thuê xe Grab lên CP2"></div>
+      <div class="field" style="margin:0"><label>Số tiền (đ)</label><input id="e-amt" type="number" placeholder="250000"></div>
+      <div class="field" style="margin:0"><label>Danh mục</label>
+        <select id="e-cat">
+          <option value="transport">🚗 Di chuyển</option>
+          <option value="food">🍜 Ăn uống</option>
+          <option value="lodging">🏠 Chỗ ở</option>
+          <option value="gear">🎒 Gear</option>
+          <option value="entry">🏅 Phí ĐK</option>
+          <option value="medical">💊 Y tế</option>
+          <option value="other">📦 Khác</option>
+        </select>
+      </div>
+    </div>
+    <div class="row2" style="margin-bottom:12px">
+      <div class="field" style="margin:0"><label>Người trả</label>
+        <select id="e-payer" onchange="updatePayer()">
+          <option>Nguyễn Minh Khoa</option>
+          <option>Ngô Thị Lan</option>
+          <option>Phạm Đức Long</option>
+          <option>Trần Văn Hùng</option>
+        </select>
+      </div>
+      <div class="field" style="margin:0"><label>Ghi chú thêm</label><input id="e-note" placeholder="Chi tiết..."></div>
+    </div>
+    <div class="btn-row">
+      <button class="btn btn-primary" onclick="addExp()">➕ Thêm</button>
+      <label style="display:flex;align-items:center;gap:6px;font-size:12px;color:var(--muted);cursor:pointer;margin-left:auto">
+        <input type="checkbox" id="e-shared" checked> Chia đều cho cả nhóm
+      </label>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Đóng góp quỹ</div>
+    <div class="row3" style="margin-bottom:0">
+      <div class="field" style="margin:0"><label>Thành viên</label>
+        <select id="c-member">
+          <option>Nguyễn Minh Khoa</option>
+          <option>Ngô Thị Lan</option>
+          <option>Phạm Đức Long</option>
+          <option>Trần Văn Hùng</option>
+        </select>
+      </div>
+      <div class="field" style="margin:0"><label>Số tiền (đ)</label><input id="c-amt" type="number" placeholder="500000"></div>
+      <div class="field" style="margin:0;display:flex;align-items:flex-end"><button class="btn btn-outline" onclick="addContrib()" style="width:100%">Ghi nhận</button></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Lịch sử chi tiêu</div>
+    <div id="exp-list"><div class="empty"><div class="empty-icon">🧾</div>Chưa có khoản chi nào<br><span style="font-size:12px">Thêm bên trên để bắt đầu theo dõi</span></div></div>
+  </div>
+
+</div>
+</div>
+
+<!-- ══ TAB 2: QUYẾT TOÁN ══ -->
+<div id="tab-settle" class="panel">
+<div class="wrap">
+
+  <div class="card">
+    <div class="card-title">Tình trạng từng thành viên</div>
+    <div class="card-sub">Dựa trên tổng chi tiêu chia đều và số tiền mỗi người đã trả</div>
+    <div id="member-list"></div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Lệnh chuyển khoản tối ưu</div>
+    <div class="card-sub">Số lần CK ít nhất để tất cả về 0 — bao gồm STK để thao tác ngay</div>
+    <div id="settle-list"><div class="empty"><div class="empty-icon">⚖️</div>Thêm chi tiêu trước để tính quyết toán</div></div>
+  </div>
+
+</div>
+</div>
+
+<!-- ══ TAB 3: NHẬT KÝ ══ -->
+<div id="tab-diary" class="panel">
+<div class="wrap">
+
+  <div class="card">
+    <div class="card-title">Ghi ký ức nhóm</div>
+    <div class="card-sub">Mỗi thành viên ghi lại — AI sẽ trích xuất keyword để đề xuất leader TNV và kỹ năng mềm</div>
+    <div class="row2" style="margin-bottom:10px">
+      <div class="field" style="margin:0"><label>Người ghi</label>
+        <select id="d-who">
+          <option>Nguyễn Minh Khoa</option><option>Ngô Thị Lan</option>
+          <option>Phạm Đức Long</option><option>Trần Văn Hùng</option>
+        </select>
+      </div>
+      <div class="field" style="margin:0"><label>Loại</label>
+        <select id="d-type">
+          <option value="memory">📸 Kỷ niệm</option>
+          <option value="thanks">💚 Cảm ơn đồng đội</option>
+          <option value="skill">⭐ Kỹ năng thấy ở bạn</option>
+          <option value="funny">😄 Chuyện vui</option>
+        </select>
+      </div>
+    </div>
+    <div class="field"><label>Nội dung</label>
+      <textarea id="d-text" placeholder="VD: Long cứu cả nhóm khi xe chết máy lúc 2h sáng — bình tĩnh xử lý hoàn toàn. Anh ấy có khiếu lãnh đạo thật sự."></textarea>
+    </div>
+    <button class="btn btn-primary" onclick="addDiary()">💾 Lưu ký ức</button>
+  </div>
+
+  <div class="card" id="diary-card">
+    <div class="card-title">Ký ức đã ghi</div>
+    <div id="diary-list"><div class="empty"><div class="empty-icon">📖</div>Chưa có ký ức nào</div></div>
+    <div id="kw-section" style="display:none;margin-top:16px;padding-top:16px;border-top:1px solid var(--br)">
+      <div style="font-size:11px;font-weight:500;color:var(--muted);margin-bottom:8px;text-transform:uppercase;letter-spacing:.5px">🏷 HLRace ghi nhận</div>
+      <div class="kw-wrap" id="kw-chips"></div>
+    </div>
+  </div>
+
+</div>
+</div>
+
+<!-- ══ TAB 4: BÁO CÁO ══ -->
+<div id="tab-report" class="panel">
+<div class="wrap">
+
+  <div class="card">
+    <div class="card-title">Tạo báo cáo tổng kết</div>
+    <div class="card-sub">AI tổng hợp từ chi tiêu + ký ức. Gửi cho cả nhóm và lưu vào HLRace để tham khảo năm sau.</div>
+    <button class="btn btn-primary" onclick="genReport()">✨ Tạo báo cáo</button>
+  </div>
+
+  <div id="report-output" style="display:none">
+
+    <div class="card">
+      <div class="report-section">
+        <div class="report-section-title"><span class="icon">💰</span> Chi tiêu chuyến đi</div>
+        <div class="report-body" id="rpt-finance"></div>
+        <table class="report-table" id="rpt-cat-table"></table>
+      </div>
+      <div class="report-section" style="margin-top:20px">
+        <div class="report-section-title"><span class="icon">👥</span> Tinh thần nhóm</div>
+        <div class="report-body" id="rpt-spirit"></div>
+      </div>
+      <div class="report-section" style="margin-top:20px">
+        <div class="report-section-title"><span class="icon">🌟</span> Điểm nổi bật</div>
+        <div class="report-body" id="rpt-highlight"></div>
+      </div>
+      <div class="report-section" style="margin-top:20px">
+        <div class="report-section-title"><span class="icon">📅</span> Ước tính năm sau</div>
+        <div class="report-body" id="rpt-next"></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="report-section">
+        <div class="report-section-title"><span class="icon">📊</span> Data gửi HLRace (ẩn danh)</div>
+        <div class="report-body" id="rpt-hlrace"></div>
+      </div>
+    </div>
+
+    <div class="btn-row" style="margin-bottom:20px">
+      <button class="btn btn-primary" onclick="shareReport()">📤 Gửi cho nhóm</button>
+      <button class="btn btn-outline" onclick="window.print()">🖨 In báo cáo</button>
+    </div>
+
+  </div>
+</div>
+</div>
+
+<!-- BOTTOM NAV -->
+<div class="bottom-nav">
+  <button class="bnav-item on" onclick="showTab('fund',null,this)"><div class="bnav-icon">💰</div>Chi tiêu</button>
+  <button class="bnav-item" onclick="showTab('settle',null,this)"><div class="bnav-icon">⚖️</div>Quyết toán</button>
+  <button class="bnav-item" onclick="showTab('diary',null,this)"><div class="bnav-icon">📖</div>Nhật ký</button>
+  <button class="bnav-item" onclick="showTab('report',null,this)"><div class="bnav-icon">📊</div>Báo cáo</button>
+</div>
+
+<script>
+const MEMBERS = [
+  {name:'Nguyễn Minh Khoa', initials:'NK', bank:'Vietcombank', stk:'1234567890', color:'#2D5A3D'},
+  {name:'Ngô Thị Lan',       initials:'NL', bank:'Techcombank', stk:'9876543210', color:'#1B4F8A'},
+  {name:'Phạm Đức Long',     initials:'PL', bank:'MBBank',      stk:'1122334455', color:'#856A00'},
+  {name:'Trần Văn Hùng',     initials:'TH', bank:'BIDV',        stk:'5544332211', color:'#7A2D6A'},
+];
+const CAT = {transport:{icon:'🚗',label:'Di chuyển'},food:{icon:'🍜',label:'Ăn uống'},lodging:{icon:'🏠',label:'Chỗ ở'},gear:{icon:'🎒',label:'Gear'},entry:{icon:'🏅',label:'Phí ĐK'},medical:{icon:'💊',label:'Y tế'},other:{icon:'📦',label:'Khác'}};
+const DTYPE = {memory:{cls:'dt-memory',icon:'📸',label:'Kỷ niệm'},thanks:{cls:'dt-thanks',icon:'💚',label:'Cảm ơn'},skill:{cls:'dt-skill',icon:'⭐',label:'Kỹ năng'},funny:{cls:'dt-funny',icon:'😄',label:'Vui'}};
+
+let expenses = [], contribs = {}, diaries = [];
+MEMBERS.forEach(m => contribs[m.name] = 500000);
+
+function fmt(n){return Math.round(n).toLocaleString('vi-VN')+'đ';}
+function mi(name){return MEMBERS.find(m=>m.name===name)||MEMBERS[0];}
+function ts(){return new Date().toLocaleString('vi-VN',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'});}
+
+function calcMetrics(){
+  const shared = expenses.filter(e=>e.shared);
+  const total = shared.reduce((s,e)=>s+e.amt,0);
+  const pool = Object.values(contribs).reduce((a,b)=>a+b,0);
+  document.getElementById('m-pool').textContent = fmt(pool);
+  document.getElementById('m-spent').textContent = fmt(total);
+  document.getElementById('m-remain').textContent = fmt(pool-total);
+  return {shared,total,pool};
+}
+
+function renderExpenses(){
+  calcMetrics();
+  const el = document.getElementById('exp-list');
+  if(!expenses.length){el.innerHTML='<div class="empty"><div class="empty-icon">🧾</div>Chưa có khoản chi nào</div>';return;}
+  el.innerHTML = expenses.map((e,i)=>`
+    <div class="exp-row">
+      <div class="exp-cat-icon">${CAT[e.cat]?.icon||'📦'}</div>
+      <div class="exp-info">
+        <div class="exp-desc">${e.desc}${e.note?`<span class="exp-tag">${e.note}</span>`:''}</div>
+        <div class="exp-meta">${e.payer} · ${e.ts} · ${CAT[e.cat]?.label} ${e.shared?'· chia đều':''}</div>
+      </div>
+      <div>
+        <div class="exp-amt">${fmt(e.amt)}</div>
+        <div style="text-align:right;margin-top:4px"><button class="btn btn-sm btn-outline" onclick="delExp(${i})" style="padding:2px 8px;font-size:10px">✕</button></div>
+      </div>
+    </div>`).join('');
+}
+
+function addExp(){
+  const desc=document.getElementById('e-desc').value.trim();
+  const amt=parseInt(document.getElementById('e-amt').value)||0;
+  if(!desc||!amt)return;
+  expenses.push({desc,amt,cat:document.getElementById('e-cat').value,
+    payer:document.getElementById('e-payer').value,
+    note:document.getElementById('e-note').value,
+    shared:document.getElementById('e-shared').checked,ts:ts()});
+  ['e-desc','e-amt','e-note'].forEach(id=>document.getElementById(id).value='');
+  renderExpenses();
+}
+function delExp(i){expenses.splice(i,1);renderExpenses();}
+
+function addContrib(){
+  const m=document.getElementById('c-member').value;
+  const amt=parseInt(document.getElementById('c-amt').value)||0;
+  if(!amt)return;
+  contribs[m]=(contribs[m]||0)+amt;
+  document.getElementById('c-amt').value='';
+  calcMetrics();
+}
+
+// ── SETTLE ──
+function calcSettle(){
+  const shared=expenses.filter(e=>e.shared);
+  const total=shared.reduce((s,e)=>s+e.amt,0);
+  const per=total/MEMBERS.length;
+  const paid={};
+  MEMBERS.forEach(m=>paid[m.name]=0);
+  shared.forEach(e=>paid[e.payer]=(paid[e.payer]||0)+e.amt);
+  const bal={};
+  MEMBERS.forEach(m=>bal[m.name]=paid[m.name]-per);
+
+  document.getElementById('member-list').innerHTML=MEMBERS.map(m=>{
+    const b=bal[m.name];
+    const cls=b>50?'pill-pos':b<-50?'pill-neg':'pill-zero';
+    const lbl=b>50?`+${fmt(b)} (được nhận)`:b<-50?`${fmt(b)} (cần trả)`:'Đã cân bằng';
+    return `<div class="member-row">
+      <div class="avatar" style="background:${m.color}">${m.initials}</div>
+      <div class="member-info">
+        <div class="member-name">${m.name}</div>
+        <div class="member-bank">${m.bank} · ${m.stk}</div>
+      </div>
+      <span class="balance-pill ${cls}">${lbl}</span>
+    </div>`;
+  }).join('');
+
+  const cred=MEMBERS.filter(m=>bal[m.name]>50).map(m=>({...mi(m.name),b:bal[m.name]}));
+  const debt=MEMBERS.filter(m=>bal[m.name]<-50).map(m=>({...mi(m.name),b:bal[m.name]}));
+  const txs=[];
+  const c=cred.map(x=>({...x})),d=debt.map(x=>({...x}));
+  let ci=0,di=0;
+  while(ci<c.length&&di<d.length){
+    const amt=Math.min(c[ci].b,-d[di].b);
+    txs.push({from:d[di],to:c[ci],amt});
+    c[ci].b-=amt;d[di].b+=amt;
+    if(Math.abs(c[ci].b)<1)ci++;
+    if(Math.abs(d[di].b)<1)di++;
+  }
+  const sl=document.getElementById('settle-list');
+  if(!txs.length){sl.innerHTML='<div class="empty"><div class="empty-icon">🎉</div>Tất cả đã cân bằng</div>';return;}
+  sl.innerHTML=txs.map(t=>`
+    <div class="settle-row">
+      <div>
+        <div class="settle-from">${t.from.name}</div>
+        <div class="settle-bank">${t.from.bank} · ${t.from.stk}</div>
+      </div>
+      <div class="settle-arrow">→</div>
+      <div style="text-align:right">
+        <div class="settle-to">${t.to.name}</div>
+        <div class="settle-bank">${t.to.bank} · ${t.to.stk}</div>
+      </div>
+      <div class="settle-amt">${fmt(t.amt)}</div>
+    </div>`).join('');
+}
+
+// ── DIARY ──
+function addDiary(){
+  const text=document.getElementById('d-text').value.trim();
+  if(!text)return;
+  diaries.push({who:document.getElementById('d-who').value,type:document.getElementById('d-type').value,text,ts:ts()});
+  document.getElementById('d-text').value='';
+  renderDiary();
+}
+function renderDiary(){
+  const el=document.getElementById('diary-list');
+  if(!diaries.length){el.innerHTML='<div class="empty"><div class="empty-icon">📖</div>Chưa có ký ức nào</div>';return;}
+  el.innerHTML=diaries.map(d=>{
+    const dt=DTYPE[d.type]||DTYPE.memory;
+    return `<div class="diary-entry">
+      <span class="diary-type-badge ${dt.cls}">${dt.icon} ${dt.label}</span>
+      <div class="diary-text">${d.text}</div>
+      <div class="diary-who">${d.who} · ${d.ts}</div>
+    </div>`;
+  }).join('');
+  renderKeywords();
+}
+function renderKeywords(){
+  const all=diaries.map(d=>d.text).join(' ').toLowerCase();
+  const kws=[];
+  if(/lãnh đạo|trưởng|lead|chỉ huy|bình tĩnh xử lý|cứu cả nhóm|quyết định/.test(all)) kws.push({l:'Tiềm năng Leader TNV',cls:'kw-leader'});
+  if(/bình tĩnh|không hoảng|xử lý sự cố|giải quyết/.test(all)) kws.push({l:'Xử lý khủng hoảng',cls:'kw-leader'});
+  if(/lái xe|chở|đón|xe cộ|lái/.test(all)) kws.push({l:'Logistics & vận chuyển',cls:'kw-skill'});
+  if(/chờ|hỗ trợ|dìu|giúp đỡ|chia sẻ/.test(all)) kws.push({l:'Hỗ trợ đồng đội',cls:'kw-skill'});
+  if(/ảnh|chụp|ghi lại|quay/.test(all)) kws.push({l:'Nhiếp ảnh & Content',cls:'kw-skill'});
+  if(/vui|cười|hài hước|buồn cười/.test(all)) kws.push({l:'Tinh thần tích cực',cls:'kw-community'});
+  if(!kws.length)return;
+  document.getElementById('kw-section').style.display='block';
+  document.getElementById('kw-chips').innerHTML=kws.map(k=>`<span class="kw ${k.cls}">${k.l}</span>`).join('');
+}
+
+// ── REPORT ──
+function genReport(){
+  const shared=expenses.filter(e=>e.shared);
+  const total=shared.reduce((s,e)=>s+e.amt,0);
+  const per=Math.round(total/MEMBERS.length);
+  const cats={};
+  shared.forEach(e=>cats[e.cat]=(cats[e.cat]||0)+e.amt);
+  const top=Object.entries(cats).sort((a,b)=>b[1]-a[1]);
+
+  document.getElementById('rpt-finance').innerHTML=
+    `Tổng chi tiêu chung: <strong>${fmt(total)}</strong> · Bình quân: <strong>${fmt(per)}/người</strong>`;
+  document.getElementById('rpt-cat-table').innerHTML=`
+    <tr><th>Danh mục</th><th>Số tiền</th><th>Tỷ lệ</th></tr>`+
+    top.map(([k,v])=>`<tr><td>${CAT[k]?.icon} ${CAT[k]?.label||k}</td><td><strong>${fmt(v)}</strong></td><td>${total?Math.round(v/total*100):0}%</td></tr>`).join('');
+
+  const memCnt=diaries.length;
+  const types={memory:0,thanks:0,skill:0,funny:0};
+  diaries.forEach(d=>types[d.type]=(types[d.type]||0)+1);
+  document.getElementById('rpt-spirit').innerHTML=
+    `${memCnt} ký ức được ghi lại. ${types.thanks} lời cảm ơn · ${types.skill} ghi nhận kỹ năng · ${types.memory} kỷ niệm · ${types.funny} chuyện vui.${memCnt>3?' Nhóm có tinh thần gắn kết tốt.':''}`;
+
+  const bestDiary=diaries.find(d=>d.type==='skill')||diaries[0];
+  document.getElementById('rpt-highlight').innerHTML=bestDiary
+    ?`<div class="report-highlight">"${bestDiary.text.substring(0,120)}${bestDiary.text.length>120?'...':''}" <br><span style="font-size:11px;color:var(--muted)">— ${bestDiary.who}</span></div>`
+    :'Thêm ký ức nhóm để xem điểm nổi bật.';
+
+  const inflation=1.08;
+  document.getElementById('rpt-next').innerHTML=
+    top.length?`Dựa trên chi tiêu năm nay, ước tính năm sau (inflation ~8%): <strong>${fmt(Math.round(per*inflation))}/người</strong>. Hạng mục tăng nhiều nhất thường là <strong>${CAT[top[0][0]]?.label}</strong>.`:'Thêm chi tiêu để có dự toán năm sau.';
+
+  document.getElementById('rpt-hlrace').innerHTML=
+    `Sapa 100K 2026 · ${MEMBERS.length} người · ${fmt(per)}/người · ${top.map(([k,v])=>CAT[k]?.label+': '+fmt(v)).join(' · ')}<br><span style="font-size:11px;color:var(--muted)">Tên thành viên được ẩn danh trước khi lưu vào dataset chung. Dữ liệu này giúp gợi ý ngân sách cho nhóm race năm sau.</span>`;
+
+  document.getElementById('report-output').style.display='block';
+}
+
+function shareReport(){alert('Tính năng gửi báo cáo qua Zalo/Email đang phát triển.\nTạm thời dùng nút In báo cáo để lưu PDF.');}
+
+// ── NAV ──
+function showTab(id, tabEl, navEl){
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('on'));
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('on'));
+  document.querySelectorAll('.bnav-item').forEach(b=>b.classList.remove('on'));
+  document.getElementById('tab-'+id).classList.add('on');
+  if(tabEl)tabEl.classList.add('on');
+  if(navEl)navEl.classList.add('on');
+  if(id==='settle')calcSettle();
+}
+// sync tab clicks with bottom nav
+document.querySelectorAll('.tab').forEach((t,i)=>{
+  t.addEventListener('click',()=>{
+    document.querySelectorAll('.bnav-item')[i]?.classList.toggle('on');
+  });
+});
+
+renderExpenses();
+</script>
+</body>
+</html>

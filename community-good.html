@@ -1,0 +1,620 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HLRace Community Good — Chạy để tạo ra điều tốt</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Outfit:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#050C08;--bg2:#090F0C;--bg3:#0E1611;--surf:#131D16;
+  --ink:#EDF5EF;--ink2:#AABFAF;--muted:#4A6050;
+  --green:#00C878;--green2:#009A5A;--amber:#FFB830;
+  --v:#4A1FFF;--red:#FF2D6B;--cyan:#00D4CC;--teal:#00897B;
+  --br:rgba(0,200,120,.12);--br2:rgba(255,255,255,.06);
+}
+body{background:var(--bg);color:var(--ink);font-family:'Outfit',sans-serif;min-height:100vh;overflow-x:hidden}
+body::before{content:'';position:fixed;inset:0;background:
+  radial-gradient(ellipse 70% 50% at 20% 20%,rgba(0,200,120,.05),transparent 60%),
+  radial-gradient(ellipse 50% 60% at 80% 80%,rgba(0,137,123,.04),transparent 60%);
+  pointer-events:none;z-index:0}
+
+/* NAV */
+.nav{position:sticky;top:0;z-index:100;background:rgba(5,12,8,.94);backdrop-filter:blur(18px);border-bottom:1px solid var(--br);height:50px;display:flex;align-items:center;justify-content:space-between;padding:0 16px}
+.nl{display:flex;align-items:center;gap:10px}
+.nav-logo{font-family:'Syne';font-size:16px;font-weight:800;color:var(--green)}
+.nav-slash{color:var(--muted)}.nav-page{font-size:11px;font-weight:700;color:var(--ink2)}
+.nav-tabs{display:flex;height:50px;overflow-x:auto;scrollbar-width:none}
+.nav-tabs::-webkit-scrollbar{display:none}
+.nt{display:flex;align-items:center;padding:0 12px;font-size:10px;font-weight:700;letter-spacing:.8px;color:var(--muted);cursor:pointer;border-bottom:2px solid transparent;transition:all .2s;white-space:nowrap;text-decoration:none}
+.nt:hover{color:var(--ink)}.nt.on{color:var(--green);border-bottom-color:var(--green)}
+
+/* VIEWS */
+.view{display:none;position:relative;z-index:1}.view.active{display:block}
+.wrap{max-width:1100px;margin:0 auto;padding:20px 14px 80px}
+
+/* HERO */
+.hero{padding:32px 20px 24px;text-align:center;position:relative;z-index:1}
+.hero-ey{display:inline-flex;align-items:center;gap:6px;padding:5px 13px;border-radius:20px;border:1px solid rgba(0,200,120,.3);background:rgba(0,200,120,.06);font-family:'JetBrains Mono';font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--green);margin-bottom:12px}
+.hero-h{font-family:'Syne';font-size:clamp(32px,6vw,64px);font-weight:800;letter-spacing:-1px;line-height:.92;margin-bottom:8px}
+.hero-grd{background:linear-gradient(135deg,var(--green),var(--cyan),var(--amber));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.hero-sub{font-size:12px;color:var(--muted);max-width:520px;margin:0 auto 20px;line-height:1.8}
+.impact-bar{display:flex;gap:18px;justify-content:center;flex-wrap:wrap;margin-bottom:8px}
+.ib{text-align:center}
+.ib-n{font-family:'Syne';font-size:26px;font-weight:800;color:var(--green);line-height:1}
+.ib-l{font-size:9px;font-family:'JetBrains Mono';letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);margin-top:2px}
+
+/* CARDS */
+.card{background:var(--bg2);border:1px solid var(--br2);border-radius:13px;overflow:hidden;margin-bottom:13px}
+.ch{padding:13px 16px;border-bottom:1px solid var(--br2);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px}
+.ct{font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--muted);display:flex;align-items:center;gap:6px}
+.ct::before{content:'';width:3px;height:11px;background:var(--green);border-radius:2px;display:inline-block}
+.cb{padding:16px}
+
+/* CAMPAIGN CARDS */
+.camp-card{background:var(--bg2);border:1.5px solid var(--br2);border-radius:13px;overflow:hidden;transition:all .3s;cursor:pointer}
+.camp-card:hover{border-color:rgba(0,200,120,.3);transform:translateY(-2px);box-shadow:0 8px 28px rgba(0,200,120,.08)}
+.cc-head{padding:14px;background:linear-gradient(135deg,rgba(0,200,120,.04),transparent)}
+.cc-type{display:inline-flex;align-items:center;gap:4px;font-size:8px;font-weight:700;padding:3px 8px;border-radius:4px;margin-bottom:8px;font-family:'JetBrains Mono';letter-spacing:1px;text-transform:uppercase}
+.t-urgent{background:rgba(255,45,107,.1);color:var(--red);border:1px solid rgba(255,45,107,.2)}
+.t-fund{background:rgba(0,200,120,.1);color:var(--green);border:1px solid rgba(0,200,120,.2)}
+.t-discuss{background:rgba(74,31,255,.1);color:var(--v);border:1px solid rgba(74,31,255,.2)}
+.t-event{background:rgba(255,184,48,.1);color:var(--amber);border:1px solid rgba(255,184,48,.2)}
+.t-ai{background:rgba(0,212,204,.1);color:var(--cyan);border:1px solid rgba(0,212,204,.2)}
+.cc-title{font-size:14px;font-weight:800;margin-bottom:5px;line-height:1.3}
+.cc-sub{font-size:10px;color:var(--muted);line-height:1.6;margin-bottom:10px}
+.cc-body{padding:0 14px 13px}
+.prog-wrap{margin-bottom:9px}
+.prog-lbl{font-size:9px;font-weight:700;display:flex;justify-content:space-between;margin-bottom:4px}
+.prog-bar{height:6px;background:rgba(255,255,255,.05);border-radius:3px;overflow:hidden}
+.prog-fill{height:100%;border-radius:3px;transition:width .8s ease}
+.cc-stats{display:grid;grid-template-columns:1fr 1fr 1fr;gap:5px;margin-bottom:9px}
+.ccs{text-align:center;padding:6px;background:rgba(255,255,255,.02);border-radius:5px}
+.ccs-v{font-family:'Syne';font-size:16px;font-weight:800;line-height:1}
+.ccs-l{font-size:7px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--muted)}
+.cc-actions{display:flex;gap:6px}
+.ca{flex:1;padding:7px;border-radius:6px;border:none;cursor:pointer;font-family:'Outfit';font-size:9px;font-weight:700;transition:all .2s}
+.ca-primary{background:var(--green);color:#000}.ca-primary:hover{background:var(--green2)}
+.ca-ghost{background:rgba(255,255,255,.03);border:1px solid var(--br2);color:var(--muted)}.ca-ghost:hover{border-color:var(--green);color:var(--green)}
+
+/* DISCUSS THREAD */
+.thread{background:var(--bg3);border:1px solid var(--br2);border-radius:9px;padding:12px;margin-bottom:8px;transition:all .2s;cursor:pointer}
+.thread:hover{border-color:rgba(0,200,120,.2)}
+.th-top{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;margin-bottom:6px}
+.th-title{font-size:12px;font-weight:700;line-height:1.3;flex:1}
+.th-meta{display:flex;gap:8px;align-items:center;flex-shrink:0}
+.th-votes{font-size:10px;font-weight:700;color:var(--green)}
+.th-replies{font-size:9px;color:var(--muted)}
+.th-tags{display:flex;gap:4px;flex-wrap:wrap;margin-bottom:6px}
+.th-tag{font-size:8px;padding:2px 7px;border-radius:4px;background:rgba(0,200,120,.07);color:var(--green);border:1px solid rgba(0,200,120,.12)}
+.th-sub{font-size:10px;color:var(--muted);line-height:1.6}
+.th-footer{display:flex;align-items:center;gap:10px;margin-top:7px}
+.vote-btn{padding:4px 10px;border-radius:5px;border:1px solid var(--br2);background:none;font-family:'Outfit';font-size:9px;font-weight:700;cursor:pointer;color:var(--muted);transition:all .2s}
+.vote-btn:hover{border-color:var(--green);color:var(--green)}
+.vote-btn.voted{background:rgba(0,200,120,.1);border-color:var(--green);color:var(--green)}
+.th-author{font-size:9px;color:var(--muted);font-family:'JetBrains Mono'}
+
+/* POINTS EXCHANGE */
+.points-hero{background:linear-gradient(135deg,rgba(0,200,120,.08),rgba(0,212,204,.05));border:1px solid var(--br);border-radius:13px;padding:20px;margin-bottom:14px;text-align:center}
+.my-points{font-family:'Syne';font-size:56px;font-weight:800;color:var(--green);line-height:1;margin-bottom:3px}
+.mp-lbl{font-size:11px;color:var(--muted);margin-bottom:14px}
+.exchange-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:10px}
+.ex-item{background:var(--bg2);border:1.5px solid var(--br2);border-radius:10px;padding:13px;transition:all .2s;cursor:pointer}
+.ex-item:hover{border-color:rgba(0,200,120,.3);transform:translateY(-1px)}
+.ex-icon{font-size:26px;margin-bottom:7px}
+.ex-name{font-size:12px;font-weight:800;margin-bottom:3px}
+.ex-cost{font-size:10px;color:var(--green);font-weight:700;margin-bottom:4px}
+.ex-desc{font-size:9px;color:var(--muted);line-height:1.5}
+
+/* AI PANEL */
+.ai-panel{position:sticky;top:58px;height:calc(100vh - 76px);display:flex;flex-direction:column;background:rgba(9,15,12,.94);border:1px solid var(--br);border-radius:14px;overflow:hidden;backdrop-filter:blur(10px)}
+.aih{padding:13px 15px;border-bottom:1px solid var(--br);flex-shrink:0}
+.aih-top{display:flex;gap:9px;align-items:center;margin-bottom:5px}
+.ai-av{width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,var(--green),var(--cyan));display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0;box-shadow:0 0 0 2px rgba(0,200,120,.2)}
+.ai-name{font-size:12px;font-weight:800}
+.ai-status{font-size:9px;color:var(--muted)}
+.ai-dot{width:6px;height:6px;border-radius:50%;background:var(--green);display:inline-block;animation:blink 2s infinite;margin-right:4px}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
+.ai-ctx{font-size:9px;color:var(--muted);font-style:italic}
+.ai-msgs{flex:1;overflow-y:auto;padding:12px;display:flex;flex-direction:column;gap:9px;scrollbar-width:thin;scrollbar-color:rgba(255,255,255,.05) transparent}
+.msg{display:flex;gap:7px;animation:msgIn .3s ease}
+@keyframes msgIn{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:translateY(0)}}
+.msg-ai{flex-direction:row}.msg-user{flex-direction:row-reverse}
+.bbl{max-width:90%;padding:9px 12px;font-size:11px;line-height:1.65;border-radius:9px}
+.msg-ai .bbl{background:rgba(0,200,120,.05);border:1px solid rgba(0,200,120,.12);color:var(--ink);border-radius:3px 9px 9px 9px}
+.msg-user .bbl{background:rgba(74,31,255,.07);border:1px solid rgba(74,31,255,.12);color:var(--ink2);border-radius:9px 3px 9px 9px}
+.msg-time{font-size:8px;color:var(--muted);margin-top:2px}
+.qp-row{padding:7px 12px;border-top:1px solid var(--br);display:flex;gap:5px;flex-wrap:wrap;flex-shrink:0}
+.qp{padding:4px 9px;border-radius:11px;border:1px solid var(--br2);background:rgba(255,255,255,.02);font-family:'Outfit';font-size:9px;font-weight:700;cursor:pointer;color:var(--muted);transition:all .2s;white-space:nowrap}
+.qp:hover{border-color:var(--green);color:var(--green)}
+.ai-inp{padding:10px 12px;border-top:1px solid var(--br);flex-shrink:0;background:rgba(5,12,8,.6)}
+.ai-row{display:flex;gap:6px}
+.ai-ta{flex:1;background:rgba(14,22,17,.9);border:1.5px solid var(--br2);border-radius:7px;color:var(--ink);font-family:'Outfit';font-size:12px;padding:8px 11px;outline:none;resize:none;min-height:37px;max-height:88px;transition:border-color .2s;line-height:1.5}
+.ai-ta:focus{border-color:rgba(0,200,120,.4)}
+.ai-ta::placeholder{color:var(--muted)}
+.ai-send{width:35px;height:35px;border-radius:7px;border:none;flex-shrink:0;background:var(--green);color:#000;font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .2s;font-weight:900}
+.ai-send:hover{background:var(--green2);transform:scale(1.06)}
+.ai-send:disabled{opacity:.4;cursor:not-allowed;transform:none}
+.tdots{display:flex;align-items:center;gap:4px;padding:6px 10px}
+.td{width:5px;height:5px;border-radius:50%;background:var(--muted);animation:td .9s ease-in-out infinite}
+.td:nth-child(2){animation-delay:.15s}.td:nth-child(3){animation-delay:.3s}
+@keyframes td{0%,80%,100%{transform:scale(1);opacity:.4}40%{transform:scale(1.3);opacity:1}}
+
+/* BUTTONS */
+.btn{padding:10px 18px;border-radius:8px;font-family:'Outfit';font-size:11px;font-weight:700;border:none;cursor:pointer;transition:all .2s;display:inline-flex;align-items:center;gap:6px}
+.btn-green{background:var(--green);color:#000}.btn-green:hover{background:var(--green2);transform:translateY(-1px)}
+.btn-ghost{background:rgba(255,255,255,.04);border:1.5px solid var(--br2);color:var(--muted)}.btn-ghost:hover{border-color:var(--green);color:var(--green)}
+.btn-full{width:100%;justify-content:center}
+
+/* MODAL */
+.mo{position:fixed;inset:0;background:rgba(0,0,0,.8);z-index:500;display:none;align-items:center;justify-content:center;padding:14px}
+.mo.open{display:flex}
+.mod{background:var(--bg2);border:1px solid var(--br2);border-radius:14px;max-width:460px;width:100%;max-height:86vh;overflow-y:auto}
+.mod-h{padding:15px 18px;border-bottom:1px solid var(--br2);display:flex;justify-content:space-between;align-items:center}
+.mod-x{background:none;border:none;color:var(--muted);font-size:17px;cursor:pointer}
+.mod-b{padding:17px}
+.fld{margin-bottom:10px}
+.fld label{display:block;font-size:9px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);margin-bottom:4px;font-family:'JetBrains Mono'}
+.fld input,.fld select,.fld textarea{width:100%;background:var(--bg3);border:1.5px solid var(--br2);border-radius:7px;color:var(--ink);font-family:'Outfit';font-size:13px;padding:9px 12px;outline:none;transition:border-color .2s}
+.fld input:focus,.fld select:focus{border-color:rgba(0,200,120,.4)}
+.f2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.note{padding:10px 13px;border-radius:8px;font-size:11px;line-height:1.7;margin-bottom:11px}
+.ng{background:rgba(0,200,120,.06);border:1px solid rgba(0,200,120,.17);color:var(--muted)}.ng strong{color:var(--green)}
+.na{background:rgba(255,184,48,.06);border:1px solid rgba(255,184,48,.17);color:var(--muted)}.na strong{color:var(--amber)}
+.nr{background:rgba(255,45,107,.06);border:1px solid rgba(255,45,107,.17);color:var(--muted)}.nr strong{color:var(--red)}
+
+/* LAYOUT */
+.two-col{display:grid;grid-template-columns:1fr 340px;gap:14px}
+@media(max-width:880px){.two-col{grid-template-columns:1fr}}
+.three-col{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:11px}
+</style>
+</head>
+<body>
+
+<nav class="nav">
+  <div class="nl">
+    <div class="nav-logo">VRACE</div>
+    <div class="nav-slash">/</div>
+    <div class="nav-page">COMMUNITY GOOD</div>
+  </div>
+  <div class="nav-tabs">
+    <div class="nt on" onclick="showV('campaigns',this)">💙 Chiến dịch</div>
+    <div class="nt" onclick="showV('discuss',this)">💬 Thảo luận</div>
+    <div class="nt" onclick="showV('points',this)">⭐ Đổi điểm</div>
+    <div class="nt" onclick="showV('propose',this)">💡 Đề xuất</div>
+    <a class="nt" href="runner-connect.html">🤝 Connect</a>
+    <a class="nt" href="running-tourism.html">✈️ Tourism</a>
+    <a class="nt" href="platform-map.html">🗺️ Platform</a>
+  </div>
+</nav>
+
+<!-- ═══ VIEW: CAMPAIGNS ═══ -->
+<div class="view active" id="view-campaigns">
+<div class="wrap">
+  <div class="hero">
+    <div class="hero-ey">💙 Community for Good · HLRace</div>
+    <div class="hero-h">CHẠY ĐỂ TẠO RA<br><span class="hero-grd">ĐIỀU TỐT ĐẸP</span></div>
+    <p class="hero-sub">Cộng đồng runner không chỉ chạy cho khoẻ — mà tích lũy điểm, đổi thành đóng góp thật, tạo ra chiến dịch thật. AI dẫn dắt, cộng đồng thực hiện.</p>
+    <div class="impact-bar">
+      <div class="ib"><div class="ib-n" id="totalKm">47,832</div><div class="ib-l">km đã chạy</div></div>
+      <div class="ib"><div class="ib-n" id="totalPoints">312,450</div><div class="ib-l">Điểm cộng đồng</div></div>
+      <div class="ib"><div class="ib-n">28</div><div class="ib-l">Chiến dịch hoàn thành</div></div>
+      <div class="ib"><div class="ib-n">142M</div><div class="ib-l">VNĐ gây được</div></div>
+    </div>
+  </div>
+
+  <div class="two-col">
+    <!-- LEFT: CAMPAIGNS -->
+    <div>
+      <!-- AI SUGGESTED -->
+      <div style="background:linear-gradient(135deg,rgba(0,212,204,.06),rgba(0,200,120,.04));border:1px solid rgba(0,212,204,.2);border-radius:13px;padding:14px;margin-bottom:14px">
+        <div style="display:flex;align-items:center;gap:7px;margin-bottom:8px">
+          <div style="font-size:16px">🤖</div>
+          <div style="font-size:11px;font-weight:800;color:var(--cyan)">AI Tốt đề xuất hôm nay</div>
+        </div>
+        <div style="font-size:12px;font-weight:700;margin-bottom:4px">Mây thấy 847 runner đang hỏi về "chạy gây quỹ cho trẻ em vùng cao"</div>
+        <div style="font-size:10px;color:var(--muted);margin-bottom:10px;line-height:1.6">Đây là chủ đề trending trong 7 ngày qua. Tháng 6 có nhiều ngày lễ Thiếu nhi — thời điểm tốt để launch chiến dịch. Mây đề xuất tạo ngay.</div>
+        <div style="display:flex;gap:7px;flex-wrap:wrap">
+          <button class="btn btn-green" style="font-size:10px;padding:8px 14px" onclick="aiQ('Tạo chiến dịch chạy gây quỹ cho trẻ em vùng cao')">✨ Tạo với AI</button>
+          <button class="btn btn-ghost" style="font-size:10px;padding:8px 14px" onclick="aiQ('Cho tôi biết thêm về đề xuất này')">💬 Tìm hiểu thêm</button>
+        </div>
+      </div>
+
+      <!-- CAMPAIGNS GRID -->
+      <div class="three-col" id="campaignsGrid"></div>
+    </div>
+
+    <!-- RIGHT: AI GOOD -->
+    <div class="ai-panel">
+      <div class="aih">
+        <div class="aih-top">
+          <div class="ai-av">💚</div>
+          <div><div class="ai-name">AI Tốt — Trợ lý cộng đồng</div><div class="ai-status"><span class="ai-dot"></span>Đang theo dõi cộng đồng</div></div>
+        </div>
+        <div class="ai-ctx" id="aiCtx">312,450 điểm đang chờ được dùng tốt</div>
+      </div>
+      <div class="ai-msgs" id="aiMsgs">
+        <div class="msg msg-ai">
+          <div class="ai-av" style="width:24px;height:24px;font-size:11px;flex-shrink:0">💚</div>
+          <div><div class="bbl">Chào! Mình là <strong>AI Tốt</strong> — trợ lý cộng đồng HLRace 🌱<br><br>Mình theo dõi những gì cộng đồng đang quan tâm, đề xuất chiến dịch có ý nghĩa, và giúp biến ý định tốt thành hành động thật.<br><br>Bạn muốn làm điều gì tốt hôm nay?</div><div class="msg-time">Vừa xong</div></div>
+        </div>
+      </div>
+      <div class="qp-row">
+        <div class="qp" onclick="aiQ('Cộng đồng đang quan tâm điều gì nhất?')">🔍 Trending</div>
+        <div class="qp" onclick="aiQ('Tôi có 150 điểm, đổi được gì hữu ích nhất?')">⭐ Đổi điểm</div>
+        <div class="qp" onclick="aiQ('Đề xuất chiến dịch gây quỹ khẩn cấp')">🆘 Khẩn cấp</div>
+        <div class="qp" onclick="aiQ('Làm thế nào tôi có thể đóng góp nhiều nhất?')">💙 Đóng góp</div>
+        <div class="qp" onclick="aiQ('Tạo chủ đề thảo luận hay cho cộng đồng runner')">💬 Thảo luận</div>
+      </div>
+      <div class="ai-inp">
+        <div class="ai-row">
+          <textarea class="ai-ta" id="aiInput" placeholder="Hỏi AI Tốt về chiến dịch, cộng đồng..." rows="1"
+            onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();aiSend()}"
+            oninput="this.style.height='auto';this.style.height=Math.min(this.scrollHeight,88)+'px'"></textarea>
+          <button class="ai-send" id="aiSendBtn" onclick="aiSend()">↑</button>
+        </div>
+        <div style="font-size:8px;color:var(--muted);margin-top:4px;text-align:center">AI Tốt · Claude AI · Dữ liệu cộng đồng HLRace</div>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- ═══ VIEW: DISCUSS ═══ -->
+<div class="view" id="view-discuss">
+<div class="wrap">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;flex-wrap:wrap;gap:10px">
+    <div><div style="font-family:'Syne';font-size:28px;font-weight:800;margin-bottom:3px">💬 Thảo luận cộng đồng</div><p style="font-size:11px;color:var(--muted)">Chủ đề do AI đề xuất và cộng đồng tạo ra. Vote để ưu tiên chủ đề quan trọng.</p></div>
+    <button class="btn btn-green" onclick="openNewThread()">+ Tạo chủ đề mới</button>
+  </div>
+  <div class="card" style="margin-bottom:14px">
+    <div class="ch"><div class="ct">AI đề xuất thảo luận</div><span style="font-size:10px;color:var(--cyan)">🤖 Mây tự đề xuất</span></div>
+    <div class="cb" id="aiThreads"></div>
+  </div>
+  <div class="card">
+    <div class="ch"><div class="ct">Cộng đồng tạo</div></div>
+    <div class="cb" id="communityThreads"></div>
+  </div>
+</div>
+</div>
+
+<!-- ═══ VIEW: POINTS ═══ -->
+<div class="view" id="view-points">
+<div class="wrap">
+  <div class="points-hero">
+    <div class="my-points" id="myPoints">285</div>
+    <div class="mp-lbl">điểm cống hiến của bạn · Cấp 🟠 Nòng Cốt</div>
+    <div style="font-size:11px;color:var(--muted);max-width:400px;margin:0 auto">Điểm tích từ: tham gia race, đóng góp cộng đồng, giới thiệu bạn bè. Đổi thành đóng góp từ thiện thật sự — HLRace và nhà tài trợ match 1:1.</div>
+  </div>
+  <div class="ch" style="background:var(--bg2);border:1px solid var(--br2);border-radius:13px 13px 0 0;padding:12px 16px"><div class="ct">Đổi điểm thành điều tốt</div><span style="font-size:10px;color:var(--green)">Match 1:1 từ nhà tài trợ</span></div>
+  <div class="exchange-grid" id="exchangeGrid" style="padding:11px;background:var(--bg2);border:1px solid var(--br2);border-top:none;border-radius:0 0 13px 13px;margin-bottom:14px"></div>
+  <div class="card">
+    <div class="ch"><div class="ct">Lịch sử đóng góp</div></div>
+    <div class="cb" id="donateHistory"></div>
+  </div>
+</div>
+</div>
+
+<!-- ═══ VIEW: PROPOSE ═══ -->
+<div class="view" id="view-propose">
+<div class="wrap">
+  <div style="font-family:'Syne';font-size:28px;font-weight:800;margin-bottom:6px">💡 Đề xuất ý tưởng</div>
+  <p style="font-size:12px;color:var(--muted);margin-bottom:20px;line-height:1.7">Bạn có ý tưởng hay, cần giúp đỡ khẩn cấp, hoặc muốn tạo sự kiện? AI Tốt sẽ phân tích và giúp biến thành chiến dịch thật.</p>
+  <div class="card">
+    <div class="ch"><div class="ct">Đề xuất mới</div></div>
+    <div class="cb">
+      <div class="note ng"><strong>Cách hoạt động:</strong> Điền ý tưởng → AI Tốt phân tích độ khả thi, đề xuất kế hoạch → Cộng đồng vote → Nếu đủ 50 vote trong 48h → Chiến dịch được tạo tự động.</div>
+      <div class="fld"><label>Loại đề xuất</label>
+        <select id="propType">
+          <option>🆘 Gây quỹ khẩn cấp (cần giúp ai đó)</option>
+          <option>💙 Chiến dịch từ thiện (có kế hoạch)</option>
+          <option>💬 Chủ đề thảo luận (ý kiến cộng đồng)</option>
+          <option>🏃 Sự kiện chạy vì mục đích tốt</option>
+          <option>💡 Ý tưởng mới (khác)</option>
+        </select>
+      </div>
+      <div class="fld"><label>Tiêu đề</label><input type="text" id="propTitle" placeholder="Gây quỹ khẩn cấp cho gia đình runner bị nạn..."></div>
+      <div class="fld"><label>Mô tả chi tiết</label>
+        <textarea id="propDesc" style="width:100%;background:var(--bg3);border:1.5px solid var(--br2);border-radius:7px;color:var(--ink);font-family:'Outfit';font-size:12px;padding:9px 12px;outline:none;min-height:100px;resize:vertical" placeholder="Tình huống, vì sao cần, bạn muốn cộng đồng giúp gì..."></textarea>
+      </div>
+      <div class="f2" style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+        <div class="fld"><label>Mục tiêu (nếu có)</label><input type="text" id="propGoal" placeholder="VD: 50 triệu VNĐ"></div>
+        <div class="fld"><label>Thời hạn</label><input type="date" id="propDeadline"></div>
+      </div>
+      <button class="btn btn-green btn-full" onclick="submitProposal()" style="font-size:12px">🤖 Gửi cho AI Tốt phân tích</button>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- MODAL: Campaign detail -->
+<div class="mo" id="campMo">
+  <div class="mod">
+    <div class="mod-h"><div style="font-size:13px;font-weight:800" id="campMoH">Chi tiết chiến dịch</div><button class="mod-x" onclick="closeM('campMo')">✕</button></div>
+    <div class="mod-b" id="campMoB"></div>
+  </div>
+</div>
+
+<!-- MODAL: New thread -->
+<div class="mo" id="threadMo">
+  <div class="mod">
+    <div class="mod-h"><div style="font-size:13px;font-weight:800">+ Tạo chủ đề thảo luận</div><button class="mod-x" onclick="closeM('threadMo')">✕</button></div>
+    <div class="mod-b">
+      <div class="fld"><label>Tiêu đề</label><input type="text" id="thTitle" placeholder="Bạn nghĩ runner nên làm gì khi..."></div>
+      <div class="fld"><label>Nội dung khởi đầu</label>
+        <textarea id="thBody" style="width:100%;background:var(--bg3);border:1.5px solid var(--br2);border-radius:7px;color:var(--ink);font-family:'Outfit';font-size:12px;padding:9px 12px;outline:none;min-height:80px;resize:vertical"></textarea>
+      </div>
+      <div class="fld"><label>Tags</label><input type="text" id="thTags" placeholder="chạy-bộ, cộng-đồng, sức-khoẻ..."></div>
+      <button class="btn btn-green btn-full" onclick="createThread()">💬 Đăng chủ đề</button>
+    </div>
+  </div>
+</div>
+
+<script src="race-config.js"></script>
+<script>
+// ═══ DATA ═══
+const CAMPAIGNS = [
+  {id:'c1',type:'urgent',typeLabel:'🆘 Khẩn cấp',title:'Hỗ trợ gia đình runner Minh Đức bị tai nạn giao thông',
+   sub:'Anh Minh Đức — runner 5 năm của cộng đồng HK — vừa bị tai nạn nghiêm trọng. Gia đình cần hỗ trợ viện phí khẩn cấp.',
+   goal:50000000,raised:38400000,joiners:124,days:3,
+   sponsor:'PHỞ ĐỆ NHẤT match 1:1 đến 20M',aiNote:'Mây xác nhận tính xác thực. Ưu tiên cao nhất.',color:'var(--red)'},
+  {id:'c2',type:'fund',typeLabel:'💙 Gây quỹ',title:'Chạy cho trẻ em vùng cao mùa đông — "Đôi Giày Ấm"',
+   sub:'Mỗi 5km runner chạy = 1 đôi giày tặng trẻ em Hà Giang. Race tháng 3 là cơ hội tốt nhất.',
+   goal:120000000,raised:87300000,joiners:312,days:18,
+   sponsor:'VPBank match 2:1 tối đa 60M',aiNote:'Trending 7 ngày. Thời điểm tốt nhất trong năm.',color:'var(--green)'},
+  {id:'c3',type:'event',typeLabel:'🏃 Sự kiện',title:'Chạy Bộ Vì Môi Trường — Hồ Tây Xanh 2026',
+   sub:'100 runners cùng chạy + nhặt rác quanh Hồ Tây. Mỗi người được tặng túi vải thay túi nilon.',
+   goal:0,raised:0,joiners:67,days:12,
+   sponsor:'Không cần quyên tiền — chỉ cần chân bạn',aiNote:'Mây đề xuất từ trend "chạy môi trường" tuần rồi.',color:'var(--cyan)'},
+  {id:'c4',type:'discuss',typeLabel:'💬 Thảo luận',title:'Có nên có đường chạy chính thức quanh Hồ Tây không?',
+   sub:'Nhiều runner gặp vấn đề an toàn khi chạy ven hồ. AI Tốt tổng hợp đề xuất để gửi lên quận Tây Hồ.',
+   goal:0,raised:0,joiners:89,days:30,
+   sponsor:'',aiNote:'Kết quả thảo luận sẽ được gửi lên chính quyền địa phương.',color:'var(--v)'},
+];
+
+const EXCHANGES = [
+  {icon:'📚',name:'Sách cho thư viện trường vùng cao',cost:50,desc:'50 điểm = 1 cuốn sách. PHỞ ĐỆ NHẤT match thêm 1 cuốn nữa.',partner:'PHỞ ĐỆ NHẤT'},
+  {icon:'🌱',name:'Trồng 1 cây xanh tại Hà Nội',cost:30,desc:'Trồng và chăm sóc trong 1 năm đầu. Nhận ảnh cây và toạ độ GPS.',partner:'Hà Nội Xanh'},
+  {icon:'🍚',name:'Bữa cơm cho bệnh nhân nghèo',cost:20,desc:'20 điểm = 1 suất ăn cho bệnh nhân viện Bạch Mai.',partner:'Cơm Tấm Nhân Ái'},
+  {icon:'💉',name:'Tiêm vắc xin cho trẻ em',cost:100,desc:'Đủ 100 điểm = 1 mũi vắc xin cho trẻ 0-5 tuổi vùng khó khăn.',partner:'WHO Vietnam'},
+  {icon:'👟',name:'Đôi giày cho trẻ em vùng cao',cost:150,desc:'150 điểm = 1 đôi giày cho chiến dịch Đôi Giày Ấm.',partner:'VPBank'},
+  {icon:'🏫',name:'Hỗ trợ học bổng 1 học kỳ',cost:500,desc:'Góp phần học bổng cho 1 học sinh giỏi hoàn cảnh khó.',partner:'HLRace Foundation'},
+];
+
+const AI_THREADS = [
+  {title:'Tại sao nhiều runner bỏ cuộc sau race đầu tiên?',tags:['tâm-lý','beginner','cộng-đồng'],sub:'Mây phát hiện 34% runner không tham gia race thứ 2. Cộng đồng nghĩ vì sao?',votes:89,replies:23},
+  {title:'Hà Nội nên có marathon đêm như Singapore không?',tags:['sự-kiện','hà-nội','ý-tưởng'],sub:'AI phân tích: Singapore Night Race thu hút 50k người. Hà Nội có điều kiện tương tự.',votes:124,replies:41},
+];
+const COMM_THREADS = [
+  {title:'Nhóm chạy sáng Chủ Nhật Hồ Tây — ai muốn tham gia?',tags:['nhóm-chạy','hồ-tây'],sub:'Mình chạy Chủ Nhật 6h sáng, pace 6-6:30. Cần thêm 3-4 người.',votes:34,replies:12},
+  {title:'Review giày Asics Gel-Nimbus 25 sau 200km',tags:['review','gear'],sub:'Đã chạy đủ 200km rồi. Chia sẻ thật về ưu nhược điểm.',votes:56,replies:28},
+  {title:'Ai biết đường chạy nào đẹp buổi tối Hà Nội?',tags:['đường-chạy','tối'],sub:'Ban ngày bận, chỉ chạy được buổi tối. Cần chỗ đủ ánh sáng và an toàn.',votes:41,replies:19},
+];
+
+let chatH = [], isTyping = false, myPts = 285;
+
+document.addEventListener('DOMContentLoaded', () => {
+  renderCampaigns();
+  renderThreads();
+  renderExchanges();
+  renderHistory();
+  setTimeout(aiWelcome, 900);
+});
+
+function showV(v, el) {
+  document.querySelectorAll('.view').forEach(x => x.classList.remove('active'));
+  document.getElementById('view-' + v).classList.add('active');
+  document.querySelectorAll('.nt').forEach(x => x.classList.remove('on'));
+  if (el) el.classList.add('on');
+}
+
+function renderCampaigns() {
+  document.getElementById('campaignsGrid').innerHTML = CAMPAIGNS.map(c => {
+    const pct = c.goal > 0 ? Math.round(c.raised/c.goal*100) : null;
+    const typeClass = {urgent:'t-urgent',fund:'t-fund',event:'t-event',discuss:'t-discuss'}[c.type];
+    return `<div class="camp-card" onclick="openCamp('${c.id}')">
+      <div class="cc-head">
+        <div class="cc-type ${typeClass}">${c.typeLabel}</div>
+        <div class="cc-title">${c.title}</div>
+        <div class="cc-sub">${c.sub.substring(0,80)}...</div>
+      </div>
+      <div class="cc-body">
+        ${pct !== null ? `<div class="prog-wrap"><div class="prog-lbl"><span style="color:var(--muted)">Đã đạt</span><span style="color:${c.color};font-weight:800">${pct}% · ${(c.raised/1e6).toFixed(1)}M</span></div><div class="prog-bar"><div class="prog-fill" style="width:${Math.min(pct,100)}%;background:${c.color}"></div></div></div>` : ''}
+        <div class="cc-stats">
+          <div class="ccs"><div class="ccs-v" style="color:${c.color}">${c.joiners}</div><div class="ccs-l">Tham gia</div></div>
+          <div class="ccs"><div class="ccs-v" style="color:var(--amber)">${c.days}</div><div class="ccs-l">Ngày còn</div></div>
+          <div class="ccs"><div class="ccs-v" style="color:var(--cyan)">${pct !== null ? pct+'%' : '∞'}</div><div class="ccs-l">${pct !== null ? 'Hoàn thành' : 'Mở'}</div></div>
+        </div>
+        ${c.sponsor ? `<div style="font-size:9px;color:${c.color};font-weight:700;margin-bottom:8px">🤝 ${c.sponsor}</div>` : ''}
+        <div class="cc-actions">
+          <button class="ca ca-primary" onclick="event.stopPropagation();joinCampaign('${c.id}')">${c.type==='discuss'?'💬 Tham gia thảo luận':'💙 Đóng góp'}</button>
+          <button class="ca ca-ghost" onclick="event.stopPropagation();aiAboutCamp('${c.id}')">🤖 Hỏi AI</button>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function openCamp(id) {
+  const c = CAMPAIGNS.find(x => x.id === id); if (!c) return;
+  const pct = c.goal > 0 ? Math.round(c.raised/c.goal*100) : null;
+  document.getElementById('campMoH').textContent = c.title;
+  document.getElementById('campMoB').innerHTML = `
+    <div style="background:rgba(0,200,120,.04);border:1px solid rgba(0,200,120,.15);border-radius:9px;padding:11px;margin-bottom:13px">
+      <div style="font-size:10px;font-weight:700;color:var(--cyan);margin-bottom:4px">🤖 AI Tốt nhận xét:</div>
+      <div style="font-size:11px;color:var(--muted)">${c.aiNote}</div>
+    </div>
+    <p style="font-size:12px;color:var(--muted);line-height:1.7;margin-bottom:13px">${c.sub}</p>
+    ${pct !== null ? `<div style="margin-bottom:13px"><div style="display:flex;justify-content:space-between;margin-bottom:5px"><span style="font-size:11px;color:var(--muted)">Tiến độ</span><span style="font-size:13px;font-weight:800;color:var(--green)">${pct}% · ${(c.raised/1e6).toFixed(1)}M / ${(c.goal/1e6).toFixed(0)}M VNĐ</span></div><div style="height:8px;background:rgba(255,255,255,.05);border-radius:4px;overflow:hidden"><div style="height:100%;width:${pct}%;background:var(--green);border-radius:4px"></div></div></div>` : ''}
+    ${c.sponsor ? `<div class="note ng"><strong>🤝 Nhà tài trợ:</strong> ${c.sponsor}</div>` : ''}
+    <div style="display:flex;gap:8px">
+      <button class="btn btn-green" style="flex:1;justify-content:center" onclick="joinCampaign('${id}');closeM('campMo')">${c.type==='discuss'?'💬 Tham gia thảo luận':'💙 Đóng góp điểm'}</button>
+      <button class="btn btn-ghost" onclick="aiAboutCamp('${id}');closeM('campMo')">🤖 Hỏi AI Tốt</button>
+    </div>`;
+  openM('campMo');
+}
+
+function joinCampaign(id) {
+  const c = CAMPAIGNS.find(x => x.id === id);
+  showToast(`💙 Đã tham gia chiến dịch "${c?.title.substring(0,30)}..."!`);
+  aiAppend('ai', `💙 Cảm ơn bạn đã tham gia <strong>${c?.title.substring(0,40)}...</strong>! Điểm của bạn đang góp phần tạo ra sự thay đổi thật. Muốn biết tác động cụ thể của bạn không?`);
+}
+function aiAboutCamp(id) { const c = CAMPAIGNS.find(x => x.id === id); aiQ(`Phân tích chiến dịch "${c?.title}" — tôi có nên tham gia không?`); }
+
+function renderThreads() {
+  const renderThread = (th, i) => `
+    <div class="thread" id="th_${i}">
+      <div class="th-top">
+        <div class="th-title">${th.title}</div>
+        <div class="th-meta"><span class="th-votes">▲ ${th.votes}</span><span class="th-replies">💬 ${th.replies}</span></div>
+      </div>
+      <div class="th-tags">${th.tags.map(t=>`<span class="th-tag">#${t}</span>`).join('')}</div>
+      <div class="th-sub">${th.sub}</div>
+      <div class="th-footer">
+        <button class="vote-btn" onclick="vote(this,'${i}')">▲ Vote</button>
+        <button class="vote-btn" onclick="aiQ('Ý kiến của bạn về chủ đề: ${th.title}')">🤖 Hỏi AI</button>
+        <span class="th-author">HLRace Community</span>
+      </div>
+    </div>`;
+  document.getElementById('aiThreads').innerHTML = AI_THREADS.map(renderThread).join('');
+  document.getElementById('communityThreads').innerHTML = COMM_THREADS.map(renderThread).join('');
+}
+
+function vote(btn, id) {
+  btn.classList.toggle('voted');
+  showToast(btn.classList.contains('voted') ? '✅ Đã vote!' : 'Vote đã huỷ');
+}
+
+function openNewThread() { openM('threadMo'); }
+function createThread() {
+  const t = document.getElementById('thTitle').value.trim();
+  if (!t) { showToast('⚠️ Nhập tiêu đề chủ đề!'); return; }
+  closeM('threadMo');
+  showToast('✅ Chủ đề đã được đăng! AI Tốt sẽ theo dõi phản hồi.');
+  aiAppend('ai', `💬 Chủ đề "<strong>${t}</strong>" đã được đăng! Mình sẽ theo dõi phản hồi và tóm tắt ý kiến cộng đồng cho bạn.`);
+}
+
+function renderExchanges() {
+  document.getElementById('exchangeGrid').innerHTML = EXCHANGES.map(e => `
+    <div class="ex-item" onclick="exchangePoints('${e.name}','${e.cost}')">
+      <div class="ex-icon">${e.icon}</div>
+      <div class="ex-name">${e.name}</div>
+      <div class="ex-cost">⭐ ${e.cost} điểm · 🤝 Match: ${e.partner}</div>
+      <div class="ex-desc">${e.desc}</div>
+    </div>`).join('');
+}
+
+function exchangePoints(name, cost) {
+  if (myPts < parseInt(cost)) { showToast(`⚠️ Cần ${cost} điểm. Bạn có ${myPts} điểm.`); return; }
+  if (confirm(`Đổi ${cost} điểm để: ${name}?`)) {
+    myPts -= parseInt(cost);
+    document.getElementById('myPoints').textContent = myPts;
+    showToast(`💙 Đã đổi ${cost} điểm → ${name}!`);
+    aiAppend('ai', `🌱 Tuyệt vời! <strong>${cost} điểm</strong> của bạn vừa được đổi thành <strong>${name}</strong>. Nhà tài trợ sẽ match thêm — tổng tác động gấp đôi. Cảm ơn bạn đã tạo ra điều tốt!`);
+  }
+}
+
+function renderHistory() {
+  document.getElementById('donateHistory').innerHTML = [
+    {icon:'📚',name:'Sách cho trường vùng cao',pts:50,date:'15/03/2026',match:'PHỞ ĐỆ NHẤT'},
+    {icon:'🌱',name:'Trồng cây Hà Nội',pts:30,date:'01/03/2026',match:'Hà Nội Xanh'},
+    {icon:'🍚',name:'Cơm cho bệnh nhân Bạch Mai',pts:20,date:'19/01/2026',match:'Cơm Tấm Nhân Ái'},
+  ].map(h => `
+    <div style="display:flex;align-items:center;gap:11px;padding:10px 0;border-bottom:1px solid var(--br2)">
+      <div style="font-size:22px">${h.icon}</div>
+      <div style="flex:1"><div style="font-size:12px;font-weight:700">${h.name}</div><div style="font-size:9px;color:var(--muted)">${h.date} · Match: ${h.match}</div></div>
+      <div style="font-size:12px;font-weight:800;color:var(--green)">-${h.pts}⭐</div>
+    </div>`).join('');
+}
+
+function submitProposal() {
+  const t = document.getElementById('propTitle').value.trim();
+  if (!t) { showToast('⚠️ Nhập tiêu đề đề xuất!'); return; }
+  showToast('✅ Gửi thành công! AI Tốt đang phân tích...');
+  setTimeout(() => {
+    aiAppend('ai', `💡 Mình vừa nhận đề xuất "<strong>${t}</strong>"!<br><br>🔍 Phân tích sơ bộ:<br>• Độ khả thi: <strong>Cao</strong> — cộng đồng đủ lớn để hỗ trợ<br>• Tương đồng với 3 chiến dịch đã thành công trước đây<br>• Đề xuất: Cần 50 vote trong 48h để launch<br><br>Mình sẽ đăng lên cộng đồng để lấy ý kiến. Bạn muốn điều chỉnh gì không?`);
+    showV('campaigns', document.querySelector('.nt'));
+  }, 1500);
+}
+
+// AI GOOD
+function aiQ(text) {
+  document.getElementById('aiInput').value = text;
+  aiSend();
+}
+function aiWelcome() {
+  aiAppend('ai', `Hôm nay cộng đồng đang có <strong>${CAMPAIGNS.filter(c=>c.type==='urgent').length} chiến dịch khẩn cấp</strong> cần hỗ trợ và <strong>${CAMPAIGNS.length} hoạt động</strong> đang diễn ra.<br><br>Bạn có <strong>${myPts} điểm cống hiến</strong> — đủ để tạo ra ít nhất 5 điều tốt ý nghĩa. Muốn bắt đầu từ đâu?`);
+}
+
+async function aiSend() {
+  const inp = document.getElementById('aiInput');
+  const text = inp.value.trim();
+  if (!text || isTyping) return;
+  inp.value = ''; inp.style.height = 'auto';
+  aiAppend('user', text);
+  chatH.push({role:'user',content:text});
+  showTyping(); isTyping = true;
+  document.getElementById('aiSendBtn').disabled = true;
+
+  try {
+    const apiKey = localStorage.getItem('race_api_key') || '';
+    if (!apiKey) {
+      hideTyping();
+      aiAppend('ai', `⚙️ Cần Claude API Key trong <a href="admin.html" style="color:var(--green)">Admin → Cài đặt</a>.`);
+      isTyping = false; document.getElementById('aiSendBtn').disabled = false; return;
+    }
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method:'POST',
+      headers:{'Content-Type':'application/json','x-api-key':apiKey,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
+      body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:700,system:buildSys(),messages:chatH.slice(-12)})
+    });
+    const data = await res.json();
+    const reply = data.content?.[0]?.text || 'Lỗi.';
+    chatH.push({role:'assistant',content:reply});
+    hideTyping();
+    aiAppend('ai', reply.replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>').replace(/\n/g,'<br>'));
+  } catch(e) { hideTyping(); aiAppend('ai','🔴 Lỗi kết nối.'); }
+  isTyping = false; document.getElementById('aiSendBtn').disabled = false;
+}
+
+function buildSys() {
+  return `Bạn là AI TỐT — trợ lý cộng đồng HLRace, chuyên về các hoạt động thiện nguyện, từ thiện và cộng đồng của runner.
+
+NGƯỜI DÙNG: Đang có ${myPts} điểm cống hiến. Cấp 🟠 Nòng Cốt.
+
+CHIẾN DỊCH ĐANG CÓ:
+${CAMPAIGNS.map(c=>`[${c.id}] ${c.title} | ${c.typeLabel} | ${c.joiners} người | Còn ${c.days} ngày | ${c.goal>0?((c.raised/c.goal*100).toFixed(0))+'% đạt mục tiêu':''}`).join('\n')}
+
+ĐỔI ĐIỂM:
+${EXCHANGES.map(e=>`${e.icon} ${e.name} | ${e.cost} điểm | ${e.partner}`).join('\n')}
+
+NHIỆM VỤ:
+1. Gợi ý chiến dịch phù hợp với điểm và mối quan tâm của user
+2. Phân tích đề xuất chiến dịch: độ khả thi, kế hoạch, cộng đồng có ủng hộ không
+3. Khi có tình huống khẩn cấp: ưu tiên rõ ràng, kêu gọi mạnh mẽ nhưng không ép buộc
+4. Đề xuất cách đổi điểm có tác động lớn nhất với số điểm của user
+5. Gợi ý chủ đề thảo luận hay từ data cộng đồng
+6. Luôn cho thấy TÁC ĐỘNG cụ thể: "50 điểm của bạn = 1 cuốn sách + 1 cuốn match = 2 cuốn sách"
+
+Ấm áp, chân thành như người bạn thật sự quan tâm. Tiếng Việt.`;
+}
+
+function aiAppend(role, html) {
+  const wrap = document.getElementById('aiMsgs');
+  const now = new Date().toLocaleTimeString('vi-VN',{hour:'2-digit',minute:'2-digit'});
+  const d = document.createElement('div');
+  d.className = 'msg msg-' + role;
+  d.innerHTML = role === 'ai'
+    ? `<div class="ai-av" style="width:24px;height:24px;font-size:11px;flex-shrink:0">💚</div><div><div class="bbl">${html}</div><div class="msg-time">${now}</div></div>`
+    : `<div><div class="bbl">${html}</div><div class="msg-time" style="text-align:right">${now}</div></div>`;
+  wrap.appendChild(d); wrap.scrollTop = wrap.scrollHeight;
+}
+function showTyping(){const w=document.getElementById('aiMsgs');const d=document.createElement('div');d.className='msg msg-ai';d.id='typ';d.innerHTML=`<div class="ai-av" style="width:24px;height:24px;font-size:11px;flex-shrink:0">💚</div><div class="bbl" style="padding:7px 11px"><div class="tdots">${[1,2,3].map(()=>'<div class="td"></div>').join('')}</div></div>`;w.appendChild(d);w.scrollTop=w.scrollHeight;}
+function hideTyping(){document.getElementById('typ')?.remove()}
+function openM(id){document.getElementById(id).classList.add('open')}
+function closeM(id){document.getElementById(id).classList.remove('open')}
+function showToast(msg){const t=document.createElement('div');t.textContent=msg;t.style.cssText='position:fixed;bottom:22px;left:50%;transform:translateX(-50%);background:#131D16;border:1px solid rgba(0,200,120,.25);color:#EDF5EF;padding:9px 16px;border-radius:7px;font-size:12px;font-weight:600;z-index:600;white-space:nowrap;box-shadow:0 4px 18px rgba(0,0,0,.4)';document.body.appendChild(t);setTimeout(()=>t.remove(),2700);}
+</script>
+</body>
+</html>

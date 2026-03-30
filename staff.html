@@ -1,0 +1,849 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Đăng Ký Nhân Sự — Giải Chạy 2026</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Be+Vietnam+Pro:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--red:#D72B2B;--gold:#F5A623;--green:#27AE60;--blue:#2980B9;--dark:#0D0D0D;--dark2:#161616;--dark3:#202020;--light:#F0EDE8;--muted:#666;--border:rgba(255,255,255,0.08)}
+html{scroll-behavior:smooth}
+body{background:var(--dark);color:var(--light);font-family:'Be Vietnam Pro',sans-serif;min-height:100vh}
+.hero{background:linear-gradient(160deg,#0d0d0d 0%,#1a0808 50%,#0d0d0d 100%);text-align:center;padding:44px 20px 28px;position:relative;overflow:hidden;border-bottom:1px solid var(--border)}
+.hero::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 80% 60% at 50% 0%,rgba(215,43,43,.1),transparent)}
+.hero-badge{display:inline-block;background:rgba(215,43,43,.15);border:1px solid rgba(215,43,43,.3);color:var(--red);font-size:9px;font-weight:800;letter-spacing:3px;text-transform:uppercase;padding:5px 16px;border-radius:2px;margin-bottom:12px}
+.hero-title{font-family:'Bebas Neue',sans-serif;font-size:clamp(30px,7vw,60px);line-height:.95;color:#fff;margin-bottom:6px}
+.hero-title span{color:var(--gold)}
+.hero-sub{font-size:11px;color:var(--muted);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:18px}
+.hero-chips{display:flex;justify-content:center;gap:20px;flex-wrap:wrap}
+.chip .cl{display:block;font-size:9px;color:var(--muted);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:3px}
+.chip .cv{font-size:13px;font-weight:700}.chip .cv.hi{color:var(--gold)}
+.steps-wrap{max-width:600px;margin:24px auto 0;padding:0 20px}
+.steps{display:flex;align-items:center}
+.st{width:26px;height:26px;border-radius:50%;border:2px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:800;color:var(--muted);flex-shrink:0;transition:all .3s;background:var(--dark);z-index:1}
+.st.active{border-color:var(--red);color:var(--red);background:rgba(215,43,43,.1)}
+.st.done{border-color:var(--green);background:var(--green);color:#fff}
+.st-line{flex:1;height:2px;background:var(--border);transition:background .3s}
+.st-line.done{background:var(--green)}
+.st-labels{display:flex;justify-content:space-between;margin-top:5px}
+.st-lbl{font-size:8px;color:var(--muted);letter-spacing:.5px;text-transform:uppercase;text-align:center;flex:1}
+.st-lbl:first-child{text-align:left}.st-lbl:last-child{text-align:right}
+.st-lbl.active{color:var(--red)}.st-lbl.done{color:var(--green)}
+.form-wrap{max-width:600px;margin:0 auto;padding:20px 20px 80px}
+.page{display:none}.page.active{display:block}
+.role-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px;margin-bottom:16px}
+.role-card{background:var(--dark2);border:2px solid var(--border);border-radius:10px;padding:14px 10px;cursor:pointer;transition:all .25s;text-align:center;position:relative;overflow:hidden}
+.role-card::after{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:var(--border);transition:background .25s}
+.role-card:hover:not(.full){border-color:rgba(215,43,43,.35);transform:translateY(-2px)}
+.role-card.selected{border-color:var(--red);background:rgba(215,43,43,.07)}
+.role-card.selected::after{background:linear-gradient(90deg,var(--red),var(--gold))}
+.role-card.full{opacity:.45;cursor:not-allowed}
+.rc-icon{font-size:26px;margin-bottom:7px}
+.rc-name{font-size:12px;font-weight:800;margin-bottom:3px}
+.rc-desc{font-size:9px;color:var(--muted);line-height:1.4;margin-bottom:6px}
+.rc-tags{display:flex;flex-direction:column;gap:3px;align-items:center}
+.rc-tag{padding:2px 8px;border-radius:3px;font-size:8px;font-weight:700;letter-spacing:.5px}
+.tag-free{background:rgba(39,174,96,.12);color:var(--green)}
+.tag-paid{background:rgba(215,43,43,.12);color:var(--red)}
+.tag-slot{background:rgba(255,255,255,.05);color:var(--muted)}
+.tag-allow{background:rgba(41,128,185,.1);color:#5dade2}
+.sec{background:var(--dark2);border:1px solid var(--border);border-radius:10px;padding:18px;margin-bottom:12px;position:relative;overflow:hidden}
+.sec::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--red),var(--gold))}
+.sec-title{font-family:'Bebas Neue',sans-serif;font-size:15px;letter-spacing:2px;margin-bottom:12px;display:flex;align-items:center;gap:8px}
+.sec-title::after{content:'';flex:1;height:1px;background:var(--border)}
+.role-badge{display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border-radius:3px;font-size:9px;font-weight:700;letter-spacing:1px;margin-bottom:10px}
+.field{margin-bottom:11px}
+.field label{display:block;font-size:8px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);margin-bottom:4px}
+.field input,.field select,.field textarea{width:100%;background:var(--dark3);border:1.5px solid var(--border);border-radius:6px;color:var(--light);font-family:'Be Vietnam Pro',sans-serif;font-size:13px;padding:9px 11px;outline:none;transition:border-color .2s;appearance:none}
+.field input:focus,.field select:focus,.field textarea:focus{border-color:var(--red)}
+.field textarea{resize:vertical;min-height:68px}
+.f2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.f3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
+@media(max-width:460px){.f2,.f3{grid-template-columns:1fr}}
+.req{color:var(--red)}
+.rg{display:flex;gap:6px;flex-wrap:wrap;margin-top:2px}
+.ro{display:flex;align-items:center;gap:5px;padding:6px 11px;border:1.5px solid var(--border);border-radius:6px;cursor:pointer;font-size:11px;font-weight:600;transition:all .2s;user-select:none}
+.ro:hover{border-color:rgba(215,43,43,.35)}.ro.sel{border-color:var(--red);background:rgba(215,43,43,.07)}
+.ro input{display:none}
+.cg{display:flex;gap:6px;flex-wrap:wrap;margin-top:2px}
+.co{display:flex;align-items:center;gap:5px;padding:6px 11px;border:1.5px solid var(--border);border-radius:6px;cursor:pointer;font-size:11px;font-weight:600;transition:all .2s;user-select:none}
+.co:hover{border-color:rgba(245,166,35,.35)}.co.sel{border-color:var(--gold);background:rgba(245,166,35,.07)}
+.co input{display:none}
+.shift-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px}
+.shift-card{background:var(--dark2);border:1.5px solid var(--border);border-radius:8px;padding:11px;cursor:pointer;transition:all .2s;text-align:center}
+.shift-card:hover{border-color:rgba(215,43,43,.35)}.shift-card.sel{border-color:var(--gold);background:rgba(245,166,35,.05)}
+.sh-time{font-size:12px;font-weight:800;color:var(--gold)}.sh-desc{font-size:9px;color:var(--muted);margin-top:2px}
+.zone-wrap{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:10px}
+.zone-btn{padding:6px 13px;border-radius:20px;border:1.5px solid var(--border);background:none;color:var(--muted);font-family:'Be Vietnam Pro',sans-serif;font-size:11px;font-weight:700;cursor:pointer;transition:all .2s}
+.zone-btn:hover{border-color:var(--muted);color:var(--light)}.zone-btn.sel{border-color:var(--blue);background:rgba(41,128,185,.1);color:#5dade2}
+.lang-row{display:flex;gap:8px;align-items:center;margin-bottom:7px}
+.lang-row .li{flex:1}.lang-row .li input{padding:8px 10px}
+.ll-wrap{display:flex;gap:3px}
+.ll{padding:3px 7px;border-radius:3px;border:1px solid var(--border);font-size:9px;font-weight:700;cursor:pointer;color:var(--muted);background:none;transition:all .15s}
+.ll.sel{background:var(--blue);color:#fff;border-color:var(--blue)}
+.ev-item{background:var(--dark3);border:1px solid var(--border);border-radius:8px;padding:12px;margin-bottom:8px;position:relative}
+.ev-num{position:absolute;top:-8px;left:10px;background:var(--red);color:#fff;font-size:8px;font-weight:800;padding:2px 7px;border-radius:3px;letter-spacing:1px}
+.photo-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:8px}
+.photo-box{border:2px dashed rgba(255,255,255,.08);border-radius:8px;padding:14px;text-align:center;cursor:pointer;transition:all .2s}
+.photo-box:hover{border-color:rgba(215,43,43,.3)}
+.photo-box img{max-width:100%;max-height:90px;border-radius:5px;display:none;margin:0 auto 6px}
+.pb-icon{font-size:22px;margin-bottom:4px}.pb-label{font-size:9px;color:var(--muted);letter-spacing:1px;text-transform:uppercase}
+.ck-box{background:rgba(245,166,35,.04);border:1.5px solid rgba(245,166,35,.18);border-radius:10px;padding:16px;margin-bottom:12px}
+.ck-amt{font-size:22px;font-weight:900;color:var(--gold);margin-bottom:4px}
+.ck-txt{font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:2px;color:var(--gold);word-break:break-all;margin:8px 0}
+.copy-btn{display:inline-flex;align-items:center;gap:5px;padding:6px 14px;background:rgba(245,166,35,.1);border:1.5px solid rgba(245,166,35,.25);border-radius:5px;color:var(--gold);font-family:'Be Vietnam Pro',sans-serif;font-size:9px;font-weight:800;letter-spacing:1px;cursor:pointer;transition:all .2s}
+.up-area{border:2px dashed rgba(245,166,35,.2);border-radius:8px;padding:16px;text-align:center;cursor:pointer;transition:all .2s}
+.up-area:hover{border-color:rgba(245,166,35,.4)}
+.sum-row{display:flex;justify-content:space-between;align-items:flex-start;padding:7px 0;border-bottom:1px solid var(--border);gap:12px}
+.sum-row:last-child{border:none}
+.sum-l{font-size:9px;color:var(--muted);letter-spacing:1px;text-transform:uppercase;flex-shrink:0;padding-top:2px}
+.sum-v{font-size:12px;font-weight:700;text-align:right;word-break:break-word}
+.btn{padding:12px 22px;border-radius:6px;font-family:'Be Vietnam Pro',sans-serif;font-size:10px;font-weight:800;letter-spacing:2px;text-transform:uppercase;cursor:pointer;border:none;transition:all .2s;display:inline-flex;align-items:center;gap:6px}
+.btn-primary{background:var(--red);color:#fff}.btn-primary:hover{opacity:.85}
+.btn-ghost{background:transparent;border:1.5px solid var(--border);color:var(--muted)}.btn-ghost:hover{border-color:var(--muted);color:var(--light)}
+.btn-full{width:100%;justify-content:center}
+.nav-row{display:flex;gap:10px;margin-top:12px}
+.spin{display:inline-block;width:13px;height:13px;border:2px solid rgba(255,255,255,.2);border-top-color:#fff;border-radius:50%;animation:sp .7s linear infinite}
+@keyframes sp{to{transform:rotate(360deg)}}
+.em{background:rgba(215,43,43,.08);border:1px solid rgba(215,43,43,.2);border-radius:6px;padding:9px 12px;font-size:11px;color:#e57373;margin-bottom:10px;display:none}
+.notice{background:rgba(245,166,35,.04);border:1px solid rgba(245,166,35,.12);border-radius:6px;padding:11px 13px;font-size:11px;color:var(--muted);line-height:1.7;margin-bottom:10px}
+.notice strong{color:var(--gold)}
+.loading-r{text-align:center;padding:36px;color:var(--muted);font-size:12px}
+/* SUCCESS */
+.done-wrap{text-align:center;padding:28px 16px}
+.done-icon{font-size:52px;margin-bottom:12px;animation:pop .5s ease}
+@keyframes pop{0%{transform:scale(.5);opacity:0}80%{transform:scale(1.1)}100%{transform:scale(1);opacity:1}}
+.done-title{font-family:'Bebas Neue',sans-serif;font-size:30px;letter-spacing:2px;margin-bottom:6px}
+.done-sub{font-size:12px;color:var(--muted);line-height:1.7;margin-bottom:16px}
+/* POINTS */
+.pts-card{background:linear-gradient(135deg,rgba(245,166,35,.08),rgba(215,43,43,.05));border:1px solid rgba(245,166,35,.2);border-radius:12px;padding:20px;margin-bottom:14px}
+.pts-num{font-family:'Bebas Neue',sans-serif;font-size:52px;color:var(--gold);line-height:1}
+.pts-sub{font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-top:2px}
+.rank-pill{display:inline-flex;align-items:center;gap:5px;padding:4px 14px;border-radius:20px;font-size:11px;font-weight:800;margin-top:10px}
+.rank-green{background:rgba(39,174,96,.12);color:var(--green);border:1px solid rgba(39,174,96,.2)}
+.pts-hint{font-size:10px;color:var(--muted);margin-top:8px;line-height:1.6}
+</style>
+</head>
+<body>
+
+<div class="hero">
+  <div class="hero-badge" id="heroBadge">👥 Đăng ký nhân sự · 2026</div>
+  <h1 class="hero-title">Nhân Sự <span id="heroSpan">Giải Chạy</span></h1>
+  <p class="hero-sub" id="heroSub">Cùng chúng tôi tạo nên sự kiện đáng nhớ</p>
+  <div class="hero-chips">
+    <div class="chip"><span class="cl">Ngày</span><span class="cv hi" id="heroDate">21.03.2026</span></div>
+    <div class="chip"><span class="cl">Địa điểm</span><span class="cv" id="heroLoc">Hồ Hoàn Kiếm</span></div>
+  </div>
+</div>
+
+<div class="steps-wrap">
+  <div class="steps">
+    <div class="st active" id="st1">1</div><div class="st-line" id="sl1"></div>
+    <div class="st" id="st2">2</div><div class="st-line" id="sl2"></div>
+    <div class="st" id="st3">3</div><div class="st-line" id="sl3"></div>
+    <div class="st" id="st4">4</div><div class="st-line" id="sl4"></div>
+    <div class="st" id="st5">5</div>
+  </div>
+  <div class="st-labels">
+    <div class="st-lbl active" id="sla1">Vai trò</div>
+    <div class="st-lbl" id="sla2">Cá nhân</div>
+    <div class="st-lbl" id="sla3">Chuyên môn</div>
+    <div class="st-lbl" id="sla4">Cam kết</div>
+    <div class="st-lbl" id="sla5">Xong</div>
+  </div>
+</div>
+
+<div class="form-wrap">
+
+<!-- BƯỚC 1: VAI TRÒ -->
+<div class="page active" id="pg1">
+  <div class="sec">
+    <div class="sec-title">👥 Chọn vai trò</div>
+    <div id="rLoad" class="loading-r"><span class="spin" style="border-top-color:var(--muted)"></span> Đang tải...</div>
+    <div id="rGrid" class="role-grid" style="display:none"></div>
+    <div id="rEmpty" style="display:none;text-align:center;padding:24px;color:var(--muted);font-size:12px">⚠️ Chưa có vai trò. Liên hệ BTC.</div>
+  </div>
+  <div class="sec" id="shiftSec" style="display:none">
+    <div class="sec-title">🕐 Ca làm việc</div>
+    <div id="shiftGrid" class="shift-grid"></div>
+  </div>
+  <div class="sec" id="zoneSec" style="display:none">
+    <div class="sec-title">📍 Khu vực mong muốn</div>
+    <div id="zoneWrap" class="zone-wrap"></div>
+  </div>
+  <div class="em" id="e1"></div>
+  <div class="nav-row"><button class="btn btn-primary btn-full" onclick="goP(2)">Tiếp theo →</button></div>
+</div>
+
+<!-- BƯỚC 2: THÔNG TIN CÁ NHÂN -->
+<div class="page" id="pg2">
+  <div class="sec">
+    <div class="sec-title">👤 Thông tin cá nhân</div>
+    <div class="f2">
+      <div class="field"><label>Họ và tên <span class="req">*</span></label><input type="text" id="fn" placeholder="Nguyễn Văn A"></div>
+      <div class="field"><label>Biệt danh / Nickname</label><input type="text" id="nickname" placeholder="Tên hay gọi"></div>
+    </div>
+    <div class="f2">
+      <div class="field"><label>Giới tính</label>
+        <div class="rg" id="gG">
+          <label class="ro" onclick="selR(this,'gG')"><input type="radio" name="gender" value="Nam">♂ Nam</label>
+          <label class="ro" onclick="selR(this,'gG')"><input type="radio" name="gender" value="Nữ">♀ Nữ</label>
+        </div>
+      </div>
+      <div class="field"><label>Tình trạng hôn nhân</label>
+        <div class="rg" id="marG">
+          <label class="ro" onclick="selR(this,'marG')"><input type="radio" name="marital" value="Độc thân">Độc thân</label>
+          <label class="ro" onclick="selR(this,'marG')"><input type="radio" name="marital" value="Đã kết hôn">Đã kết hôn</label>
+        </div>
+      </div>
+    </div>
+    <div class="f2">
+      <div class="field"><label>Ngày sinh <span class="req">*</span></label><input type="date" id="dob"></div>
+      <div class="field"><label>CCCD / CMND <span class="req">*</span></label><input type="text" id="idCard" placeholder="012345678901"></div>
+    </div>
+    <div class="f2">
+      <div class="field"><label>Số điện thoại <span class="req">*</span></label><input type="tel" id="phone" placeholder="0912345678"></div>
+      <div class="field"><label>Email</label><input type="email" id="email" placeholder="email@example.com"></div>
+    </div>
+    <div class="field"><label>Địa chỉ thường trú</label><input type="text" id="address" placeholder="Số nhà, phường/xã, quận/huyện, tỉnh/TP"></div>
+    <div class="f2">
+      <div class="field"><label>Thành phố</label><input type="text" id="city" placeholder="Hà Nội"></div>
+      <div class="field"><label>Size áo</label>
+        <select id="shirtSize"><option value="">-- Chọn --</option>
+          <option>XS</option><option>S</option><option>M</option><option>L</option><option>XL</option><option>2XL</option><option>3XL</option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <div class="sec">
+    <div class="sec-title">🏢 Nghề nghiệp / Đơn vị</div>
+    <div class="f2">
+      <div class="field"><label>Nghề nghiệp / Chức vụ</label><input type="text" id="job" placeholder="Sinh viên, Kỹ sư, Giáo viên..."></div>
+      <div class="field"><label>Đơn vị / Trường học</label><input type="text" id="workplace" placeholder="Tên công ty / trường"></div>
+    </div>
+  </div>
+
+  <div class="sec">
+    <div class="sec-title">🚗 Phương tiện di chuyển</div>
+    <div class="cg" id="transG">
+      <label class="co" onclick="selC(this)"><input type="checkbox" value="Xe máy">🛵 Xe máy</label>
+      <label class="co" onclick="selC(this)"><input type="checkbox" value="Ô tô">🚗 Ô tô</label>
+      <label class="co" onclick="selC(this)"><input type="checkbox" value="Xe đạp">🚲 Xe đạp</label>
+      <label class="co" onclick="selC(this)"><input type="checkbox" value="Xe buýt">🚌 Xe buýt</label>
+      <label class="co" onclick="selC(this)"><input type="checkbox" value="Đi bộ">🚶 Đi bộ</label>
+    </div>
+  </div>
+
+  <div class="sec">
+    <div class="sec-title">📸 Ảnh cá nhân</div>
+    <div class="photo-grid">
+      <div class="photo-box" onclick="document.getElementById('pa').click()">
+        <div class="pb-icon">🤳</div><img id="prevA" alt=""><div class="pb-label">Ảnh chân dung</div>
+        <input type="file" id="pa" accept="image/*" style="display:none" onchange="handlePhoto(this,'prevA','avatar')">
+      </div>
+      <div class="photo-box" onclick="document.getElementById('pc').click()">
+        <div class="pb-icon">🪪</div><img id="prevC" alt=""><div class="pb-label">Ảnh CCCD/CMND</div>
+        <input type="file" id="pc" accept="image/*" style="display:none" onchange="handlePhoto(this,'prevC','cccd')">
+      </div>
+    </div>
+  </div>
+
+  <div class="sec">
+    <div class="sec-title">🆘 Người thân khẩn cấp</div>
+    <div class="f2">
+      <div class="field"><label>Họ tên <span class="req">*</span></label><input type="text" id="emgN" placeholder="Người thân gần nhất"></div>
+      <div class="field"><label>Quan hệ</label>
+        <select id="emgRel"><option value="">-- Chọn --</option>
+          <option>Bố/Mẹ</option><option>Vợ/Chồng</option><option>Anh/Chị/Em</option><option>Bạn bè</option>
+        </select>
+      </div>
+    </div>
+    <div class="field"><label>Số điện thoại <span class="req">*</span></label><input type="tel" id="emgP" placeholder="0912345678"></div>
+  </div>
+
+  <div class="em" id="e2"></div>
+  <div class="nav-row">
+    <button class="btn btn-ghost" onclick="goP(1)">← Quay lại</button>
+    <button class="btn btn-primary" style="flex:1;justify-content:center" onclick="goP(3)">Tiếp theo →</button>
+  </div>
+</div>
+
+<!-- BƯỚC 3: CHUYÊN MÔN (ĐỘNG THEO VAI TRÒ) -->
+<div class="page" id="pg3">
+  <!-- 3A: Chung cho tất cả -->
+  <div class="sec">
+    <div class="sec-title">🌍 Ngoại ngữ</div>
+    <div id="langRows">
+      <div class="lang-row">
+        <div class="li"><input type="text" placeholder="VD: Tiếng Anh" class="ln"></div>
+        <div class="ll-wrap">
+          <div class="ll" onclick="selLL(this)">A</div><div class="ll" onclick="selLL(this)">B</div>
+          <div class="ll" onclick="selLL(this)">C</div><div class="ll" onclick="selLL(this)">Bản ngữ</div>
+        </div>
+      </div>
+    </div>
+    <button onclick="addLang()" style="margin-top:7px;width:100%;background:none;border:1px dashed rgba(255,255,255,.1);border-radius:5px;color:var(--muted);font-size:10px;padding:5px;cursor:pointer">+ Thêm ngoại ngữ</button>
+  </div>
+
+  <div class="sec">
+    <div class="sec-title">⚽ Thể thao / Năng khiếu</div>
+    <input type="text" id="sports" placeholder="VD: Chạy bộ, bơi lội, bóng đá, nhiếp ảnh, âm nhạc..."
+      style="width:100%;background:var(--dark3);border:1.5px solid var(--border);border-radius:6px;color:var(--light);font-family:'Be Vietnam Pro',sans-serif;font-size:13px;padding:9px 11px;outline:none">
+  </div>
+
+  <div class="sec">
+    <div class="sec-title">📋 3 Sự kiện lớn nhất đã tham gia</div>
+    <div class="notice"><strong>💡 Gợi ý:</strong> Ghi tên sự kiện, năm, vai trò bạn đảm nhận. AI sẽ dùng để phân công phù hợp.</div>
+    <div id="evList">
+      <div class="ev-item"><div class="ev-num">SỰ KIỆN 1</div>
+        <div class="f2" style="margin-top:10px">
+          <div class="field"><label>Tên sự kiện</label><input type="text" class="en" placeholder="VD: VnExpress Marathon 2024"></div>
+          <div class="field"><label>Năm</label><input type="text" class="ey" placeholder="2024"></div>
+        </div>
+        <div class="f2">
+          <div class="field"><label>Vai trò của bạn</label><input type="text" class="er" placeholder="Lead TNV, Pacer, Y tế..."></div>
+          <div class="field"><label>Quy mô</label><input type="text" class="es" placeholder="5000 người"></div>
+        </div>
+      </div>
+      <div class="ev-item"><div class="ev-num">SỰ KIỆN 2</div>
+        <div class="f2" style="margin-top:10px">
+          <div class="field"><label>Tên sự kiện</label><input type="text" class="en" placeholder="Để trống nếu chưa có"></div>
+          <div class="field"><label>Năm</label><input type="text" class="ey"></div>
+        </div>
+        <div class="f2">
+          <div class="field"><label>Vai trò</label><input type="text" class="er"></div>
+          <div class="field"><label>Quy mô</label><input type="text" class="es"></div>
+        </div>
+      </div>
+      <div class="ev-item"><div class="ev-num">SỰ KIỆN 3</div>
+        <div class="f2" style="margin-top:10px">
+          <div class="field"><label>Tên sự kiện</label><input type="text" class="en" placeholder="Để trống nếu chưa có"></div>
+          <div class="field"><label>Năm</label><input type="text" class="ey"></div>
+        </div>
+        <div class="f2">
+          <div class="field"><label>Vai trò</label><input type="text" class="er"></div>
+          <div class="field"><label>Quy mô</label><input type="text" class="es"></div>
+        </div>
+      </div>
+    </div>
+    <div class="f2" style="margin-top:10px">
+      <div class="field"><label>Kỹ năng nổi bật nhất</label><input type="text" id="topSkill" placeholder="Giao tiếp, tổ chức, y tế..."></div>
+      <div class="field"><label>Có thể làm Lead / Trưởng nhóm?</label>
+        <div class="rg" id="leadG">
+          <label class="ro" onclick="selR(this,'leadG')"><input type="radio" name="canLead" value="Có, đã có kinh nghiệm">✅ Có, kinh nghiệm</label>
+          <label class="ro" onclick="selR(this,'leadG')"><input type="radio" name="canLead" value="Có, muốn thử">🌱 Muốn thử</label>
+          <label class="ro" onclick="selR(this,'leadG')"><input type="radio" name="canLead" value="Chưa">Chưa</label>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 3B: ĐỘNG THEO VAI TRÒ -->
+  <div id="roleSpec"></div>
+
+  <div class="em" id="e3"></div>
+  <div class="nav-row">
+    <button class="btn btn-ghost" onclick="goP(2)">← Quay lại</button>
+    <button class="btn btn-primary" style="flex:1;justify-content:center" onclick="goP(4)">Tiếp theo →</button>
+  </div>
+</div>
+
+<!-- BƯỚC 4: CAM KẾT + THANH TOÁN -->
+<div class="page" id="pg4">
+  <div class="sec">
+    <div class="sec-title">📋 Xác nhận thông tin</div>
+    <div id="sumContent"></div>
+  </div>
+  <div class="sec">
+    <div class="sec-title">💬 Mong muốn & Cam kết</div>
+    <div class="field"><label>Bạn muốn đóng góp gì tại sự kiện này?</label>
+      <textarea id="wishContrib" placeholder="Chia sẻ mong muốn, điều bạn muốn học hỏi hay đóng góp..."></textarea>
+    </div>
+    <div class="f2">
+      <div class="field"><label>Có thể đến trước bao lâu?</label>
+        <select id="arriveEarly"><option value="">-- Chọn --</option>
+          <option>30 phút</option><option>1 tiếng</option><option>2 tiếng</option><option>Hơn 2 tiếng</option>
+        </select>
+      </div>
+      <div class="field"><label>Vị trí mong muốn trong team</label>
+        <select id="teamPos"><option value="">-- Chọn --</option>
+          <option>Thành viên bình thường</option><option>Phó nhóm</option>
+          <option>Trưởng nhóm</option><option>Tuỳ BTC phân công</option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <div id="paymentSec" style="display:none">
+    <div class="sec">
+      <div class="sec-title">💳 Thanh toán</div>
+      <div class="ck-box">
+        <div style="font-size:10px;color:var(--muted);margin-bottom:3px">Số tiền:</div>
+        <div class="ck-amt" id="feeAmt">—</div>
+        <div id="ckBank" style="font-size:11px;color:var(--muted);margin-bottom:6px">🏦 Vietcombank</div>
+        <div style="font-size:10px;color:var(--muted);">Nội dung CK:</div>
+        <div class="ck-txt" id="ckTxt">GIAICHAY NS-HOVANA-5678</div>
+        <button class="copy-btn" onclick="copyCK()">📋 Sao chép</button>
+      </div>
+      <div class="field"><label>Ảnh chuyển khoản <span class="req">*</span></label>
+        <div class="up-area" onclick="document.getElementById('imgCK').click()">
+          <img id="prevCK" style="max-width:100%;max-height:130px;border-radius:5px;display:none;margin:0 auto 8px">
+          <div id="upTxt" style="font-size:12px;color:var(--muted)">📸 <strong style="color:var(--gold)">Chọn ảnh</strong> chụp màn hình CK</div>
+        </div>
+        <input type="file" id="imgCK" accept="image/*" style="display:none" onchange="handlePayImg(this)">
+      </div>
+    </div>
+  </div>
+
+  <div id="freeSec" style="display:none">
+    <div class="notice" style="background:rgba(39,174,96,.04);border-color:rgba(39,174,96,.15)">
+      <strong style="color:var(--green)">✅ Vai trò này miễn phí!</strong> Không cần chuyển khoản.
+    </div>
+  </div>
+
+  <label style="display:flex;align-items:flex-start;gap:8px;cursor:pointer;font-size:11px;color:var(--muted);line-height:1.6;margin-bottom:12px">
+    <input type="checkbox" id="agree" style="margin-top:3px;accent-color:var(--red);flex-shrink:0">
+    Tôi cam kết tham gia đầy đủ, đúng giờ, thực hiện đúng vai trò và tuân thủ nội quy. Tôi đồng ý để thông tin được dùng cho mục đích tổ chức.
+  </label>
+
+  <div class="em" id="e4"></div>
+  <div class="nav-row">
+    <button class="btn btn-ghost" onclick="goP(3)">← Quay lại</button>
+    <button class="btn btn-primary" id="subBtn" style="flex:1;justify-content:center" onclick="doSubmit()">✓ Gửi đăng ký</button>
+  </div>
+</div>
+
+<!-- BƯỚC 5: SUCCESS -->
+<div class="page" id="pg5">
+  <div class="done-wrap">
+    <div class="done-icon">🎉</div>
+    <h2 class="done-title">Đăng ký thành công!</h2>
+    <p class="done-sub">BTC sẽ xem xét và liên hệ xác nhận trong 48h.<br>Cảm ơn bạn đã đồng hành!</p>
+
+    <div class="pts-card">
+      <div style="font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:2px">Điểm Cống Hiến khởi đầu</div>
+      <div class="pts-num">+10</div>
+      <div class="pts-sub">ĐIỂM ĐKÝ HOÀN TẤT</div>
+      <div class="rank-pill rank-green">🌱 XANH LÁ — TNV Mới</div>
+      <div class="pts-hint">
+        Hoàn thành sự kiện <strong style="color:var(--gold)">+10đ</strong> ·
+        Đến sớm >30 phút <strong style="color:var(--gold)">+5đ</strong> ·
+        Lead team <strong style="color:var(--gold)">+20đ</strong> ·
+        Được đánh giá 5⭐ <strong style="color:var(--gold)">+10đ</strong>
+      </div>
+    </div>
+
+    <div class="sec" id="doneCard" style="text-align:left;max-width:440px;margin:0 auto 14px"></div>
+    <div style="font-size:11px;color:var(--muted);margin-bottom:14px">
+      Hỗ trợ: <a id="doneEmail" href="#" style="color:var(--gold)">lehoang81@gmail.com</a> · <span id="donePhone">0904 028 281</span>
+    </div>
+    <div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap">
+      <a href="leaderboard.html" class="btn btn-ghost" style="text-decoration:none;font-size:9px">🏆 Bảng xếp hạng</a>
+      <a href="index.html" class="btn btn-ghost" style="text-decoration:none;font-size:9px">← Trang chính</a>
+    </div>
+    <div id="spBanner" style="display:none;margin-top:14px;max-width:440px;margin-left:auto;margin-right:auto"></div>
+  </div>
+</div>
+
+</div>
+
+<script src="race-config.js"></script>
+<script>
+// ═══ STATE ═══════════════════════════════════════════════
+let SR=null,SS=null,SZ=null,payImg=null,avatarB64=null,cccdB64=null,curP=1,allRoles=[];
+
+// ═══ ROLE SPECIFIC TEMPLATES ═════════════════════════════
+const TPL={
+  pacer:`<div class="sec"><div class="sec-title">🏃 Thông tin Pacer</div>
+    <div class="role-badge" style="background:rgba(215,43,43,.1);color:var(--red);border:1px solid rgba(215,43,43,.2)">🏃 PACER</div>
+    <div class="f2"><div class="field"><label>Pace mục tiêu (phút/km)</label><input type="text" id="r_pace" placeholder="VD: 5:30, 6:00"></div>
+    <div class="field"><label>Cự ly có thể pace</label><div class="cg" id="pcdG">
+      <label class="co" onclick="selC(this)"><input type="checkbox" value="3km">3km</label>
+      <label class="co" onclick="selC(this)"><input type="checkbox" value="5km">5km</label>
+      <label class="co" onclick="selC(this)"><input type="checkbox" value="10km">10km</label>
+      <label class="co" onclick="selC(this)"><input type="checkbox" value="HM">HM</label>
+    </div></div></div>
+    <div class="f3"><div class="field"><label>PB 5km</label><input type="text" id="r_pb5" placeholder="00:00"></div>
+    <div class="field"><label>PB 10km</label><input type="text" id="r_pb10" placeholder="00:00"></div>
+    <div class="field"><label>PB Half</label><input type="text" id="r_pbhm" placeholder="0:00:00"></div></div>
+    <div class="field"><label>Kinh nghiệm làm Pacer</label><textarea id="r_pacerexp" placeholder="Đã làm Pacer ở sự kiện nào? Pace bao nhiêu?"></textarea></div>
+  </div>`,
+
+  tnv:`<div class="sec"><div class="sec-title">💚 Thông tin TNV</div>
+    <div class="role-badge" style="background:rgba(39,174,96,.1);color:var(--green);border:1px solid rgba(39,174,96,.2)">💚 TÌNH NGUYỆN VIÊN</div>
+    <div class="field"><label>Kỹ năng phù hợp công việc TNV</label><div class="cg" id="tskG">
+      <label class="co" onclick="selC(this)"><input type="checkbox" value="Giao tiếp">🗣 Giao tiếp</label>
+      <label class="co" onclick="selC(this)"><input type="checkbox" value="Tổ chức">📋 Tổ chức</label>
+      <label class="co" onclick="selC(this)"><input type="checkbox" value="Hướng dẫn">🧭 Hướng dẫn</label>
+      <label class="co" onclick="selC(this)"><input type="checkbox" value="Thiết kế">🎨 Thiết kế</label>
+      <label class="co" onclick="selC(this)"><input type="checkbox" value="IT">💻 IT</label>
+      <label class="co" onclick="selC(this)"><input type="checkbox" value="Lái xe">🚗 Lái xe</label>
+    </div></div>
+    <div class="f2">
+      <div class="field"><label>Vị trí mong muốn trong team TNV</label><div class="rg" id="tpG">
+        <label class="ro" onclick="selR(this,'tpG')"><input type="radio" name="tnvpos" value="Thành viên">Thành viên</label>
+        <label class="ro" onclick="selR(this,'tpG')"><input type="radio" name="tnvpos" value="Phó nhóm">Phó nhóm</label>
+        <label class="ro" onclick="selR(this,'tpG')"><input type="radio" name="tnvpos" value="Trưởng nhóm">Trưởng nhóm</label>
+      </div></div>
+      <div class="field"><label>Số TNV đã lead tối đa</label><input type="number" id="r_maxlead" placeholder="VD: 10" min="0"></div>
+    </div>
+  </div>`,
+
+  nag:`<div class="sec"><div class="sec-title">📸 Thiết bị & Kinh nghiệm Media</div>
+    <div class="role-badge" style="background:rgba(142,68,173,.1);color:#c39bd3;border:1px solid rgba(142,68,173,.2)">📸 NAG / MEDIA</div>
+    <div class="field"><label>Chuyên môn</label><div class="cg" id="msG">
+      <label class="co" onclick="selC(this)"><input type="checkbox" value="Nhiếp ảnh">📷 Ảnh</label>
+      <label class="co" onclick="selC(this)"><input type="checkbox" value="Quay phim">🎬 Quay phim</label>
+      <label class="co" onclick="selC(this)"><input type="checkbox" value="Livestream">📡 Livestream</label>
+      <label class="co" onclick="selC(this)"><input type="checkbox" value="Edit ảnh">🖼 Edit ảnh</label>
+      <label class="co" onclick="selC(this)"><input type="checkbox" value="Edit video">✂️ Edit video</label>
+      <label class="co" onclick="selC(this)"><input type="checkbox" value="Drone">🚁 Drone</label>
+    </div></div>
+    <div class="field"><label>Thiết bị sẽ mang theo</label><textarea id="r_equip" placeholder="VD: Canon R5, Sony A7IV, DJI Mini 4, Gimbal..."></textarea></div>
+    <div class="f2">
+      <div class="field"><label>Số năm kinh nghiệm</label><select id="r_mexp">
+        <option value="">-- Chọn --</option><option>Dưới 1 năm</option><option>1–2 năm</option><option>3–5 năm</option><option>5+ năm</option>
+      </select></div>
+      <div class="field"><label>Link portfolio / fanpage</label><input type="text" id="r_port" placeholder="facebook.com/... hoặc instagram..."></div>
+    </div>
+  </div>`,
+
+  medical:`<div class="sec"><div class="sec-title">🏥 Chuyên môn Y tế</div>
+    <div class="role-badge" style="background:rgba(231,76,60,.1);color:#e74c3c;border:1px solid rgba(231,76,60,.2)">🏥 Y TẾ / CỨU THƯƠNG</div>
+    <div class="field"><label>Chuyên môn <span class="req">*</span></label><div class="cg" id="mdG">
+      <label class="co" onclick="selC(this)"><input type="checkbox" value="Bác sĩ">👨‍⚕️ Bác sĩ</label>
+      <label class="co" onclick="selC(this)"><input type="checkbox" value="Y tá/Điều dưỡng">💊 Y tá/ĐD</label>
+      <label class="co" onclick="selC(this)"><input type="checkbox" value="Cấp cứu">🚑 Cấp cứu</label>
+      <label class="co" onclick="selC(this)"><input type="checkbox" value="Y học thể thao">🏃 Y học TT</label>
+      <label class="co" onclick="selC(this)"><input type="checkbox" value="Sinh viên Y">🎓 SV Y</label>
+    </div></div>
+    <div class="f2">
+      <div class="field"><label>Bằng cấp / Chứng chỉ</label><input type="text" id="r_mcert" placeholder="BSCK1, RN, ACLS, PHTLS..."></div>
+      <div class="field"><label>Đơn vị công tác</label><input type="text" id="r_munit" placeholder="Bệnh viện / trường..."></div>
+    </div>
+    <div class="field"><label>Kinh nghiệm y tế tại sự kiện thể thao</label><textarea id="r_mexp" placeholder="Mô tả kinh nghiệm xử lý tình huống y tế..."></textarea></div>
+  </div>`,
+
+  security:`<div class="sec"><div class="sec-title">🛡️ Thông tin An ninh</div>
+    <div class="role-badge" style="background:rgba(41,128,185,.1);color:#5dade2;border:1px solid rgba(41,128,185,.2)">🛡️ AN NINH</div>
+    <div class="f2"><div class="field"><label>Chiều cao (cm)</label><input type="number" id="r_h" placeholder="170"></div>
+    <div class="field"><label>Cân nặng (kg)</label><input type="number" id="r_w" placeholder="65"></div></div>
+    <div class="field"><label>Đã qua huấn luyện</label><div class="cg" id="stG">
+      <label class="co" onclick="selC(this)"><input type="checkbox" value="Nghĩa vụ quân sự">⭐ Quân sự</label>
+      <label class="co" onclick="selC(this)"><input type="checkbox" value="Bảo vệ chuyên nghiệp">🔒 Bảo vệ</label>
+      <label class="co" onclick="selC(this)"><input type="checkbox" value="Võ thuật">🥋 Võ thuật</label>
+      <label class="co" onclick="selC(this)"><input type="checkbox" value="Cảnh sát">👮 Cảnh sát</label>
+    </div></div>
+    <div class="field"><label>Tự đánh giá thể lực</label><div class="rg" id="sfG">
+      <label class="ro" onclick="selR(this,'sfG')"><input type="radio" name="secfit" value="Tốt">💪 Tốt</label>
+      <label class="ro" onclick="selR(this,'sfG')"><input type="radio" name="secfit" value="Khá">👍 Khá</label>
+      <label class="ro" onclick="selR(this,'sfG')"><input type="radio" name="secfit" value="Trung bình">🙂 TB</label>
+    </div></div>
+    <div class="field"><label>Kinh nghiệm an ninh sự kiện</label><textarea id="r_sexp" placeholder="Mô tả kinh nghiệm..."></textarea></div>
+  </div>`,
+
+  btc:`<div class="sec"><div class="sec-title">👑 Thông tin BTC / Lead</div>
+    <div class="role-badge" style="background:rgba(245,166,35,.1);color:var(--gold);border:1px solid rgba(245,166,35,.2)">👑 BTC / LEAD</div>
+    <div class="field"><label>Chuyên môn điều phối</label><div class="cg" id="bcG">
+      <label class="co" onclick="selC(this)"><input type="checkbox" value="Logistics">📦 Logistics</label>
+      <label class="co" onclick="selC(this)"><input type="checkbox" value="Truyền thông">📢 Truyền thông</label>
+      <label class="co" onclick="selC(this)"><input type="checkbox" value="Tài chính">💰 Tài chính</label>
+      <label class="co" onclick="selC(this)"><input type="checkbox" value="Nhân sự">👥 Nhân sự</label>
+      <label class="co" onclick="selC(this)"><input type="checkbox" value="Kỹ thuật">🔧 Kỹ thuật</label>
+    </div></div>
+    <div class="f2">
+      <div class="field"><label>Số người đã lead tối đa</label><input type="number" id="r_mt" placeholder="VD: 30"></div>
+      <div class="field"><label>Công cụ quen dùng</label><input type="text" id="r_tools" placeholder="Excel, Trello, Notion, Zalo..."></div>
+    </div>
+    <div class="field"><label>Kinh nghiệm tổ chức sự kiện</label><textarea id="r_bexp" placeholder="Mô tả kinh nghiệm điều phối, quản lý..."></textarea></div>
+  </div>`,
+
+  cheer:`<div class="sec"><div class="sec-title">📣 Thông tin Cổ vũ</div>
+    <div class="role-badge" style="background:rgba(231,76,60,.08);color:#f1948a;border:1px solid rgba(231,76,60,.15)">📣 CỔ VŨ / CHEERING</div>
+    <div class="field"><label>Hình thức cổ vũ</label><div class="cg" id="chtG">
+      <label class="co" onclick="selC(this)"><input type="checkbox" value="Hò reo">📢 Hò reo</label>
+      <label class="co" onclick="selC(this)"><input type="checkbox" value="Nhạc cụ">🎸 Nhạc cụ</label>
+      <label class="co" onclick="selC(this)"><input type="checkbox" value="Nhảy múa">💃 Nhảy múa</label>
+      <label class="co" onclick="selC(this)"><input type="checkbox" value="Cosplay">🎭 Cosplay</label>
+      <label class="co" onclick="selC(this)"><input type="checkbox" value="Pom pom">🎀 Pom pom</label>
+    </div></div>
+    <div class="f2">
+      <div class="field"><label>Nhóm / CLB</label><input type="text" id="r_cclub" placeholder="VD: CLB Yoga XYZ"></div>
+      <div class="field"><label>Tự chuẩn bị trang phục?</label><div class="rg" id="coG">
+        <label class="ro" onclick="selR(this,'coG')"><input type="radio" name="chout" value="Có">Có</label>
+        <label class="ro" onclick="selR(this,'coG')"><input type="radio" name="chout" value="Cần hỗ trợ">Cần hỗ trợ</label>
+      </div></div>
+    </div>
+  </div>`,
+};
+
+// ═══ INIT ════════════════════════════════════════════════
+document.addEventListener('DOMContentLoaded', async () => {
+  const c = await loadRaceConfig();
+  // Apply hero
+  const root = document.documentElement;
+  if(c.colorPrimary) root.style.setProperty('--red',c.colorPrimary);
+  if(c.colorAccent)  root.style.setProperty('--gold',c.colorAccent);
+  _t('heroBadge','👥 Đăng ký nhân sự · '+(c.raceDate||'2026'));
+  _t('heroSpan', c.raceName||'Giải Chạy');
+  _t('heroSub',  c.slogan||'Cùng chúng tôi tạo nên sự kiện đáng nhớ');
+  _t('heroDate', c.raceDate||'');
+  _t('heroLoc',  c.locationShort||c.location||'');
+  _t('doneEmail',c.email||''); const de=_q('doneEmail'); if(de) de.href='mailto:'+(c.email||'');
+  _t('donePhone',c.phone||'');
+  window.__CFG = c;
+  document.title = 'Đăng ký nhân sự — '+(c.raceName||'Giải Chạy');
+  allRoles = c.staffRoles||[];
+  renderRoles();
+  const urlR = new URLSearchParams(location.search).get('role');
+  if(urlR){ await new Promise(r=>setTimeout(r,300));
+    const found=allRoles.find(x=>x.id===urlR||x.id===decodeURIComponent(urlR));
+    if(found){ const el=document.querySelector(`[data-rid="${found.id}"]`); if(el) pickRole(found.id,el); }
+  }
+});
+
+function _t(id,v){const e=document.getElementById(id);if(e)e.textContent=v;}
+function _q(id){return document.getElementById(id);}
+function esc(s){return(s||'').toString().replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+
+// ═══ ROLES ═══════════════════════════════════════════════
+function renderRoles(){
+  _q('rLoad').style.display='none';
+  const active=(allRoles||[]).filter(r=>r.enabled!==false);
+  if(!active.length){_q('rEmpty').style.display='block';return;}
+  _q('rGrid').style.display='grid';
+  _q('rGrid').innerHTML=active.map(r=>{
+    const left=r.maxSlot?(r.maxSlot-(r.registered||0)):null;
+    const full=left!==null&&left<=0;
+    return `<div class="role-card${full?' full':''}" data-rid="${r.id}" onclick="${full?'':(`pickRole('${r.id}',this)`)}">
+      <div class="rc-icon">${r.icon||'👤'}</div>
+      <div class="rc-name">${esc(r.name)}</div>
+      ${r.desc?`<div class="rc-desc">${esc(r.desc)}</div>`:''}
+      <div class="rc-tags">
+        ${(!r.price||r.free!==false)?`<span class="rc-tag tag-free">✓ Miễn phí</span>`:`<span class="rc-tag tag-paid">💳 ${esc(r.priceDisplay||'')}</span>`}
+        ${left!==null?(full?`<span class="rc-tag" style="background:rgba(215,43,43,.2);color:var(--red)">Hết slot</span>`:`<span class="rc-tag tag-slot">Còn ${left} slot</span>`):''}
+        ${r.allowance?`<span class="rc-tag tag-allow">💰 ${esc(r.allowance)}</span>`:''}
+      </div></div>`;
+  }).join('');
+}
+
+function pickRole(id,el){
+  if(el.classList.contains('full')) return;
+  document.querySelectorAll('.role-card').forEach(c=>c.classList.remove('selected'));
+  el.classList.add('selected');
+  SR=allRoles.find(r=>r.id===id); SS=null; SZ=null;
+
+  const sS=_q('shiftSec');
+  if(SR.shifts?.length){
+    _q('shiftGrid').innerHTML=SR.shifts.map(s=>`
+      <div class="shift-card" onclick="pickShift('${esc(s.id||s.name)}',this)">
+        <div class="sh-time">${esc(s.time||s.name)}</div>
+        <div class="sh-desc">${esc(s.name||'')}</div>
+      </div>`).join('');
+    sS.style.display='block';
+  } else sS.style.display='none';
+
+  const zS=_q('zoneSec');
+  if(SR.zones?.length){
+    _q('zoneWrap').innerHTML=SR.zones.map(z=>`<button class="zone-btn" onclick="pickZone('${esc(z)}',this)">${esc(z)}</button>`).join('');
+    zS.style.display='block';
+  } else zS.style.display='none';
+
+  buildSpec();
+}
+function pickShift(id,el){document.querySelectorAll('.shift-card').forEach(c=>c.classList.remove('sel'));el.classList.add('sel');SS=id;}
+function pickZone(z,el){document.querySelectorAll('.zone-btn').forEach(b=>b.classList.remove('sel'));el.classList.add('sel');SZ=z;}
+
+function buildSpec(){
+  if(!SR){_q('roleSpec').innerHTML='';return;}
+  const id=SR.id.toLowerCase();
+  let tpl='';
+  if(id==='pacer'||id.includes('pacer')) tpl=TPL.pacer;
+  else if(id==='tnv'||id.includes('tnv')||id.includes('volunteer')) tpl=TPL.tnv;
+  else if(id==='nag'||id.includes('nag')||id.includes('media')||id.includes('photo')) tpl=TPL.nag;
+  else if(id==='medical'||id.includes('med')||id.includes('yte')) tpl=TPL.medical;
+  else if(id==='security'||id.includes('sec')||id.includes('anninh')) tpl=TPL.security;
+  else if(id==='btc'||id.includes('btc')||id.includes('lead')) tpl=TPL.btc;
+  else if(id==='cheer'||id.includes('cheer')||id.includes('covu')) tpl=TPL.cheer;
+  _q('roleSpec').innerHTML=tpl;
+}
+
+// ═══ FORM HELPERS ═════════════════════════════════════════
+function gv(id){return(_q(id)||{}).value?.trim()||'';}
+function gr(nm){const e=document.querySelector('[name='+nm+']:checked');return e?e.value:'';}
+function gcb(gId){return[...(document.getElementById(gId)||{querySelectorAll:()=>[]}).querySelectorAll('.co.sel input')].map(i=>i.value).join(', ');}
+function selR(el,gId){document.querySelectorAll('#'+gId+' .ro').forEach(o=>o.classList.remove('sel'));el.classList.add('sel');}
+function selC(el){el.classList.toggle('sel');}
+function selLL(el){el.closest('.ll-wrap').querySelectorAll('.ll').forEach(l=>l.classList.remove('sel'));el.classList.add('sel');}
+function addLang(){
+  const d=document.createElement('div');d.className='lang-row';
+  d.innerHTML=`<div class="li"><input type="text" placeholder="Ngôn ngữ" class="ln"></div>
+    <div class="ll-wrap"><div class="ll" onclick="selLL(this)">A</div><div class="ll" onclick="selLL(this)">B</div>
+    <div class="ll" onclick="selLL(this)">C</div><div class="ll" onclick="selLL(this)">Bản ngữ</div></div>`;
+  _q('langRows').appendChild(d);
+}
+function getLangs(){return[...document.querySelectorAll('.lang-row')].map(r=>{const n=(r.querySelector('.ln')||{}).value?.trim()||'';const l=(r.querySelector('.ll.sel')||{}).textContent||'';return n?(n+(l?' ('+l+')':'')):null;}).filter(Boolean).join('; ');}
+function getEvents(){return[...document.querySelectorAll('.ev-item')].map((el,i)=>{const n=(el.querySelector('.en')||{}).value?.trim()||'';const y=(el.querySelector('.ey')||{}).value?.trim()||'';const r=(el.querySelector('.er')||{}).value?.trim()||'';const s=(el.querySelector('.es')||{}).value?.trim()||'';return n?`[${i+1}] ${n}${y?' ('+y+')':''} — ${r}${s?', '+s:''}`:''}).filter(Boolean).join(' | ');}
+function getTrans(){return[...document.querySelectorAll('#transG .co.sel input')].map(i=>i.value).join(', ');}
+
+function handlePhoto(inp,prevId,type){
+  const f=inp.files[0];if(!f)return;
+  const r=new FileReader();
+  r.onload=e=>{
+    const img=_q(prevId);img.src=e.target.result;img.style.display='block';
+    inp.closest('.photo-box').querySelector('.pb-icon').style.display='none';
+    if(type==='avatar') avatarB64=e.target.result;else cccdB64=e.target.result;
+  };r.readAsDataURL(f);
+}
+function handlePayImg(inp){
+  const f=inp.files[0];if(!f)return;
+  if(f.size>5*1024*1024){alert('File quá lớn! Tối đa 5MB.');return;}
+  const r=new FileReader();
+  r.onload=e=>{
+    payImg=e.target.result;
+    _q('prevCK').src=payImg;_q('prevCK').style.display='block';
+    _q('upTxt').innerHTML='✅ <strong style="color:var(--green)">Đã chọn</strong> — Nhấn để đổi';
+  };r.readAsDataURL(f);
+}
+function copyCK(){
+  navigator.clipboard.writeText(_q('ckTxt').textContent)
+    .then(()=>{const b=event.target.closest('button');const o=b.innerHTML;b.textContent='✅ Đã sao chép!';setTimeout(()=>b.innerHTML=o,2000);})
+    .catch(()=>prompt('Copy:',_q('ckTxt').textContent));
+}
+
+// ═══ NAVIGATION ═══════════════════════════════════════════
+function showE(id,msg){const e=_q(id);e.textContent=msg;e.style.display='block';setTimeout(()=>e.style.display='none',3500);}
+
+function goP(n){
+  if(n===2){
+    if(!SR){showE('e1','⚠️ Vui lòng chọn vai trò!');return;}
+    if(SR.shifts?.length&&!SS){showE('e1','⚠️ Vui lòng chọn ca làm việc!');return;}
+    if(SR.zones?.length&&!SZ){showE('e1','⚠️ Vui lòng chọn khu vực!');return;}
+  }
+  if(n===3){
+    if(!gv('fn')){showE('e2','⚠️ Vui lòng nhập họ tên!');return;}
+    if(!gv('dob')){showE('e2','⚠️ Vui lòng nhập ngày sinh!');return;}
+    if(!gv('idCard')){showE('e2','⚠️ Vui lòng nhập CCCD!');return;}
+    if(!gv('phone')){showE('e2','⚠️ Vui lòng nhập số điện thoại!');return;}
+    if(!gv('emgN')||!gv('emgP')){showE('e2','⚠️ Vui lòng nhập thông tin người thân khẩn cấp!');return;}
+  }
+  if(n===4) buildConfirm();
+  curP=n;
+  document.querySelectorAll('.page').forEach((p,i)=>p.classList.toggle('active',i+1===n));
+  for(let i=1;i<=5;i++){
+    _q('st'+i).className='st'+(i<n?' done':i===n?' active':'');
+    const l=_q('sla'+i);if(l) l.className='st-lbl'+(i<n?' done':i===n?' active':'');
+    const ln=_q('sl'+i);if(ln) ln.className='st-line'+(i<n?' done':'');
+  }
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+function buildConfirm(){
+  const isFree=(!SR.price||SR.free!==false);
+  document.getElementById('sumContent').innerHTML=[
+    ['Vai trò',(SR.icon||'')+' '+SR.name],
+    ['Họ tên',gv('fn')+(gv('nickname')?' ('+gv('nickname')+')':'')],
+    ['SĐT / Email',gv('phone')+(gv('email')?' · '+gv('email'):'')],
+    ...(SS?[['Ca làm việc',SS]]:[]),
+    ...(SZ?[['Khu vực',SZ]]:[]),
+    ['Phương tiện',getTrans()||'—'],
+    ['Kinh nghiệm',getEvents()||'Chưa có'],
+    ['Kỹ năng nổi bật',gv('topSkill')||'—'],
+    ['Phụ cấp',SR.allowance||'—'],
+    ['Phí tham gia',isFree?'✅ Miễn phí':(SR.priceDisplay||'')],
+  ].map(([l,v])=>`<div class="sum-row"><span class="sum-l">${l}</span><span class="sum-v">${esc(v)}</span></div>`).join('');
+
+  _q('paymentSec').style.display=isFree?'none':'block';
+  _q('freeSec').style.display=isFree?'block':'none';
+  if(!isFree){
+    const cfg=window.__CFG||{};
+    _q('feeAmt').textContent=SR.priceDisplay||'';
+    _q('ckBank').innerHTML=`🏦 <strong>${cfg.bankName||'Vietcombank'}</strong> — STK: <strong style="color:var(--gold)">${cfg.bankAccount||''}</strong> — ${cfg.bankOwner||''}`;
+    const prefix=cfg.ckPrefix||'GIAICHAY';
+    const rn=gv('fn').normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/đ/g,'d').replace(/Đ/g,'D').toUpperCase().replace(/\s+/g,'');
+    const p4=gv('phone').replace(/\D/g,'').slice(-4);
+    _q('ckTxt').textContent=`${prefix} NS-${rn}-${p4}`;
+  }
+}
+
+// ═══ COLLECT EXTRA ════════════════════════════════════════
+function collectExtra(){
+  const extra={};const id=SR.id.toLowerCase();
+  const safe=i=>{const e=_q(i);return e?e.value.trim():'';};
+  const scb=gId=>{const el=document.getElementById(gId);if(!el)return'';return[...el.querySelectorAll('.co.sel input')].map(i=>i.value).join(', ');};
+
+  if(id.includes('pacer')){extra.pace=safe('r_pace');extra.pb5=safe('r_pb5');extra.pb10=safe('r_pb10');extra.pbhm=safe('r_pbhm');extra.paceDists=scb('pcdG');extra.pacerExp=safe('r_pacerexp');}
+  if(id==='tnv'||id.includes('tnv')){extra.tnvSkills=scb('tskG');extra.tnvPos=gr('tnvpos');extra.maxLead=safe('r_maxlead');}
+  if(id==='nag'||id.includes('nag')||id.includes('media')){extra.mediaSpec=scb('msG');extra.equip=safe('r_equip');extra.mediaExp=safe('r_mexp');extra.portfolio=safe('r_port');}
+  if(id.includes('med')||id.includes('yte')){extra.medSpec=scb('mdG');extra.cert=safe('r_mcert');extra.unit=safe('r_munit');extra.medExp=safe('r_mexp');}
+  if(id.includes('sec')||id.includes('anninh')){extra.h=safe('r_h');extra.w=safe('r_w');extra.train=scb('stG');extra.fit=gr('secfit');extra.sexp=safe('r_sexp');}
+  if(id.includes('btc')||id.includes('lead')){extra.spec=scb('bcG');extra.maxTeam=safe('r_mt');extra.tools=safe('r_tools');extra.bexp=safe('r_bexp');}
+  if(id.includes('cheer')||id.includes('covu')){extra.type=scb('chtG');extra.club=safe('r_cclub');extra.outfit=gr('chout');}
+  return extra;
+}
+
+// ═══ SUBMIT ═══════════════════════════════════════════════
+async function doSubmit(){
+  if(!_q('agree').checked){showE('e4','⚠️ Vui lòng đồng ý cam kết!');return;}
+  const isFree=(!SR.price||SR.free!==false);
+  if(!isFree&&!payImg){showE('e4','⚠️ Vui lòng upload ảnh chuyển khoản!');return;}
+
+  const btn=_q('subBtn');btn.disabled=true;btn.innerHTML='<span class="spin"></span> Đang gửi...';
+  const ts=new Date().toLocaleString('vi-VN');
+  const regId='NS-'+Date.now().toString(36).toUpperCase();
+  const url=localStorage.getItem('race_sheet_url')||'';
+
+  let imgLink='';
+  if(url&&payImg&&!isFree){
+    try{const res=await fetch(url,{method:'POST',mode:'cors',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({action:'uploadImage',imageBase64:payImg,fileName:regId+'_ck.jpg'})});
+      const d=await res.json();if(d.url)imgLink=d.url;
+    }catch(e){imgLink='[IMG_'+regId+']';}
+  }
+
+  const payload={action:'addStaff',id:regId,timestamp:ts,status:'pending',
+    roleId:SR.id,roleName:SR.name,roleIcon:SR.icon||'',shift:SS||'',zone:SZ||'',
+    fullName:gv('fn'),nickname:gv('nickname'),gender:gr('gender'),marital:gr('marital'),
+    dob:gv('dob'),idCard:gv('idCard'),phone:gv('phone'),email:gv('email'),
+    address:gv('address'),city:gv('city'),job:gv('job'),workplace:gv('workplace'),
+    shirtSize:gv('shirtSize'),transport:getTrans(),languages:getLangs(),
+    sports:gv('sports'),eventHistory:getEvents(),topSkill:gv('topSkill'),
+    canLead:gr('canLead'),wishContrib:gv('wishContrib'),arriveEarly:gv('arriveEarly'),
+    teamPosition:gv('teamPos'),emgName:gv('emgN'),emgPhone:gv('emgP'),emgRel:gv('emgRel'),
+    isFree:isFree,fee:isFree?0:(SR.price||0),allowance:SR.allowance||'',
+    paymentImg:imgLink,initialPoints:10,
+    extraJson:JSON.stringify(collectExtra()),
+  };
+
+  if(url){
+    try{await fetch(url,{method:'POST',mode:'no-cors',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});}
+    catch(e){btn.disabled=false;btn.innerHTML='✓ Gửi đăng ký';showE('e4','⚠️ Lỗi kết nối. Thử lại!');return;}
+  }
+
+  // Success
+  _q('doneCard').innerHTML=[['Vai trò',(SR.icon||'')+' '+SR.name],['Họ tên',gv('fn')],
+    ['Mã đăng ký',regId],...(SS?[['Ca',SS]]:[],...(SZ?[['Khu vực',SZ]]:[])),
+    ['Trạng thái','⏳ Chờ BTC xác nhận'],
+  ].map(([l,v])=>`<div class="sum-row"><span class="sum-l">${l}</span><span class="sum-v" style="${l==='Trạng thái'?'color:var(--gold)':''}">${esc(v)}</span></div>`).join('');
+
+  const sps=(window.__CFG||{}).sponsors||[];
+  if(sps.length){const sp=sps[Math.floor(Math.random()*sps.length)];
+    _q('spBanner').style.display='block';
+    _q('spBanner').innerHTML=`<div style="background:var(--dark2);border:1.5px solid rgba(245,166,35,.15);border-radius:10px;padding:14px;display:flex;gap:10px;align-items:flex-start">
+      <div style="font-size:24px">${sp.logo||'🎁'}</div>
+      <div><div style="font-weight:800;color:${sp.color||'#F5A623'}">${esc(sp.name)}</div>
+      <div style="font-size:11px;color:var(--muted)">${esc(sp.offer||'')}</div></div></div>`;
+  }
+
+  curP=5;document.querySelectorAll('.page').forEach((p,i)=>p.classList.toggle('active',i+1===5));
+  for(let i=1;i<=5;i++){
+    _q('st'+i).className='st done';const l=_q('sla'+i);if(l)l.className='st-lbl done';
+    const ln=_q('sl'+i);if(ln)ln.className='st-line done';
+  }
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+</script>
+</body>
+</html>

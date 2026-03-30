@@ -1,0 +1,812 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HLRace — Trail Keeper</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,500;0,700;1,600&family=Geist:wght@300;400;500;600&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#F4F1EA;--card:#FFFFFF;--s1:#EDE8DC;--s2:#E2DAC8;
+  --ink:#1A1710;--ink2:#5A5240;--muted:#9A9070;
+  --forest:#2A5C3A;--forest2:#3D8A52;--earth:#8A5C2A;
+  --sky:#1A4A7A;--gold:#8A6E00;--red:#8A2A2A;
+  --br:rgba(26,23,16,.07);--br2:rgba(26,23,16,.13);
+  --r:14px;--r-sm:8px;
+}
+body{background:var(--bg);color:var(--ink);font-family:'Geist',sans-serif;font-size:14px;min-height:100vh}
+
+/* HDR */
+.hdr{background:var(--forest);padding:28px 20px 24px;position:relative;overflow:hidden}
+.hdr::after{content:'';position:absolute;bottom:-1px;left:0;right:0;height:20px;background:var(--bg);border-radius:20px 20px 0 0}
+.hdr-top{display:flex;align-items:center;gap:12px;margin-bottom:10px}
+.hdr-icon{width:40px;height:40px;border-radius:10px;background:rgba(255,255,255,.12);display:flex;align-items:center;justify-content:center;font-size:20px}
+.hdr-title{font-family:'Fraunces';font-size:22px;font-weight:700;color:#fff;line-height:1.1}
+.hdr-sub{font-size:12px;color:rgba(255,255,255,.65);line-height:1.6;max-width:480px}
+.hdr-badge{display:inline-flex;align-items:center;gap:5px;margin-top:8px;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.2);border-radius:20px;padding:4px 10px;font-family:'Geist Mono';font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:rgba(255,255,255,.7)}
+
+/* PROGRESS */
+.prog-wrap{padding:16px 20px 0;max-width:640px;margin:0 auto}
+.prog-bar-bg{height:4px;background:var(--s2);border-radius:2px;overflow:hidden}
+.prog-bar-fill{height:100%;background:var(--forest);border-radius:2px;transition:width .3s}
+.prog-labels{display:flex;justify-content:space-between;margin-top:6px}
+.prog-label{font-size:9px;font-family:'Geist Mono';color:var(--muted);text-transform:uppercase;letter-spacing:.5px}
+.prog-label.active{color:var(--forest);font-weight:500}
+
+/* WRAP */
+.wrap{max-width:640px;margin:0 auto;padding:16px 16px 80px}
+
+/* STEP PANELS */
+.step-panel{display:none}.step-panel.active{display:block}
+
+/* CARDS */
+.card{background:var(--card);border:1px solid var(--br);border-radius:var(--r);padding:20px;margin-bottom:14px}
+.card-hdr{display:flex;align-items:center;gap:12px;margin-bottom:16px;padding-bottom:12px;border-bottom:1px solid var(--br)}
+.card-icon{width:42px;height:42px;border-radius:var(--r-sm);display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0}
+.ci-forest{background:rgba(42,92,58,.1);border:1px solid rgba(42,92,58,.15)}
+.ci-earth{background:rgba(138,92,42,.1);border:1px solid rgba(138,92,42,.15)}
+.ci-sky{background:rgba(26,74,122,.1);border:1px solid rgba(26,74,122,.15)}
+.ci-gold{background:rgba(138,110,0,.1);border:1px solid rgba(138,110,0,.15)}
+.card-title{font-family:'Fraunces';font-size:16px;font-weight:700;margin-bottom:2px}
+.card-sub{font-size:12px;color:var(--muted);line-height:1.5}
+
+/* FIELDS */
+.field{margin-bottom:12px}
+.field label{display:block;font-size:11px;font-weight:500;text-transform:uppercase;letter-spacing:.4px;color:var(--muted);margin-bottom:5px}
+.field-req{color:var(--red);font-size:12px}
+.field input,.field select,.field textarea{width:100%;padding:10px 12px;border:1px solid var(--br2);border-radius:var(--r-sm);font-size:13px;background:var(--card);color:var(--ink);font-family:'Geist',sans-serif;outline:none;transition:border-color .15s}
+.field input:focus,.field select:focus,.field textarea:focus{border-color:var(--forest)}
+.field textarea{resize:vertical;min-height:80px;line-height:1.6}
+.field-hint{font-size:11px;color:var(--muted);margin-top:4px;line-height:1.5;font-style:italic}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
+
+/* SEASON MATRIX */
+.season-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:8px}
+.season-cell{border:1.5px solid var(--br2);border-radius:var(--r-sm);padding:10px 6px;text-align:center;cursor:pointer;transition:all .15s;position:relative}
+.season-cell:hover{border-color:var(--forest)}
+.season-cell.best{border-color:var(--forest);background:rgba(42,92,58,.08)}
+.season-cell.ok{border-color:var(--earth);background:rgba(138,92,42,.06)}
+.season-cell.avoid{border-color:var(--red);background:rgba(138,42,42,.05)}
+.season-cell.best::after{content:'Tốt nhất';position:absolute;bottom:4px;left:0;right:0;font-size:8px;color:var(--forest);font-weight:500}
+.season-cell.ok::after{content:'Ổn';position:absolute;bottom:4px;left:0;right:0;font-size:8px;color:var(--earth)}
+.season-cell.avoid::after{content:'Tránh';position:absolute;bottom:4px;left:0;right:0;font-size:8px;color:var(--red)}
+.season-icon{font-size:18px;margin-bottom:4px}
+.season-name{font-size:10px;font-weight:500;color:var(--ink2)}
+.season-legend{display:flex;gap:12px;font-size:10px;color:var(--muted);margin-top:6px;flex-wrap:wrap}
+.sl-dot{width:10px;height:10px;border-radius:2px;flex-shrink:0;margin-top:1px}
+
+/* MOMENT BUILDER */
+.moment-list{display:flex;flex-direction:column;gap:8px;margin-bottom:10px}
+.moment-item{background:var(--s1);border-radius:var(--r-sm);padding:12px 14px;border:1px solid var(--br);position:relative}
+.moment-del{position:absolute;top:8px;right:10px;font-size:11px;color:var(--muted);cursor:pointer;border:none;background:none;padding:2px 6px}
+.moment-del:hover{color:var(--red)}
+.moment-type-badge{display:inline-block;font-size:9px;font-weight:500;padding:2px 7px;border-radius:20px;margin-bottom:6px;letter-spacing:.3px}
+.mb-seasonal{background:#E8F0D8;color:#2A5C1A;border:1px solid #B8D498}
+.mb-wildlife{background:#F5E8D0;color:#7A4A00;border:1px solid #D4A870}
+.mb-culture{background:#E8E0F5;color:#4A2A8A;border:1px solid #B8A0D8}
+.mb-safety{background:#FBEAE5;color:#8A2A2A;border:1px solid #F0B8B8}
+.mb-secret{background:#E5F0F8;color:#1A4A7A;border:1px solid #90C0E0}
+.moment-text{font-size:12px;color:var(--ink2);line-height:1.6}
+.moment-km{font-size:10px;font-family:'Geist Mono';color:var(--muted);margin-top:3px}
+
+.add-moment-form{background:var(--s1);border:1.5px dashed var(--br2);border-radius:var(--r-sm);padding:14px;margin-top:8px}
+.add-moment-form.active{border-color:var(--forest)}
+
+/* PHOTO SLOTS */
+.photo-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.photo-slot{aspect-ratio:4/3;border:1.5px dashed var(--br2);border-radius:var(--r-sm);display:flex;align-items:center;justify-content:center;cursor:pointer;flex-direction:column;gap:4px;transition:all .15s;background:var(--s1)}
+.photo-slot:hover{border-color:var(--forest);background:rgba(42,92,58,.04)}
+.photo-slot.filled{border-color:var(--forest);border-style:solid;background:rgba(42,92,58,.06)}
+.ps-icon{font-size:20px;color:var(--muted)}
+.ps-label{font-size:10px;color:var(--muted);text-align:center;padding:0 4px}
+
+/* TEP SCORE */
+.tep-wrap{background:linear-gradient(135deg,rgba(42,92,58,.06),rgba(26,74,122,.04));border:1px solid rgba(42,92,58,.15);border-radius:var(--r-sm);padding:16px;margin-top:14px}
+.tep-title{font-size:12px;font-weight:500;color:var(--forest);margin-bottom:12px;display:flex;align-items:center;gap:6px}
+.tep-bars{display:flex;flex-direction:column;gap:8px}
+.tep-bar-row{display:flex;align-items:center;gap:10px}
+.tep-bar-label{font-size:11px;color:var(--ink2);width:100px;flex-shrink:0}
+.tep-bar-bg{flex:1;height:6px;background:var(--s2);border-radius:3px;overflow:hidden}
+.tep-bar-fill{height:100%;border-radius:3px;background:var(--forest);transition:width .5s}
+.tep-bar-score{font-family:'Geist Mono';font-size:11px;color:var(--forest);min-width:28px;text-align:right}
+.tep-total{display:flex;justify-content:space-between;margin-top:12px;padding-top:10px;border-top:1px solid rgba(42,92,58,.15);font-size:13px}
+.tep-total-val{font-family:'Geist Mono';font-weight:500;color:var(--forest);font-size:16px}
+
+/* BUTTONS */
+.btn{padding:10px 20px;border-radius:var(--r-sm);font-size:13px;font-weight:500;cursor:pointer;border:none;font-family:'Geist',sans-serif;display:inline-flex;align-items:center;gap:7px;transition:all .15s}
+.btn-forest{background:var(--forest);color:#fff}
+.btn-forest:hover{background:var(--forest2)}
+.btn-outline{background:transparent;border:1.5px solid var(--br2);color:var(--ink2)}
+.btn-outline:hover{background:var(--s1)}
+.btn-sm{padding:6px 12px;font-size:12px}
+.nav-row{display:flex;justify-content:space-between;align-items:center;margin-top:16px}
+
+/* SECURITY BOX */
+.security-box{background:rgba(26,74,122,.06);border:1px solid rgba(26,74,122,.15);border-radius:var(--r-sm);padding:14px;font-size:12px;color:var(--sky);line-height:1.8;margin-top:12px}
+.security-box strong{font-weight:600}
+
+/* PRICING */
+.pricing-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:10px}
+.price-card{border:1.5px solid var(--br2);border-radius:var(--r-sm);padding:14px;text-align:center;cursor:pointer;transition:all .15s}
+.price-card:hover{border-color:var(--forest)}
+.price-card.selected{border-color:var(--forest);background:rgba(42,92,58,.06)}
+.pc-label{font-size:11px;color:var(--muted);margin-bottom:6px}
+.pc-price{font-family:'Geist Mono';font-size:18px;font-weight:500;color:var(--ink);margin-bottom:4px}
+.pc-desc{font-size:10px;color:var(--muted);line-height:1.5}
+.pc-split{font-size:10px;color:var(--forest);margin-top:6px;font-weight:500}
+
+/* SUCCESS */
+.success{display:none;text-align:center;padding:40px 20px}
+.success-icon{font-size:52px;margin-bottom:14px}
+.success-title{font-family:'Fraunces';font-size:22px;font-weight:700;color:var(--forest);margin-bottom:8px}
+.success-sub{font-size:13px;color:var(--muted);line-height:1.7;max-width:400px;margin:0 auto 20px}
+.success-tep{background:var(--card);border:1px solid var(--br);border-radius:var(--r);padding:16px;max-width:360px;margin:0 auto 16px;text-align:left}
+
+/* SEC LABEL */
+.sec-label{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin-bottom:10px;display:flex;align-items:center;gap:8px}
+.sec-label::after{content:'';flex:1;height:1px;background:var(--br)}
+</style>
+</head>
+<body>
+
+<div class="hdr">
+  <div class="hdr-top">
+    <div class="hdr-icon">🏔</div>
+    <div class="hdr-title">Trail Keeper</div>
+  </div>
+  <div class="hdr-sub">Chia sẻ trail bạn biết — không chỉ là file GPX, mà là toàn bộ trải nghiệm sống động mà chỉ bạn mới có.</div>
+  <div class="hdr-badge">HLRace · Trail Experience Product</div>
+</div>
+
+<div class="prog-wrap">
+  <div class="prog-bar-bg"><div class="prog-bar-fill" id="prog-fill" style="width:20%"></div></div>
+  <div class="prog-labels">
+    <span class="prog-label active" id="pl-1">Route</span>
+    <span class="prog-label" id="pl-2">Mùa &amp; Thời tiết</span>
+    <span class="prog-label" id="pl-3">Khoảnh khắc</span>
+    <span class="prog-label" id="pl-4">Bí mật local</span>
+    <span class="prog-label" id="pl-5">Định giá</span>
+  </div>
+</div>
+
+<div class="wrap">
+
+<!-- ══ STEP 1: ROUTE ══ -->
+<div class="step-panel active" id="step-1">
+
+  <div class="card">
+    <div class="card-hdr">
+      <div class="card-icon ci-forest">🗺</div>
+      <div>
+        <div class="card-title">Thông tin route cơ bản</div>
+        <div class="card-sub">Đây là xương sống — nhưng chỉ là điểm bắt đầu</div>
+      </div>
+    </div>
+
+    <div class="field">
+      <label>Tên trail <span class="field-req">*</span></label>
+      <input id="r-name" placeholder="VD: Vòng cung Tả Van — qua ruộng bậc thang và bản Mông">
+      <div class="field-hint">Đặt tên gợi cảm xúc, không chỉ địa danh</div>
+    </div>
+
+    <div class="row2">
+      <div class="field">
+        <label>Tỉnh / Khu vực <span class="field-req">*</span></label>
+        <select id="r-province">
+          <option value="">— Chọn tỉnh —</option>
+          <option>Lào Cai (Sapa)</option><option>Hà Giang</option><option>Cao Bằng</option>
+          <option>Lai Châu</option><option>Sơn La</option><option>Điện Biên</option>
+          <option>Hải Phòng (Cát Bà)</option><option>Ninh Bình</option><option>Đà Lạt</option>
+          <option>Kon Tum</option><option>Đà Nẵng (Bà Nà)</option><option>Khác</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Loại địa hình <span class="field-req">*</span></label>
+        <select id="r-terrain">
+          <option>Trail rừng</option><option>Trail núi kỹ thuật</option>
+          <option>Trail ruộng bậc thang</option><option>Trail ven biển</option>
+          <option>Trail bản làng</option><option>Trail cao nguyên</option>
+          <option>Kết hợp nhiều loại</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="row3">
+      <div class="field">
+        <label>Tổng km <span class="field-req">*</span></label>
+        <input id="r-km" type="number" placeholder="12.5">
+      </div>
+      <div class="field">
+        <label>Độ leo (m)</label>
+        <input id="r-elev" type="number" placeholder="850">
+      </div>
+      <div class="field">
+        <label>Thời gian ước tính</label>
+        <input id="r-time" placeholder="3-4 giờ">
+      </div>
+    </div>
+
+    <div class="row2">
+      <div class="field">
+        <label>Độ khó</label>
+        <select id="r-diff">
+          <option value="1">Dễ — ai cũng đi được</option>
+          <option value="2">Trung bình — cần thể lực cơ bản</option>
+          <option value="3" selected>Khó — có kỹ thuật</option>
+          <option value="4">Rất khó — runner có kinh nghiệm</option>
+          <option value="5">Extreme — chuyên gia</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Loại vòng</label>
+        <select id="r-loop">
+          <option>Vòng lặp (start = finish)</option>
+          <option>Điểm A đến điểm B</option>
+          <option>Ra vào cùng đường</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="field">
+      <label>Mô tả trail theo lời bạn <span class="field-req">*</span></label>
+      <textarea id="r-desc" placeholder="Kể cho tôi nghe về trail này như thể bạn đang nói chuyện với bạn bè. Cảm giác chạy như thế nào? Đoạn nào đẹp nhất? Đoạn nào khó nhất? Tại sao bạn thích nó?"></textarea>
+    </div>
+
+    <div class="row2">
+      <div class="field">
+        <label>Lat (điểm bắt đầu) <span class="field-req">*</span></label>
+        <input id="r-lat" type="number" step="any" placeholder="22.3361">
+        <div class="field-hint">Mở Google Maps → nhấn giữ → copy</div>
+      </div>
+      <div class="field">
+        <label>Lng (điểm bắt đầu) <span class="field-req">*</span></label>
+        <input id="r-lng" type="number" step="any" placeholder="103.8438">
+      </div>
+    </div>
+
+    <div class="field">
+      <label>Upload file GPX <span class="field-req">*</span></label>
+      <div style="border:1.5px dashed var(--br2);border-radius:var(--r-sm);padding:20px;text-align:center;background:var(--s1);cursor:pointer" onclick="fakeGPX(this)">
+        <div style="font-size:24px;margin-bottom:6px" id="gpx-icon">📁</div>
+        <div style="font-size:12px;color:var(--muted)" id="gpx-label">Chọn file .gpx hoặc .fit</div>
+        <div style="font-size:10px;color:var(--muted);margin-top:3px">Garmin, Strava Export, Komoot đều được</div>
+      </div>
+      <div class="field-hint">Chưa có file GPX? Dùng app Strava, Garmin Connect, hoặc OsmAnd để ghi khi bạn chạy</div>
+    </div>
+  </div>
+
+  <div class="nav-row">
+    <div></div>
+    <button class="btn btn-forest" onclick="goStep(2)">Tiếp: Mùa & Thời tiết →</button>
+  </div>
+</div>
+
+<!-- ══ STEP 2: MÙA & THỜI TIẾT ══ -->
+<div class="step-panel" id="step-2">
+
+  <div class="card">
+    <div class="card-hdr">
+      <div class="card-icon ci-sky">🌤</div>
+      <div>
+        <div class="card-title">Mùa tốt nhất & Điều kiện</div>
+        <div class="card-sub">Đây là thứ khách quốc tế không thể Google — chỉ người địa phương biết</div>
+      </div>
+    </div>
+
+    <div class="sec-label">Đánh giá từng tháng</div>
+    <div class="season-grid" id="season-grid">
+      <!-- Filled by JS -->
+    </div>
+    <div class="season-legend">
+      <div style="display:flex;align-items:center;gap:4px"><div class="sl-dot" style="background:rgba(42,92,58,.3)"></div><span>Tốt nhất</span></div>
+      <div style="display:flex;align-items:center;gap:4px"><div class="sl-dot" style="background:rgba(138,92,42,.3)"></div><span>Ổn</span></div>
+      <div style="display:flex;align-items:center;gap:4px"><div class="sl-dot" style="background:rgba(138,42,42,.2)"></div><span>Nên tránh</span></div>
+      <div style="display:flex;align-items:center;gap:4px"><div class="sl-dot" style="background:var(--s2)"></div><span>Chưa đánh giá</span></div>
+    </div>
+    <div class="field-hint" style="margin-top:6px">Nhấn vào từng tháng để chuyển qua các mức đánh giá</div>
+
+    <div style="margin-top:14px">
+    <div class="field">
+      <label>Tháng đẹp nhất — lý do chi tiết</label>
+      <textarea id="s-best" placeholder="VD: Tháng 9-10 ruộng lúa vàng rực, sương mù buổi sáng đẹp nhất năm. Nhiệt độ 15-22°C, đường khô ráo sau mùa mưa kết thúc..."></textarea>
+    </div>
+
+    <div class="field">
+      <label>Thời điểm trong ngày tốt nhất</label>
+      <select id="s-time">
+        <option>4h30-7h sáng (sương mù, ánh sáng vàng)</option>
+        <option>7h-10h sáng (mát, rõ ràng)</option>
+        <option>Cả ngày đều ổn</option>
+        <option>Chiều 15h-18h (ánh sáng đẹp)</option>
+        <option>Tùy mùa</option>
+      </select>
+      <div class="field-hint">Giờ vàng của trail này là gì? Ánh sáng chụp ảnh đẹp nhất lúc nào?</div>
+    </div>
+
+    <div class="row2">
+      <div class="field">
+        <label>Mùa mưa ảnh hưởng thế nào?</label>
+        <select id="s-rain">
+          <option>Đường trơn nguy hiểm — nên tránh</option>
+          <option>Đường khó nhưng vẫn chạy được</option>
+          <option>Đẹp theo cách khác — suối đầy nước</option>
+          <option>Không ảnh hưởng nhiều</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Nguy hiểm thời tiết cần biết</label>
+        <select id="s-danger">
+          <option>Không có nguy hiểm đặc biệt</option>
+          <option>Sương mù dày — dễ lạc đường</option>
+          <option>Mưa đá tháng 3-4</option>
+          <option>Lũ quét mùa mưa</option>
+          <option>Gió mạnh trên đỉnh</option>
+          <option>Khác</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="field">
+      <label>Lời khuyên thời tiết từ kinh nghiệm của bạn</label>
+      <textarea id="s-advice" placeholder="VD: Luôn mang áo mưa dù trời nắng — mây kéo đến rất nhanh. Tháng 12-2 có thể có băng giá trên đỉnh. Kiểm tra thời tiết Sapa trước 48h..."></textarea>
+    </div>
+    </div>
+  </div>
+
+  <div class="nav-row">
+    <button class="btn btn-outline" onclick="goStep(1)">← Quay lại</button>
+    <button class="btn btn-forest" onclick="goStep(3)">Tiếp: Khoảnh khắc đặc biệt →</button>
+  </div>
+</div>
+
+<!-- ══ STEP 3: EXPERIENCE MOMENTS ══ -->
+<div class="step-panel" id="step-3">
+
+  <div class="card">
+    <div class="card-hdr">
+      <div class="card-icon ci-gold">✨</div>
+      <div>
+        <div class="card-title">Khoảnh khắc đặc biệt</div>
+        <div class="card-sub">Đây là thứ tạo ra giá trị unique — không thể copy, không thể Google</div>
+      </div>
+    </div>
+
+    <div class="field-hint" style="margin-bottom:12px;font-style:normal;background:var(--s1);padding:10px 12px;border-radius:var(--r-sm);border:1px solid var(--br)">
+      Ví dụ: "Vườn đào nhà ông Mình km 4 nở rộ tháng 2-3" · "Thác Tả Phìn chỉ đầy nước sau mưa 2 ngày" · "Sương mù thung lũng Tả Van 5h30-7h sáng" · "Đàn trâu ra đồng lúc 6h mỗi sáng ở km 7"
+    </div>
+
+    <div class="moment-list" id="moment-list">
+      <!-- Filled by JS -->
+    </div>
+
+    <div class="add-moment-form" id="add-form">
+      <div class="row2" style="margin-bottom:8px">
+        <div class="field" style="margin:0">
+          <label>Loại khoảnh khắc</label>
+          <select id="m-type">
+            <option value="seasonal">🌸 Theo mùa</option>
+            <option value="wildlife">🦋 Động thực vật</option>
+            <option value="culture">🎭 Văn hóa, con người</option>
+            <option value="safety">⚠️ Lưu ý an toàn</option>
+            <option value="secret">🤫 Bí mật local</option>
+          </select>
+        </div>
+        <div class="field" style="margin:0">
+          <label>Tại km nào?</label>
+          <input id="m-km" type="number" step="0.1" placeholder="4.2">
+        </div>
+      </div>
+      <div class="field" style="margin-bottom:8px">
+        <label>Mô tả chi tiết</label>
+        <textarea id="m-text" style="min-height:60px" placeholder="Mô tả khoảnh khắc, khi nào xảy ra, cần chuẩn bị gì để không bỏ lỡ..."></textarea>
+      </div>
+      <div class="row2" style="margin-bottom:8px">
+        <div class="field" style="margin:0">
+          <label>Thời điểm (mùa/tháng/giờ)</label>
+          <input id="m-when" placeholder="Tháng 2-3, sáng sớm">
+        </div>
+        <div class="field" style="margin:0">
+          <label>Xác suất gặp được</label>
+          <select id="m-prob">
+            <option value="always">Luôn có (100%)</option>
+            <option value="likely">Thường có (70%+)</option>
+            <option value="seasonal">Theo mùa (đúng thời điểm)</option>
+            <option value="rare">Hiếm nhưng tuyệt vời</option>
+          </select>
+        </div>
+      </div>
+      <button class="btn btn-forest btn-sm" onclick="addMoment()">+ Thêm khoảnh khắc</button>
+      <button class="btn btn-outline btn-sm" onclick="document.getElementById('add-form').classList.remove('active')" style="margin-left:8px">Hủy</button>
+    </div>
+
+    <button class="btn btn-outline" style="margin-top:10px;width:100%" onclick="document.getElementById('add-form').classList.add('active')">+ Thêm khoảnh khắc mới</button>
+
+    <!-- Photo moments -->
+    <div style="margin-top:16px">
+      <div class="sec-label">Ảnh thực tế</div>
+      <div class="photo-grid">
+        <div class="photo-slot" onclick="fakePhoto(this,'Ảnh trail chính')">
+          <div class="ps-icon">📷</div><div class="ps-label">Cảnh chính</div>
+        </div>
+        <div class="photo-slot" onclick="fakePhoto(this,'Khoảnh khắc đặc biệt')">
+          <div class="ps-icon">🌸</div><div class="ps-label">Khoảnh khắc</div>
+        </div>
+        <div class="photo-slot" onclick="fakePhoto(this,'Điểm nguy hiểm cần lưu ý')">
+          <div class="ps-icon">⚠️</div><div class="ps-label">Lưu ý</div>
+        </div>
+        <div class="photo-slot" onclick="fakePhoto(this,'View điểm cao nhất')">
+          <div class="ps-icon">🏔</div><div class="ps-label">View đỉnh</div>
+        </div>
+        <div class="photo-slot" onclick="fakePhoto(this,'Điểm xuất phát / kết thúc')">
+          <div class="ps-icon">🏁</div><div class="ps-label">Start/Finish</div>
+        </div>
+        <div class="photo-slot" onclick="fakePhoto(this,'Ảnh tùy chọn')">
+          <div class="ps-icon">+</div><div class="ps-label">Thêm ảnh</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="nav-row">
+    <button class="btn btn-outline" onclick="goStep(2)">← Quay lại</button>
+    <button class="btn btn-forest" onclick="goStep(4)">Tiếp: Bí mật local →</button>
+  </div>
+</div>
+
+<!-- ══ STEP 4: LOCAL KNOWLEDGE ══ -->
+<div class="step-panel" id="step-4">
+
+  <div class="card">
+    <div class="card-hdr">
+      <div class="card-icon ci-earth">🤫</div>
+      <div>
+        <div class="card-title">Kiến thức bản địa</div>
+        <div class="card-sub">Những thứ không có trên bản đồ — chỉ người địa phương biết</div>
+      </div>
+    </div>
+
+    <div class="field">
+      <label>Điểm lấy nước uống được</label>
+      <textarea id="l-water" placeholder="VD: Suối km 4.2 nước sạch uống trực tiếp được. Suối km 8 gần bản có trâu bơi nên không uống. Giếng đá nhà ông Lử km 6 — gõ cửa hỏi sẽ cho..."></textarea>
+    </div>
+
+    <div class="field">
+      <label>Nhà dân có thể nhờ / trú ẩn</label>
+      <textarea id="l-shelter" placeholder="VD: Nhà chị A km 4 — bán mật ong và cho trú mưa. Bản Tả Van km 9 có nhà văn hóa mở cửa. Tránh gõ cửa sau 21h..."></textarea>
+      <div class="field-hint">Đừng ghi tên chính xác hay số điện thoại — chỉ mô tả vị trí và cách nhận biết</div>
+    </div>
+
+    <div class="field">
+      <label>Động vật cần lưu ý</label>
+      <textarea id="l-animals" placeholder="VD: Đoạn km 7-8 chó thả rông ban đêm — đi chậm, không chạy. Ong rừng km 12 tháng 4-5 — đừng đập tổ. Rắn hổ mang hay ra đường sáng sớm tháng 6-8..."></textarea>
+    </div>
+
+    <div class="field">
+      <label>Văn hóa địa phương cần tôn trọng</label>
+      <textarea id="l-culture" placeholder="VD: Qua bản Mông — xin phép trước khi chụp ảnh người. Không chạy qua sân nhà khi có đám ma/cưới. Chợ phiên Chủ nhật — đi chậm, nhường đường..."></textarea>
+    </div>
+
+    <div class="field">
+      <label>Điểm nguy hiểm ít ai biết</label>
+      <textarea id="l-danger" placeholder="VD: Km 15 có vách đá không có biển báo — mưa trơn rất nguy hiểm. Suối km 11 mùa mưa nước lên nhanh — không vượt nếu nước trên đầu gối..."></textarea>
+    </div>
+
+    <div class="field">
+      <label>Bí mật local bạn muốn chia sẻ</label>
+      <textarea id="l-secret" placeholder="VD: Từ km 8 rẽ trái theo đường mòn bộ đội 200m sẽ ra điểm view tốt nhất không ai biết. Nhà bà Sùng km 6 có thắng cố tự nấu ngon nhất vùng, 20k/bát..."></textarea>
+    </div>
+
+    <div class="field">
+      <label>Gear đặc biệt cần cho trail này</label>
+      <textarea id="l-gear" placeholder="VD: Bắt buộc gaiters tháng 7-9 — vắt rất nhiều. Poles cần thiết cho đoạn km 14-16. Tháng 12-1 cần găng tay và mũ len trên đỉnh..."></textarea>
+    </div>
+  </div>
+
+  <div class="nav-row">
+    <button class="btn btn-outline" onclick="goStep(3)">← Quay lại</button>
+    <button class="btn btn-forest" onclick="goStep(5)">Tiếp: Định giá →</button>
+  </div>
+</div>
+
+<!-- ══ STEP 5: ĐỊNH GIÁ & BẢO MẬT ══ -->
+<div class="step-panel" id="step-5">
+
+  <div class="card">
+    <div class="card-hdr">
+      <div class="card-icon ci-gold">💰</div>
+      <div>
+        <div class="card-title">Định giá & Bảo vệ nội dung</div>
+        <div class="card-sub">Bạn xứng đáng được trả công — hệ thống bảo vệ giá trị của bạn</div>
+      </div>
+    </div>
+
+    <div class="sec-label">Chọn mô hình truy cập</div>
+    <div class="pricing-grid">
+      <div class="price-card" onclick="selectPrice(this,'free')">
+        <div class="pc-label">Miễn phí</div>
+        <div class="pc-price">0đ</div>
+        <div class="pc-desc">Chia sẻ cộng đồng, nhận điểm công đức</div>
+        <div class="pc-split" style="color:var(--forest)">+100 điểm CĐ</div>
+      </div>
+      <div class="price-card selected" onclick="selectPrice(this,'sub')">
+        <div class="pc-label">Subscription</div>
+        <div class="pc-price">79k/tháng</div>
+        <div class="pc-desc">Truy cập unlimited tất cả trail trong gói</div>
+        <div class="pc-split">Bạn nhận 60%</div>
+      </div>
+      <div class="price-card" onclick="selectPrice(this,'single')">
+        <div class="pc-label">Mua riêng lẻ</div>
+        <div class="pc-price" id="single-price">49k</div>
+        <div class="pc-desc">Truy cập vĩnh viễn trail này + live updates</div>
+        <div class="pc-split">Bạn nhận 60%</div>
+      </div>
+    </div>
+
+    <div style="margin-top:12px">
+      <div class="field">
+        <label>Giá bán lẻ của trail này (nếu chọn mua riêng)</label>
+        <select id="price-select" onchange="document.getElementById('single-price').textContent=this.value">
+          <option value="29k">29,000đ — trail ngắn, đơn giản</option>
+          <option value="49k" selected>49,000đ — trail trung bình</option>
+          <option value="79k">79,000đ — trail khó, nhiều nội dung</option>
+          <option value="99k">99,000đ — trail đặc biệt, hiếm</option>
+          <option value="149k">149,000đ — trail legendary</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="security-box">
+      <strong>Hệ thống bảo vệ nội dung của bạn:</strong><br>
+      File GPX được nhúng watermark ẩn chứa userId + timestamp mua — nếu bị share lại, HLRace detect được nguồn gốc và xử lý.<br><br>
+      Giá trị thật của trail không nằm trong file GPX mà nằm trong <strong>live layer</strong>: thời tiết realtime, báo cáo điều kiện tuần này, cộng đồng đang chạy trail này. Bản copy rời không có những thứ này.<br><br>
+      Người mua qua HLRace có thể chia sẻ <em>trải nghiệm</em> nhưng không thể resell <em>quyền truy cập</em> — đây là điều khoản sử dụng được enforce bằng tài khoản.
+    </div>
+
+    <div style="margin-top:14px">
+      <div class="field">
+        <label>Cập nhật định kỳ — bạn cam kết</label>
+        <select id="update-freq">
+          <option>Sau mỗi chuyến chạy (lý tưởng nhất)</option>
+          <option>Hàng tháng</option>
+          <option>Theo mùa (4 lần/năm)</option>
+          <option>Khi có thay đổi lớn</option>
+        </select>
+        <div class="field-hint">Trail được cập nhật thường xuyên sẽ được xếp hạng cao hơn trong tìm kiếm</div>
+      </div>
+    </div>
+
+    <!-- TEP Score Preview -->
+    <div class="tep-wrap" id="tep-preview">
+      <div class="tep-title">📊 Trail Experience Product Score — ước tính</div>
+      <div class="tep-bars">
+        <div class="tep-bar-row">
+          <div class="tep-bar-label">Route (GPX)</div>
+          <div class="tep-bar-bg"><div class="tep-bar-fill" style="width:80%"></div></div>
+          <div class="tep-bar-score" id="s-route">80</div>
+        </div>
+        <div class="tep-bar-row">
+          <div class="tep-bar-label">Conditions</div>
+          <div class="tep-bar-bg"><div class="tep-bar-fill" style="width:60%" id="bar-cond"></div></div>
+          <div class="tep-bar-score" id="s-cond">60</div>
+        </div>
+        <div class="tep-bar-row">
+          <div class="tep-bar-label">Moments</div>
+          <div class="tep-bar-bg"><div class="tep-bar-fill" style="width:40%" id="bar-mom"></div></div>
+          <div class="tep-bar-score" id="s-mom">40</div>
+        </div>
+        <div class="tep-bar-row">
+          <div class="tep-bar-label">Local Knowledge</div>
+          <div class="tep-bar-bg"><div class="tep-bar-fill" style="width:20%" id="bar-local"></div></div>
+          <div class="tep-bar-score" id="s-local">20</div>
+        </div>
+        <div class="tep-bar-row">
+          <div class="tep-bar-label">Freshness</div>
+          <div class="tep-bar-bg"><div class="tep-bar-fill" style="width:50%" id="bar-fresh"></div></div>
+          <div class="tep-bar-score" id="s-fresh">50</div>
+        </div>
+      </div>
+      <div class="tep-total">
+        <span style="font-size:12px;color:var(--muted)">TEP Score tổng</span>
+        <span class="tep-total-val" id="tep-total">58/100</span>
+      </div>
+      <div style="font-size:11px;color:var(--muted);margin-top:8px;line-height:1.6">
+        Thêm khoảnh khắc đặc biệt và kiến thức bản địa để tăng score. Score cao hơn → xếp hạng cao hơn → doanh thu cao hơn.
+      </div>
+    </div>
+  </div>
+
+  <div class="nav-row">
+    <button class="btn btn-outline" onclick="goStep(4)">← Quay lại</button>
+    <button class="btn btn-forest" onclick="submitTrail()">🚀 Gửi trail để duyệt</button>
+  </div>
+</div>
+
+<!-- SUCCESS -->
+<div class="success" id="success">
+  <div class="success-icon">🏔</div>
+  <div class="success-title">Trail đã được gửi!</div>
+  <div class="success-sub">HLRace sẽ review trong 3-5 ngày. Khi được duyệt, trail của bạn sẽ xuất hiện trong hệ thống và bạn bắt đầu nhận % doanh thu từ người mua.</div>
+
+  <div class="success-tep">
+    <div style="font-size:12px;color:var(--muted);margin-bottom:8px;text-transform:uppercase;letter-spacing:.5px;font-weight:500">TEP Score của trail bạn</div>
+    <div class="tep-bars">
+      <div class="tep-bar-row">
+        <div class="tep-bar-label" style="width:90px">Route</div>
+        <div class="tep-bar-bg"><div class="tep-bar-fill" style="width:80%"></div></div>
+        <div class="tep-bar-score">80</div>
+      </div>
+      <div class="tep-bar-row">
+        <div class="tep-bar-label" style="width:90px">Conditions</div>
+        <div class="tep-bar-bg"><div class="tep-bar-fill" id="sc-cond" style="width:60%"></div></div>
+        <div class="tep-bar-score" id="sc-cond-v">60</div>
+      </div>
+      <div class="tep-bar-row">
+        <div class="tep-bar-label" style="width:90px">Moments</div>
+        <div class="tep-bar-bg"><div class="tep-bar-fill" id="sc-mom" style="width:40%"></div></div>
+        <div class="tep-bar-score" id="sc-mom-v">40</div>
+      </div>
+      <div class="tep-bar-row">
+        <div class="tep-bar-label" style="width:90px">Local Know.</div>
+        <div class="tep-bar-bg"><div class="tep-bar-fill" id="sc-local" style="width:20%"></div></div>
+        <div class="tep-bar-score" id="sc-local-v">20</div>
+      </div>
+    </div>
+    <div class="tep-total">
+      <span style="font-size:12px;color:var(--muted)">TEP Score</span>
+      <span class="tep-total-val" id="sc-total">58/100</span>
+    </div>
+  </div>
+
+  <div style="background:rgba(42,92,58,.06);border:1px solid rgba(42,92,58,.15);border-radius:var(--r-sm);padding:14px;max-width:360px;margin:0 auto 16px;font-size:12px;color:var(--forest);line-height:1.8;text-align:left">
+    <strong>Để tăng TEP Score sau khi publish:</strong><br>
+    Thêm ảnh thực tế mỗi mùa · Báo cáo điều kiện sau mỗi chuyến chạy · Trả lời câu hỏi từ người mua · Cập nhật khi có thay đổi địa hình
+  </div>
+
+  <button class="btn btn-outline" onclick="window.location.reload()">Thêm trail khác</button>
+</div>
+
+</div><!-- end wrap -->
+
+<script>
+const MONTHS = ['T1','T2','T3','T4','T5','T6','T7','T8','T9','T10','T11','T12'];
+const MONTH_ICONS = ['❄️','🌸','🌸','🌧','☔','🌿','🌿','🌦','🍂','🍁','☁️','❄️'];
+let seasonState = {};
+MONTHS.forEach(m => seasonState[m] = 'none');
+
+let moments = [];
+let currentStep = 1;
+const STEPS = 5;
+
+function buildSeasonGrid() {
+  const grid = document.getElementById('season-grid');
+  grid.innerHTML = MONTHS.map(m => `
+    <div class="season-cell" id="sc-${m}" onclick="cycleMonth('${m}')">
+      <div class="season-icon">${MONTH_ICONS[MONTHS.indexOf(m)]}</div>
+      <div class="season-name">${m}</div>
+    </div>`).join('');
+}
+
+function cycleMonth(m) {
+  const states = ['none','best','ok','avoid'];
+  const idx = states.indexOf(seasonState[m]);
+  seasonState[m] = states[(idx+1) % states.length];
+  const el = document.getElementById('sc-'+m);
+  el.className = 'season-cell' + (seasonState[m] !== 'none' ? ' '+seasonState[m] : '');
+  updateTEP();
+}
+
+function goStep(n) {
+  document.getElementById('step-'+currentStep).classList.remove('active');
+  document.getElementById('step-'+n).classList.add('active');
+  const pcts = {1:20, 2:40, 3:60, 4:80, 5:100};
+  document.getElementById('prog-fill').style.width = pcts[n]+'%';
+  for(let i=1;i<=STEPS;i++) {
+    const lbl = document.getElementById('pl-'+i);
+    lbl.classList.toggle('active', i===n);
+  }
+  currentStep = n;
+  if(n===5) updateTEP();
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+// MOMENTS
+const MTYPE_CLS = {seasonal:'mb-seasonal',wildlife:'mb-wildlife',culture:'mb-culture',safety:'mb-safety',secret:'mb-secret'};
+const MTYPE_LABELS = {seasonal:'Theo mùa',wildlife:'Thiên nhiên',culture:'Văn hóa',safety:'An toàn',secret:'Bí mật local'};
+
+function addMoment() {
+  const type = document.getElementById('m-type').value;
+  const km = document.getElementById('m-km').value;
+  const text = document.getElementById('m-text').value.trim();
+  const when = document.getElementById('m-when').value;
+  const prob = document.getElementById('m-prob').value;
+  if(!text) return;
+  moments.push({type,km,text,when,prob});
+  renderMoments();
+  document.getElementById('m-text').value='';
+  document.getElementById('m-km').value='';
+  document.getElementById('m-when').value='';
+  document.getElementById('add-form').classList.remove('active');
+  updateTEP();
+}
+
+function renderMoments() {
+  const el = document.getElementById('moment-list');
+  if(!moments.length) { el.innerHTML='<div style="font-size:12px;color:var(--muted);text-align:center;padding:12px">Chưa có khoảnh khắc nào — thêm ít nhất 3 để tăng giá trị trail</div>'; return; }
+  el.innerHTML = moments.map((m,i) => `
+    <div class="moment-item">
+      <button class="moment-del" onclick="delMoment(${i})">✕</button>
+      <span class="moment-type-badge ${MTYPE_CLS[m.type]}">${MTYPE_LABELS[m.type]}</span>
+      <div class="moment-text">${m.text}</div>
+      <div class="moment-km">${m.km?'Km '+m.km+' · ':''}${m.when?m.when+' · ':''}${m.prob}</div>
+    </div>`).join('');
+}
+
+function delMoment(i) { moments.splice(i,1); renderMoments(); updateTEP(); }
+
+// TEP SCORE
+function updateTEP() {
+  const hasGPX = document.getElementById('gpx-label').textContent !== 'Chọn file .gpx hoặc .fit';
+  const hasDesc = (document.getElementById('r-desc')?.value||'').length > 50;
+  const routeScore = hasGPX ? 80 : 40;
+
+  const seasonFilled = Object.values(seasonState).filter(s=>s!=='none').length;
+  const hasSeasonText = (document.getElementById('s-best')?.value||'').length > 20;
+  const condScore = Math.min(100, seasonFilled*6 + (hasSeasonText?20:0));
+
+  const momScore = Math.min(100, moments.length * 20);
+
+  const localFields = ['l-water','l-shelter','l-animals','l-culture','l-danger','l-secret','l-gear'];
+  const localFilled = localFields.filter(id=>(document.getElementById(id)?.value||'').length>20).length;
+  const localScore = Math.round(localFilled/localFields.length*100);
+
+  const freshScore = 50; // default, increases after publish + updates
+
+  const total = Math.round((routeScore + condScore + momScore + localScore + freshScore) / 5);
+
+  ['cond','mom','local','fresh'].forEach(k => {
+    const scores = {cond:condScore,mom:momScore,local:localScore,fresh:freshScore};
+    const v = scores[k];
+    const fill = document.getElementById('bar-'+k);
+    const score = document.getElementById('s-'+k);
+    if(fill) fill.style.width = v+'%';
+    if(score) score.textContent = v;
+  });
+  document.getElementById('s-route').textContent = routeScore;
+  const tot = document.getElementById('tep-total');
+  if(tot) tot.textContent = total+'/100';
+}
+
+function selectPrice(el, type) {
+  document.querySelectorAll('.price-card').forEach(c=>c.classList.remove('selected'));
+  el.classList.add('selected');
+}
+
+function fakeGPX(el) {
+  document.getElementById('gpx-icon').textContent='✅';
+  document.getElementById('gpx-label').textContent='trail_sapa_tavan_12km.gpx · 2.4MB · Đã tải';
+  el.style.borderColor='var(--forest)'; el.style.borderStyle='solid';
+  updateTEP();
+}
+
+function fakePhoto(el, label) {
+  el.classList.add('filled');
+  el.innerHTML=`<div style="font-size:14px">✅</div><div class="ps-label" style="color:var(--forest)">${label}</div>`;
+}
+
+function submitTrail() {
+  // Sync success TEP
+  const total = document.getElementById('tep-total')?.textContent || '58/100';
+  document.getElementById('sc-total').textContent = total;
+  document.querySelectorAll('.step-panel').forEach(p=>p.classList.remove('active'));
+  document.getElementById('success').style.display='block';
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+// Init
+buildSeasonGrid();
+renderMoments();
+</script>
+</body>
+</html>

@@ -1,0 +1,885 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Nghiệm Thu & Xác Nhận — HLRace</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#F7F5F0;--white:#fff;--ink:#111418;--muted:#6B7280;
+  --red:#C8393B;--gold:#D97706;--green:#16A34A;--blue:#1D6FA4;
+  --border:rgba(17,20,24,.09);--shadow:0 2px 10px rgba(0,0,0,.06);
+}
+body{background:var(--bg);color:var(--ink);font-family:'DM Sans',sans-serif;min-height:100vh}
+
+.topbar{background:var(--ink);height:50px;display:flex;align-items:center;justify-content:space-between;padding:0 24px;position:sticky;top:0;z-index:100}
+.tb-brand{color:#fff;font-weight:700;font-size:13px;display:flex;align-items:center;gap:8px}
+.tb-tag{background:var(--red);font-family:'Bebas Neue';font-size:11px;letter-spacing:1.5px;padding:3px 8px;border-radius:3px}
+.tb-right{display:flex;gap:8px}
+.tb-btn{padding:6px 14px;border-radius:5px;font-family:'DM Sans';font-size:11px;font-weight:700;cursor:pointer;border:none;background:rgba(255,255,255,.1);color:#fff;transition:all .2s}
+.tb-btn:hover{background:rgba(255,255,255,.18)}
+
+.role-sw{background:var(--white);border-bottom:1px solid var(--border);padding:10px 24px;display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.rs-label{font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--muted);flex-shrink:0}
+.rs-tabs{display:flex;background:var(--bg);border-radius:7px;padding:3px;gap:0}
+.rs-tab{padding:7px 18px;border-radius:5px;font-size:11px;font-weight:700;cursor:pointer;color:var(--muted);transition:all .2s;white-space:nowrap}
+.rs-tab.on{background:var(--white);color:var(--ink);box-shadow:0 1px 4px rgba(0,0,0,.08)}
+.rs-hint{margin-left:auto;font-size:10px;color:var(--muted)}
+
+.main{max-width:1060px;margin:0 auto;padding:22px 20px 80px}
+
+.card{background:var(--white);border:1px solid var(--border);border-radius:12px;overflow:hidden;box-shadow:var(--shadow);margin-bottom:14px}
+.card-head{padding:14px 18px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+.ch-title{font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--muted);display:flex;align-items:center;gap:7px}
+.ch-title::before{content:'';width:3px;height:12px;background:var(--red);border-radius:2px;display:inline-block;flex-shrink:0}
+.card-body{padding:18px}
+
+/* CONTRACT HEADER */
+.contract-hero{background:linear-gradient(135deg,#0f1520,#1a2540);border-radius:12px;padding:22px;margin-bottom:16px;color:#fff;position:relative;overflow:hidden}
+.contract-hero::before{content:'';position:absolute;top:-40px;right:-40px;width:220px;height:220px;background:radial-gradient(circle,rgba(200,57,59,.18),transparent 70%)}
+.ch-statusbadge{display:inline-flex;align-items:center;gap:6px;padding:4px 12px;border-radius:20px;font-size:10px;font-weight:700;letter-spacing:.5px;margin-bottom:10px}
+.ch-name{font-family:'Bebas Neue';font-size:26px;letter-spacing:1.5px;margin-bottom:3px}
+.ch-meta{font-size:11px;color:rgba(255,255,255,.45);margin-bottom:16px}
+.ch-parties{display:grid;grid-template-columns:1fr 44px 1fr 44px 1fr;align-items:center;gap:8px}
+@media(max-width:640px){.ch-parties{grid-template-columns:1fr}}
+.cp{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:8px;padding:10px 13px}
+.cp-role{font-size:8px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,.35);margin-bottom:3px}
+.cp-name{font-size:12px;font-weight:700;line-height:1.3}
+.cp-sub{font-size:10px;color:rgba(255,255,255,.45);margin-top:2px}
+.cp-arrow{text-align:center;color:rgba(255,255,255,.25);font-size:22px;font-weight:300}
+
+/* PROGRESS GRID */
+.prog-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:9px;margin-bottom:16px}
+.pg{background:var(--white);border:1px solid var(--border);border-radius:9px;padding:11px;text-align:center;box-shadow:var(--shadow)}
+.pg-num{font-family:'Bebas Neue';font-size:28px;line-height:1}
+.pg-lbl{font-size:8px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);margin-top:3px}
+
+/* CHECKLIST */
+.checklist{display:flex;flex-direction:column;gap:7px}
+.cl-item{border:1.5px solid var(--border);border-radius:10px;overflow:hidden;transition:border-color .2s}
+.cl-item.pass{border-color:rgba(22,163,74,.4)}
+.cl-item.fail{border-color:rgba(200,57,59,.4)}
+.cl-item.review{border-color:rgba(217,119,6,.4)}
+.cl-header{padding:11px 14px;display:flex;align-items:center;gap:10px;cursor:pointer;user-select:none}
+.cl-icon{font-size:16px;width:26px;text-align:center;flex-shrink:0}
+.cl-info{flex:1;min-width:0}
+.cl-name{font-size:12px;font-weight:700}
+.cl-desc{font-size:10px;color:var(--muted);margin-top:1px}
+.cl-actions{display:flex;gap:5px;flex-shrink:0}
+.cv-btn{padding:5px 11px;border-radius:5px;border:1.5px solid var(--border);background:none;font-family:'DM Sans';font-size:10px;font-weight:700;cursor:pointer;transition:all .15s;color:var(--muted);white-space:nowrap}
+.cv-btn:hover{transform:scale(1.05)}
+.cv-pass.active{background:rgba(22,163,74,.12);border-color:var(--green);color:var(--green)}
+.cv-fail.active{background:rgba(200,57,59,.1);border-color:var(--red);color:var(--red)}
+.cv-review.active{background:rgba(217,119,6,.1);border-color:var(--gold);color:var(--gold)}
+.cl-expand{padding:12px 14px;border-top:1px solid var(--border);background:var(--bg);display:none}
+.cl-item.open .cl-expand{display:block}
+.cl-note-input{width:100%;background:var(--white);border:1.5px solid var(--border);border-radius:7px;font-family:'DM Sans';font-size:12px;padding:8px 11px;color:var(--ink);outline:none;transition:border-color .2s;resize:vertical;min-height:52px}
+.cl-note-input:focus{border-color:var(--blue)}
+.evidence-wrap{display:flex;flex-wrap:wrap;gap:7px;margin-top:8px}
+.ev-thumb{position:relative;width:68px;height:68px}
+.ev-thumb img{width:100%;height:100%;object-fit:cover;border-radius:7px;border:1px solid var(--border);cursor:pointer}
+.ev-del{position:absolute;top:-5px;right:-5px;background:var(--red);color:#fff;border:none;border-radius:50%;width:17px;height:17px;font-size:9px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-weight:800}
+.ev-add{width:68px;height:68px;border-radius:7px;border:2px dashed var(--border);display:flex;align-items:center;justify-content:center;font-size:22px;cursor:pointer;color:var(--muted);background:none;transition:all .2s;flex-shrink:0}
+.ev-add:hover{border-color:var(--blue);color:var(--blue)}
+
+/* BADGES */
+.badge{display:inline-flex;align-items:center;gap:4px;padding:3px 8px;border-radius:4px;font-size:9px;font-weight:700;letter-spacing:.5px;white-space:nowrap}
+.b-pass{background:rgba(22,163,74,.1);color:var(--green)}
+.b-fail{background:rgba(200,57,59,.1);color:var(--red)}
+.b-review{background:rgba(217,119,6,.1);color:var(--gold)}
+.b-wait{background:rgba(107,114,128,.1);color:var(--muted)}
+.b-approved{background:rgba(29,111,164,.1);color:var(--blue)}
+.b-paid{background:rgba(22,163,74,.15);color:var(--green)}
+
+/* AUDIT LOG */
+.audit-log{display:flex;flex-direction:column;gap:0}
+.al{display:flex;gap:10px;padding-bottom:11px;position:relative}
+.al::before{content:'';position:absolute;left:10px;top:21px;bottom:0;width:1px;background:var(--border)}
+.al:last-child::before{display:none}
+.al-dot{width:21px;height:21px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:9px;color:#fff;z-index:1;position:relative}
+.al-body{flex:1;padding-top:1px}
+.al-who{font-size:11px;font-weight:700}
+.al-what{font-size:11px;color:var(--muted);margin-top:1px}
+.al-when{font-size:9px;color:var(--muted);margin-top:2px;letter-spacing:.3px}
+
+/* MATCHING */
+.match-board{display:flex;flex-direction:column;gap:8px}
+.match-row{display:grid;grid-template-columns:1fr 52px 1fr;align-items:center;gap:10px;padding:12px 14px;border:1.5px solid var(--border);border-radius:10px;background:var(--white)}
+.match-row.active{border-color:rgba(200,57,59,.25);background:rgba(200,57,59,.015)}
+.ms{background:var(--bg);border-radius:7px;padding:9px 11px}
+.ms-role{font-size:8px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:3px}
+.ms-name{font-size:12px;font-weight:700}
+.ms-sub{font-size:10px;color:var(--muted);margin-top:1px}
+.mc{text-align:center}
+.mc-icon{font-size:20px}
+.mc-lbl{font-size:8px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;margin-top:3px}
+
+/* PAYMENT */
+.pay-box{background:linear-gradient(135deg,rgba(22,163,74,.06),rgba(22,163,74,.02));border:1.5px solid rgba(22,163,74,.2);border-radius:12px;padding:18px}
+.pay-amount{font-family:'Bebas Neue';font-size:38px;color:var(--green);line-height:1;letter-spacing:1px}
+.pay-sub{font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-top:3px}
+.bank-box{background:var(--bg);border-radius:8px;padding:13px;margin:12px 0;font-size:12px;line-height:2}
+.bank-box strong{color:var(--ink)}
+
+/* BUTTONS */
+.btn{padding:10px 20px;border-radius:7px;font-family:'DM Sans';font-size:11px;font-weight:700;border:none;cursor:pointer;transition:all .2s;display:inline-flex;align-items:center;gap:6px}
+.btn-primary{background:var(--red);color:#fff}.btn-primary:hover{opacity:.9}
+.btn-green{background:var(--green);color:#fff}.btn-green:hover{opacity:.9}
+.btn-ghost{background:var(--bg);border:1.5px solid var(--border);color:var(--muted)}.btn-ghost:hover{border-color:var(--ink);color:var(--ink)}
+.btn-full{width:100%;justify-content:center}
+
+/* FORM */
+.fld{margin-bottom:11px}
+.fld label{display:block;font-size:9px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);margin-bottom:4px}
+.fld input,.fld select,.fld textarea{width:100%;background:var(--bg);border:1.5px solid var(--border);border-radius:7px;font-family:'DM Sans';font-size:13px;padding:9px 12px;outline:none;transition:border-color .2s;color:var(--ink)}
+.fld input:focus,.fld select:focus,.fld textarea:focus{border-color:var(--red)}
+.fld textarea{resize:vertical;min-height:70px}
+.f2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+@media(max-width:500px){.f2{grid-template-columns:1fr}}
+
+/* NOTICE */
+.notice{padding:11px 14px;border-radius:8px;font-size:11px;line-height:1.7;margin-bottom:12px}
+.n-gold{background:rgba(217,119,6,.06);border:1px solid rgba(217,119,6,.18);color:var(--muted)}
+.n-gold strong{color:var(--gold)}
+.n-green{background:rgba(22,163,74,.06);border:1px solid rgba(22,163,74,.18);color:var(--muted)}
+.n-green strong{color:var(--green)}
+.n-blue{background:rgba(29,111,164,.06);border:1px solid rgba(29,111,164,.18);color:var(--muted)}
+.n-blue strong{color:var(--blue)}
+
+/* UPLOAD ZONE */
+.upload-zone{border:2px dashed var(--border);border-radius:9px;padding:18px;text-align:center;cursor:pointer;transition:all .2s}
+.upload-zone:hover,.upload-zone.drag{border-color:var(--blue);background:rgba(29,111,164,.03)}
+
+/* VIEW */
+.view{display:none}.view.active{display:block}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+@media(max-width:720px){.g2{grid-template-columns:1fr}}
+
+/* CONTRACT SELECTOR */
+.csel-list{display:flex;flex-direction:column;gap:7px;margin-bottom:18px}
+.csel-item{padding:12px 15px;background:var(--white);border:1.5px solid var(--border);border-radius:9px;cursor:pointer;transition:all .2s;display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+.csel-item:hover{border-color:rgba(200,57,59,.3);box-shadow:0 2px 8px rgba(0,0,0,.06)}
+.csel-item.active{border-color:var(--red);background:rgba(200,57,59,.02)}
+.ci-name{font-size:13px;font-weight:700;margin-bottom:2px}
+.ci-meta{font-size:10px;color:var(--muted)}
+.ci-r{display:flex;flex-direction:column;align-items:flex-end;gap:4px}
+.ci-amt{font-size:14px;font-weight:800;color:var(--green)}
+
+/* PHOTO PREVIEW */
+.photo-grid{display:flex;flex-wrap:wrap;gap:7px;margin-top:8px}
+.pt{position:relative;width:78px;height:78px}
+.pt img{width:100%;height:100%;object-fit:cover;border-radius:7px;border:1px solid var(--border)}
+.pt-del{position:absolute;top:-5px;right:-5px;background:var(--red);color:#fff;border:none;border-radius:50%;width:17px;height:17px;font-size:10px;cursor:pointer;display:flex;align-items:center;justify-content:center}
+
+/* SPIN */
+.spin{display:inline-block;width:12px;height:12px;border:2px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:sp .7s linear infinite}
+@keyframes sp{to{transform:rotate(360deg)}}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="tb-brand"><span class="tb-tag">VRACE</span>Nghiệm Thu & Xác Nhận Hợp Đồng</div>
+  <div class="tb-right">
+    <button class="tb-btn" onclick="location.href='marketplace.html'">← Marketplace</button>
+    <button class="tb-btn" onclick="location.href='admin.html'">⚙️ Admin</button>
+  </div>
+</div>
+
+<div class="role-sw">
+  <span class="rs-label">Xem với tư cách:</span>
+  <div class="rs-tabs">
+    <div class="rs-tab on" onclick="setRole('btc',this)">🏅 BTC · HLRace</div>
+    <div class="rs-tab" onclick="setRole('provider',this)">🚚 Nhà cung cấp</div>
+    <div class="rs-tab" onclick="setRole('sponsor',this)">💼 Nhà tài trợ</div>
+  </div>
+  <span class="rs-hint">Mỗi bên chỉ thấy thông tin & hành động của mình</span>
+</div>
+
+<div class="main">
+
+  <!-- CONTRACT SELECTOR -->
+  <div style="font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:8px">Chọn hợp đồng</div>
+  <div class="csel-list" id="cselList"></div>
+
+  <!-- ══════════════ BTC VIEW ══════════════ -->
+  <div class="view active" id="view-btc">
+
+    <div class="contract-hero" id="btcHero"></div>
+    <div class="prog-grid" id="btcProg"></div>
+
+    <div class="card">
+      <div class="card-head">
+        <div class="ch-title">Checklist nghiệm thu</div>
+        <div style="display:flex;gap:7px;flex-wrap:wrap">
+          <button class="btn btn-ghost" style="padding:6px 13px;font-size:10px" onclick="addCheckItem()">+ Thêm hạng mục</button>
+          <button class="btn btn-primary" style="padding:6px 13px;font-size:10px" id="finishBtn" onclick="finishAcceptance()">✅ Hoàn tất nghiệm thu</button>
+        </div>
+      </div>
+      <div class="card-body">
+        <div class="notice n-gold">
+          <strong>Hướng dẫn:</strong> Tick ✅ Đạt / ❌ Không đạt / ⚠️ Cần bổ sung cho từng hạng mục.
+          Mở rộng hạng mục để ghi chú và xem bằng chứng. Khi đủ điều kiện → nhấn Hoàn tất.
+        </div>
+        <div class="checklist" id="btcChecklist"></div>
+      </div>
+    </div>
+
+    <div class="g2">
+      <div class="card">
+        <div class="card-head"><div class="ch-title">Audit Log — Lịch sử đầy đủ</div></div>
+        <div class="card-body"><div class="audit-log" id="btcAudit"></div></div>
+      </div>
+      <div class="card">
+        <div class="card-head"><div class="ch-title">Ghi chú nội bộ BTC</div></div>
+        <div class="card-body">
+          <div class="fld">
+            <label>Ghi chú (chỉ BTC thấy)</label>
+            <textarea id="btcNote" placeholder="Điều cần theo dõi, phản hồi nội bộ..."></textarea>
+          </div>
+          <button class="btn btn-ghost btn-full" onclick="saveBtcNote()" style="font-size:11px;padding:9px">💾 Lưu ghi chú</button>
+          <div id="btcNoteMsg" style="font-size:11px;color:var(--green);margin-top:6px;display:none">✅ Đã lưu</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════ PROVIDER VIEW ══════════════ -->
+  <div class="view" id="view-provider">
+
+    <div class="contract-hero" id="pvHero"></div>
+
+    <div class="notice n-blue">
+      <strong>Hướng dẫn:</strong> Upload ảnh/video bằng chứng cho từng hạng mục BTC cần kiểm tra.
+      Sau khi BTC xác nhận đạt, nhà tài trợ sẽ chuyển khoản thẳng cho bạn. Xuất hóa đơn VAT cho nhà tài trợ (không phải BTC).
+    </div>
+
+    <div id="pvItemList"></div>
+
+    <div class="card">
+      <div class="card-head"><div class="ch-title">Hóa đơn VAT</div></div>
+      <div class="card-body">
+        <div class="notice n-green">
+          <strong>Lưu ý:</strong> Xuất hóa đơn VAT cho <strong id="pvSponsorName">nhà tài trợ</strong> — không phải BTC.
+          Hóa đơn là căn cứ để nhà tài trợ thanh toán theo đúng quy định kế toán.
+        </div>
+        <div class="f2">
+          <div class="fld"><label>Số hóa đơn VAT</label><input type="text" id="pvInvNum" placeholder="AA/26T0123456"></div>
+          <div class="fld"><label>Ngày xuất</label><input type="date" id="pvInvDate"></div>
+        </div>
+        <div class="f2">
+          <div class="fld"><label>Giá trị (VNĐ)</label><input type="text" id="pvInvAmt" placeholder="85,000,000"></div>
+          <div class="fld"><label>Nội dung hóa đơn</label><input type="text" id="pvInvDesc" placeholder="Dịch vụ catering VĐV..."></div>
+        </div>
+        <div class="upload-zone" onclick="document.getElementById('pvInvFile').click()" id="pvInvZone">
+          <div style="font-size:24px;margin-bottom:5px">📄</div>
+          <div style="font-size:12px;color:var(--muted)"><strong style="color:var(--blue)">Upload file hóa đơn</strong> — PDF hoặc ảnh chụp</div>
+          <input type="file" id="pvInvFile" accept=".pdf,image/*" style="display:none" onchange="pvHandleInvoice(this)">
+        </div>
+        <div id="pvInvPreview" style="margin-top:8px"></div>
+        <button class="btn btn-primary btn-full" style="margin-top:12px" onclick="pvSubmitInvoice()">📤 Gửi hóa đơn cho BTC</button>
+        <div id="pvInvMsg" style="font-size:11px;margin-top:8px;display:none"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════ SPONSOR VIEW ══════════════ -->
+  <div class="view" id="view-sponsor">
+
+    <div class="contract-hero" id="spHero"></div>
+
+    <div id="spNotice" class="notice n-gold" style="margin-bottom:12px">
+      <strong>Đang chờ:</strong> BTC đang tiến hành nghiệm thu. Bạn sẽ nhận thông báo khi hoàn tất.
+    </div>
+
+    <div class="card" id="spResultCard">
+      <div class="card-head"><div class="ch-title">Kết quả nghiệm thu từ BTC</div></div>
+      <div class="card-body" id="spResultBody"></div>
+    </div>
+
+    <div class="card" id="spPayCard">
+      <div class="card-head"><div class="ch-title">Xác nhận & Thanh toán</div></div>
+      <div class="card-body">
+        <div class="pay-box" style="margin-bottom:14px;text-align:center">
+          <div class="pay-sub">Số tiền thanh toán thẳng cho nhà cung cấp</div>
+          <div class="pay-amount" id="spPayAmt">—</div>
+        </div>
+        <div class="bank-box" id="spBankInfo"></div>
+        <div class="f2">
+          <div class="fld"><label>Số chứng từ CK</label><input type="text" id="spTransRef" placeholder="Mã giao dịch ngân hàng"></div>
+          <div class="fld"><label>Ngày chuyển khoản</label><input type="date" id="spTransDate"></div>
+        </div>
+        <div class="upload-zone" onclick="document.getElementById('spProofFile').click()" style="margin-bottom:10px">
+          <div style="font-size:20px;margin-bottom:4px">📸</div>
+          <div style="font-size:12px;color:var(--muted)"><strong style="color:var(--blue)">Upload ảnh chuyển khoản</strong> làm bằng chứng</div>
+          <input type="file" id="spProofFile" accept="image/*" style="display:none" onchange="spHandleProof(this)">
+        </div>
+        <img id="spProofPreview" style="max-width:100%;border-radius:8px;display:none;margin-bottom:10px;max-height:200px;object-fit:cover">
+        <button class="btn btn-green btn-full" onclick="spConfirmPayment()">✅ Xác nhận đã chuyển khoản cho nhà cung cấp</button>
+        <div id="spPayMsg" style="font-size:11px;margin-top:8px;display:none"></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-head"><div class="ch-title">Audit Log — Lịch sử nghiệm thu</div></div>
+      <div class="card-body"><div class="audit-log" id="spAudit"></div></div>
+    </div>
+  </div>
+
+</div>
+
+<script src="race-config.js"></script>
+<script>
+// ══════════════════════════════════════════════════════════
+// DATA
+// ══════════════════════════════════════════════════════════
+
+const CONTRACTS = [
+  {
+    id: 'c1',
+    name: 'Dịch vụ Catering VĐV',
+    event: 'Giải Chạy 21/03/2026',
+    status: 'in_review', // in_review | btc_approved | sponsor_confirmed | paid
+    amount: '85,000,000',
+    amountNum: 85000000,
+    sponsor: { name: 'PHỞ ĐỆ NHẤT · Acecook', contact: 'Nguyễn Văn Thành', phone: '0912 111 222' },
+    provider: {
+      name: 'Nhà bếp Hoàn Kiếm', contact: 'Trần Thị Lan', phone: '0912 333 444',
+      bank: 'Vietcombank', bankAcct: '1234 5678 9012', bankOwner: 'Nhà bếp Hoàn Kiếm',
+      bankBranch: 'Chi nhánh Hoàn Kiếm'
+    },
+    items: [
+      { id:'i1', icon:'🍜', name:'Số lượng suất ăn', desc:'Đủ 1.200 suất phở sáng đúng quy cách', verdict:null, note:'', photos:[] },
+      { id:'i2', icon:'✅', name:'Vệ sinh an toàn thực phẩm', desc:'Đạt tiêu chuẩn VSATTP, đủ điều kiện phục vụ', verdict:null, note:'', photos:[] },
+      { id:'i3', icon:'⏰', name:'Thời gian phục vụ', desc:'Bắt đầu 5:30, kết thúc trước 9:00', verdict:null, note:'', photos:[] },
+      { id:'i4', icon:'👨‍🍳', name:'Nhân lực phục vụ', desc:'Tối thiểu 8 nhân viên có mặt', verdict:null, note:'', photos:[] },
+      { id:'i5', icon:'🧹', name:'Dọn dẹp sau sự kiện', desc:'Khu vực sạch trong vòng 2 tiếng sau kết thúc', verdict:null, note:'', photos:[] },
+    ],
+    audit: [
+      { who:'BTC · Nguyễn Hoài Nam', what:'Tạo hợp đồng & checklist nghiệm thu', when:'20/03/2026 · 16:00', color:'#1D6FA4' },
+      { who:'Nhà bếp Hoàn Kiếm', what:'Xác nhận nhận checklist, bắt đầu chuẩn bị', when:'20/03/2026 · 17:30', color:'#16A34A' },
+    ],
+    invoice: null,
+    btcNote: '',
+  },
+  {
+    id: 'c2',
+    name: 'Dịch vụ Vận tải & Shuttle',
+    event: 'Giải Chạy 21/03/2026',
+    status: 'btc_approved',
+    amount: '120,000,000',
+    amountNum: 120000000,
+    sponsor: { name: 'Vietcombank Hà Nội', contact: 'Lê Minh Hùng', phone: '0912 555 666' },
+    provider: {
+      name: 'Vận tải Hoàn Kiếm', contact: 'Phạm Văn Đức', phone: '0912 777 888',
+      bank: 'ACB', bankAcct: '9876 5432 1000', bankOwner: 'Cty Vận tải Hoàn Kiếm',
+      bankBranch: 'Chi nhánh Hà Nội'
+    },
+    items: [
+      { id:'i6', icon:'🚌', name:'Số lượng xe', desc:'10 xe 45 chỗ đúng giờ tại 6 điểm đón', verdict:'pass', note:'Đủ 10 xe, đúng giờ 5:00', photos:[] },
+      { id:'i7', icon:'📋', name:'Giấy tờ xe & lái xe', desc:'Bằng lái hợp lệ, đăng kiểm còn hạn', verdict:'pass', note:'Kiểm tra 10/10 xe đủ hồ sơ', photos:[] },
+      { id:'i8', icon:'📍', name:'Phủ đủ lộ trình', desc:'6 điểm tập kết, không chậm quá 15 phút', verdict:'pass', note:'Hoàn thành đúng lịch', photos:[] },
+      { id:'i9', icon:'🔄', name:'Chuyến về sau sự kiện', desc:'Vận chuyển VĐV về đủ 6 điểm', verdict:'pass', note:'', photos:[] },
+    ],
+    audit: [
+      { who:'BTC · Nguyễn Hoài Nam', what:'Tạo hợp đồng & checklist nghiệm thu', when:'20/03/2026 · 16:00', color:'#1D6FA4' },
+      { who:'Vận tải Hoàn Kiếm', what:'Upload 8 ảnh bằng chứng xe chuẩn bị', when:'21/03/2026 · 04:50', color:'#16A34A' },
+      { who:'BTC · Trần Minh Tuấn', what:'✅ Đạt: Số lượng xe — 10/10 xe đúng giờ', when:'21/03/2026 · 09:10', color:'#C8393B' },
+      { who:'BTC · Trần Minh Tuấn', what:'✅ Đạt: Giấy tờ xe & lái xe', when:'21/03/2026 · 09:11', color:'#C8393B' },
+      { who:'BTC · Trần Minh Tuấn', what:'✅ Đạt: Lộ trình & thời gian', when:'21/03/2026 · 09:12', color:'#C8393B' },
+      { who:'BTC · Trần Minh Tuấn', what:'✅ Đạt: Chuyến về sau sự kiện', when:'21/03/2026 · 12:30', color:'#C8393B' },
+      { who:'Hệ thống', what:'📧 Đã gửi thông báo tới Vietcombank HN — BTC xác nhận đạt', when:'21/03/2026 · 12:31', color:'#7C3AED' },
+    ],
+    invoice: { num:'AA/26T000123', date:'21/03/2026', amt:'120,000,000', desc:'Dịch vụ vận tải shuttle VĐV' },
+    btcNote: 'Xe về muộn 5 phút ở điểm Hàng Đào — chấp nhận được. Nhà cung cấp phục vụ tốt.',
+  },
+];
+
+// ══════════════════════════════════════════════════════════
+// STATE
+// ══════════════════════════════════════════════════════════
+let curRole = 'btc';
+let curC = CONTRACTS[0];
+
+// ══════════════════════════════════════════════════════════
+// INIT
+// ══════════════════════════════════════════════════════════
+document.addEventListener('DOMContentLoaded', () => {
+  const url = localStorage.getItem('race_sheet_url') || '';
+  // In production: load contracts from Sheets
+  renderCsel();
+  renderAll();
+});
+
+// ══════════════════════════════════════════════════════════
+// ROLE
+// ══════════════════════════════════════════════════════════
+function setRole(role, btn) {
+  curRole = role;
+  document.querySelectorAll('.rs-tab').forEach(t => t.classList.remove('on'));
+  btn.classList.add('on');
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  document.getElementById('view-' + role).classList.add('active');
+  renderAll();
+}
+
+// ══════════════════════════════════════════════════════════
+// CONTRACT SELECTOR
+// ══════════════════════════════════════════════════════════
+function renderCsel() {
+  const statusMap = {
+    in_review: { label: '⏳ Đang nghiệm thu', cls: 'b-review' },
+    btc_approved: { label: '✅ BTC đã duyệt', cls: 'b-approved' },
+    sponsor_confirmed: { label: '💰 Tài trợ xác nhận', cls: 'b-pass' },
+    paid: { label: '🏦 Đã thanh toán', cls: 'b-paid' },
+  };
+  document.getElementById('cselList').innerHTML = CONTRACTS.map(c => {
+    const s = statusMap[c.status] || { label: c.status, cls: 'b-wait' };
+    return `<div class="csel-item${c.id === curC.id ? ' active' : ''}" onclick="selC('${c.id}')">
+      <div>
+        <div class="ci-name">${c.name}</div>
+        <div class="ci-meta">${c.sponsor.name} ↔ ${c.provider.name} · ${c.event}</div>
+      </div>
+      <div class="ci-r">
+        <div class="ci-amt">${c.amount} VNĐ</div>
+        <span class="badge ${s.cls}">${s.label}</span>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function selC(id) {
+  curC = CONTRACTS.find(c => c.id === id) || CONTRACTS[0];
+  renderCsel();
+  renderAll();
+}
+
+// ══════════════════════════════════════════════════════════
+// RENDER ALL
+// ══════════════════════════════════════════════════════════
+function renderAll() {
+  renderHeroes();
+  renderBtcProg();
+  renderBtcChecklist();
+  renderBtcAudit();
+  renderBtcNote();
+  renderProviderView();
+  renderSponsorView();
+}
+
+// ══════════════════════════════════════════════════════════
+// HEROES
+// ══════════════════════════════════════════════════════════
+function heroHTML() {
+  const c = curC;
+  const isApproved = ['btc_approved','sponsor_confirmed','paid'].includes(c.status);
+  const statusText = {
+    in_review: '⏳ Đang nghiệm thu',
+    btc_approved: '✅ BTC đã duyệt — Chờ tài trợ xác nhận',
+    sponsor_confirmed: '💰 Tài trợ đã xác nhận — Chờ thanh toán',
+    paid: '🏦 Đã thanh toán — Hoàn tất',
+  }[c.status] || c.status;
+  const statusColor = isApproved ? 'rgba(22,163,74,.2)' : 'rgba(217,119,6,.15)';
+  const statusFg = isApproved ? '#4ade80' : '#fbbf24';
+  return `
+    <div class="ch-statusbadge" style="background:${statusColor};color:${statusFg}">${statusText}</div>
+    <div class="ch-name">${c.name}</div>
+    <div class="ch-meta">📅 ${c.event} · 💰 ${c.amount} VNĐ</div>
+    <div class="ch-parties">
+      <div class="cp"><div class="cp-role">Nhà tài trợ</div><div class="cp-name">${c.sponsor.name}</div><div class="cp-sub">${c.sponsor.contact} · ${c.sponsor.phone}</div></div>
+      <div class="cp-arrow">→</div>
+      <div class="cp" style="border-color:rgba(200,57,59,.3);background:rgba(200,57,59,.06)"><div class="cp-role">BTC · HLRace</div><div class="cp-name">Kiểm soát chất lượng</div><div class="cp-sub">Phê duyệt nghiệm thu</div></div>
+      <div class="cp-arrow">→</div>
+      <div class="cp"><div class="cp-role">Nhà cung cấp</div><div class="cp-name">${c.provider.name}</div><div class="cp-sub">${c.provider.contact} · ${c.provider.phone}</div></div>
+    </div>`;
+}
+function renderHeroes() {
+  ['btcHero','pvHero','spHero'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.innerHTML = heroHTML();
+  });
+}
+
+// ══════════════════════════════════════════════════════════
+// BTC VIEW
+// ══════════════════════════════════════════════════════════
+function renderBtcProg() {
+  const items = curC.items;
+  const pass = items.filter(i => i.verdict === 'pass').length;
+  const fail = items.filter(i => i.verdict === 'fail').length;
+  const rev  = items.filter(i => i.verdict === 'review').length;
+  const pend = items.filter(i => !i.verdict).length;
+  const pct  = items.length ? Math.round(pass / items.length * 100) : 0;
+  document.getElementById('btcProg').innerHTML = `
+    <div class="pg"><div class="pg-num" style="color:var(--green)">${pass}</div><div class="pg-lbl">✅ Đạt</div></div>
+    <div class="pg"><div class="pg-num" style="color:var(--red)">${fail}</div><div class="pg-lbl">❌ Không đạt</div></div>
+    <div class="pg"><div class="pg-num" style="color:var(--gold)">${rev}</div><div class="pg-lbl">⚠️ Cần bổ sung</div></div>
+    <div class="pg"><div class="pg-num" style="color:var(--muted)">${pend}</div><div class="pg-lbl">⏳ Chưa kiểm tra</div></div>
+    <div class="pg"><div class="pg-num" style="color:var(--blue)">${items.length}</div><div class="pg-lbl">📋 Tổng</div></div>
+    <div class="pg"><div class="pg-num" style="color:var(--green)">${pct}%</div><div class="pg-lbl">Hoàn thành</div></div>`;
+
+  // Enable finish button only if all items have a verdict
+  const btn = document.getElementById('finishBtn');
+  const allDone = items.length > 0 && pend === 0 && fail === 0 && rev === 0;
+  btn.style.opacity = allDone ? '1' : '0.5';
+  btn.title = allDone ? '' : 'Cần tick đầy đủ, không có mục Không đạt hoặc Cần bổ sung';
+}
+
+function renderBtcChecklist() {
+  document.getElementById('btcChecklist').innerHTML = curC.items.map(item => {
+    const vCls = item.verdict || '';
+    const vLabel = { pass:'✅ Đạt', fail:'❌ Không đạt', review:'⚠️ Cần bổ sung' }[item.verdict] || '⏳ Chưa kiểm tra';
+    const vBadgeCls = { pass:'b-pass', fail:'b-fail', review:'b-review' }[item.verdict] || 'b-wait';
+    return `
+      <div class="cl-item ${vCls}" id="cli-${item.id}">
+        <div class="cl-header" onclick="toggleCli('${item.id}')">
+          <div class="cl-icon">${item.icon}</div>
+          <div class="cl-info">
+            <div class="cl-name">${item.name}</div>
+            <div class="cl-desc">${item.desc}</div>
+          </div>
+          <div class="cl-actions">
+            <span class="badge ${vBadgeCls}" style="margin-right:6px">${vLabel}</span>
+            <button class="cv-btn cv-pass${item.verdict==='pass'?' active':''}" onclick="setVerdict(event,'${item.id}','pass')" title="Đạt">✅</button>
+            <button class="cv-btn cv-fail${item.verdict==='fail'?' active':''}" onclick="setVerdict(event,'${item.id}','fail')" title="Không đạt">❌</button>
+            <button class="cv-btn cv-review${item.verdict==='review'?' active':''}" onclick="setVerdict(event,'${item.id}','review')" title="Cần bổ sung">⚠️</button>
+          </div>
+        </div>
+        <div class="cl-expand" id="clx-${item.id}">
+          <div class="fld" style="margin-bottom:8px">
+            <label>Ghi chú BTC</label>
+            <input type="text" class="cl-note-input" id="clnote-${item.id}" value="${esc(item.note)}" placeholder="Ghi chú chi tiết...">
+          </div>
+          <div style="font-size:9px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);margin-bottom:6px">Bằng chứng từ nhà cung cấp (${item.photos.length} ảnh)</div>
+          <div class="evidence-wrap">
+            ${item.photos.map((src,pi) => `
+              <div class="ev-thumb">
+                <img src="${src}" onclick="previewImg('${src}')">
+                <button class="ev-del" onclick="delPhoto('${item.id}',${pi})">×</button>
+              </div>`).join('')}
+            <button class="ev-add" onclick="document.getElementById('evf-${item.id}').click()" title="Thêm ảnh bằng chứng">+</button>
+            <input type="file" id="evf-${item.id}" accept="image/*" style="display:none" onchange="addPhoto(this,'${item.id}')">
+          </div>
+        </div>
+      </div>`;
+  }).join('');
+}
+
+function toggleCli(id) {
+  const el = document.getElementById('cli-' + id);
+  if (el) el.classList.toggle('open');
+}
+
+function setVerdict(e, itemId, verdict) {
+  e.stopPropagation();
+  const item = curC.items.find(i => i.id === itemId);
+  if (!item) return;
+  item.verdict = item.verdict === verdict ? null : verdict; // toggle
+  // Save note if open
+  const noteEl = document.getElementById('clnote-' + itemId);
+  if (noteEl) item.note = noteEl.value;
+
+  const vLabel = { pass:'✅ Đạt', fail:'❌ Không đạt', review:'⚠️ Cần bổ sung' }[item.verdict] || 'Bỏ đánh dấu';
+  addAudit('BTC · Admin', `${vLabel}: "${item.name}"${item.note ? ' — ' + item.note : ''}`, '#C8393B');
+
+  const wasOpen = document.getElementById('cli-' + itemId)?.classList.contains('open');
+  renderBtcProg();
+  renderBtcChecklist();
+  if (wasOpen) setTimeout(() => document.getElementById('cli-' + itemId)?.classList.add('open'), 50);
+  saveToSheets();
+}
+
+function addPhoto(inp, itemId) {
+  const f = inp.files[0]; if (!f) return;
+  const r = new FileReader();
+  r.onload = ev => {
+    const item = curC.items.find(i => i.id === itemId);
+    if (item) { item.photos.push(ev.target.result); addAudit('BTC · Admin', `Upload ảnh bằng chứng: "${item.name}"`, '#16A34A'); }
+    const wasOpen = document.getElementById('cli-' + itemId)?.classList.contains('open');
+    renderBtcChecklist();
+    if (wasOpen) setTimeout(() => document.getElementById('cli-' + itemId)?.classList.add('open'), 50);
+  };
+  r.readAsDataURL(f);
+}
+
+function delPhoto(itemId, pi) {
+  const item = curC.items.find(i => i.id === itemId);
+  if (item) { item.photos.splice(pi, 1); }
+  const wasOpen = document.getElementById('cli-' + itemId)?.classList.contains('open');
+  renderBtcChecklist();
+  if (wasOpen) setTimeout(() => document.getElementById('cli-' + itemId)?.classList.add('open'), 50);
+}
+
+function addCheckItem() {
+  const name = prompt('Tên hạng mục:'); if (!name?.trim()) return;
+  const desc = prompt('Mô tả yêu cầu chi tiết:') || '';
+  const icons = ['📋','🔧','🎯','📦','✅','⚠️','🔍','📊'];
+  const icon = icons[Math.floor(Math.random() * icons.length)];
+  const newId = 'i_' + Date.now();
+  curC.items.push({ id: newId, icon, name: name.trim(), desc, verdict: null, note: '', photos: [] });
+  addAudit('BTC · Admin', `Thêm hạng mục mới: "${name.trim()}"`, '#1D6FA4');
+  renderBtcProg();
+  renderBtcChecklist();
+}
+
+function finishAcceptance() {
+  const items = curC.items;
+  const allPassed = items.length > 0 && items.every(i => i.verdict === 'pass');
+  if (!allPassed) {
+    alert('⚠️ Cần tất cả hạng mục đều đạt (✅) trước khi hoàn tất nghiệm thu!');
+    return;
+  }
+  if (!confirm(`✅ Xác nhận hoàn tất nghiệm thu "${curC.name}"?\n\nSau khi xác nhận, hệ thống sẽ tự động thông báo cho ${curC.sponsor.name}.`)) return;
+
+  curC.status = 'btc_approved';
+  const ts = new Date().toLocaleString('vi-VN');
+  addAudit('BTC · Admin', `✅ HOÀN TẤT NGHIỆM THU — Tất cả ${items.length} hạng mục đạt`, '#16A34A');
+  addAudit('Hệ thống', `📧 Đã gửi thông báo tới ${curC.sponsor.name} — Yêu cầu xác nhận & thanh toán`, '#7C3AED');
+
+  renderCsel();
+  renderAll();
+  alert(`✅ Nghiệm thu hoàn tất!\n\nHệ thống đã gửi thông báo tới:\n• ${curC.sponsor.name} — để xác nhận & thanh toán\n• ${curC.provider.name} — thông báo được duyệt\n\nThời gian: ${ts}`);
+  saveToSheets();
+}
+
+function renderBtcAudit() {
+  document.getElementById('btcAudit').innerHTML = [...curC.audit].reverse().map(a => `
+    <div class="al">
+      <div class="al-dot" style="background:${a.color}">${a.who.includes('Hệ thống') ? '⚡' : a.who.includes('BTC') ? 'B' : a.who.includes(curC.provider.name.split('·')[0].trim()) ? 'P' : 'S'}</div>
+      <div class="al-body">
+        <div class="al-who">${a.who}</div>
+        <div class="al-what">${a.what}</div>
+        <div class="al-when">${a.when}</div>
+      </div>
+    </div>`).join('');
+}
+
+function renderBtcNote() {
+  const el = document.getElementById('btcNote');
+  if (el) el.value = curC.btcNote || '';
+}
+
+function saveBtcNote() {
+  const el = document.getElementById('btcNote');
+  curC.btcNote = el?.value || '';
+  const msg = document.getElementById('btcNoteMsg');
+  msg.style.display = 'block';
+  setTimeout(() => msg.style.display = 'none', 2000);
+}
+
+// ══════════════════════════════════════════════════════════
+// PROVIDER VIEW
+// ══════════════════════════════════════════════════════════
+function renderProviderView() {
+  const spName = document.getElementById('pvSponsorName');
+  if (spName) spName.textContent = curC.sponsor.name;
+
+  document.getElementById('pvItemList').innerHTML = curC.items.map(item => `
+    <div class="card">
+      <div class="card-head">
+        <div class="ch-title">${item.icon} ${item.name}</div>
+        ${item.verdict ? `<span class="badge ${ {pass:'b-pass',fail:'b-fail',review:'b-review'}[item.verdict]}">${{pass:'✅ BTC: Đạt',fail:'❌ BTC: Không đạt',review:'⚠️ BTC: Cần bổ sung'}[item.verdict]}</span>` : '<span class="badge b-wait">⏳ BTC đang kiểm tra</span>'}
+      </div>
+      <div class="card-body">
+        <div style="font-size:11px;color:var(--muted);margin-bottom:10px">📋 Yêu cầu: ${item.desc}</div>
+        ${item.verdict === 'review' ? `<div class="notice n-gold"><strong>BTC yêu cầu bổ sung:</strong> ${item.note || 'Vui lòng upload thêm bằng chứng hoặc liên hệ BTC.'}</div>` : ''}
+        <div style="font-size:9px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);margin-bottom:7px">Upload ảnh/video bằng chứng (${item.photos.length} file)</div>
+        <div class="evidence-wrap">
+          ${item.photos.map((src, pi) => `
+            <div class="ev-thumb">
+              <img src="${src}" onclick="previewImg('${src}')">
+              <button class="ev-del" onclick="pvDelPhoto('${item.id}',${pi})">×</button>
+            </div>`).join('')}
+          <button class="ev-add" onclick="document.getElementById('pvevf-${item.id}').click()">+</button>
+          <input type="file" id="pvevf-${item.id}" accept="image/*,video/*" style="display:none" onchange="pvAddPhoto(this,'${item.id}')">
+        </div>
+      </div>
+    </div>`).join('');
+}
+
+function pvAddPhoto(inp, itemId) {
+  const f = inp.files[0]; if (!f) return;
+  const r = new FileReader();
+  r.onload = ev => {
+    const item = curC.items.find(i => i.id === itemId);
+    if (item) {
+      item.photos.push(ev.target.result);
+      addAudit(curC.provider.name, `Upload bằng chứng: "${item.name}" (+1 ảnh)`, '#16A34A');
+    }
+    renderProviderView();
+    renderBtcChecklist();
+  };
+  r.readAsDataURL(f);
+}
+
+function pvDelPhoto(itemId, pi) {
+  const item = curC.items.find(i => i.id === itemId);
+  if (item) item.photos.splice(pi, 1);
+  renderProviderView();
+  renderBtcChecklist();
+}
+
+function pvHandleInvoice(inp) {
+  const f = inp.files[0]; if (!f) return;
+  const r = new FileReader();
+  r.onload = ev => {
+    document.getElementById('pvInvPreview').innerHTML =
+      f.type.startsWith('image') ? `<img src="${ev.target.result}" style="max-width:100%;border-radius:8px;max-height:120px;object-fit:contain">` :
+      `<div style="padding:10px;background:var(--bg);border-radius:7px;font-size:11px;color:var(--muted)">📄 ${f.name}</div>`;
+  };
+  r.readAsDataURL(f);
+}
+
+function pvSubmitInvoice() {
+  const num = document.getElementById('pvInvNum').value.trim();
+  if (!num) { showMsg('pvInvMsg', '⚠️ Nhập số hóa đơn!', 'red'); return; }
+  curC.invoice = {
+    num, date: document.getElementById('pvInvDate').value,
+    amt: document.getElementById('pvInvAmt').value,
+    desc: document.getElementById('pvInvDesc').value,
+  };
+  addAudit(curC.provider.name, `📄 Gửi hóa đơn VAT số ${num} — ${curC.invoice.amt} VNĐ cho ${curC.sponsor.name}`, '#16A34A');
+  showMsg('pvInvMsg', `✅ Đã gửi hóa đơn #${num} cho BTC và ${curC.sponsor.name}`, 'green');
+  renderBtcAudit();
+  renderSponsorView();
+}
+
+// ══════════════════════════════════════════════════════════
+// SPONSOR VIEW
+// ══════════════════════════════════════════════════════════
+function renderSponsorView() {
+  const isApproved = ['btc_approved','sponsor_confirmed','paid'].includes(curC.status);
+  const notice = document.getElementById('spNotice');
+  if (notice) {
+    notice.className = 'notice ' + (isApproved ? 'n-green' : 'n-gold');
+    notice.innerHTML = isApproved
+      ? `<strong>✅ BTC đã nghiệm thu xong!</strong> Tất cả ${curC.items.length} hạng mục đạt yêu cầu. Vui lòng xác nhận và chuyển khoản cho nhà cung cấp.`
+      : `<strong>Đang chờ:</strong> BTC đang tiến hành nghiệm thu (${curC.items.filter(i=>i.verdict==='pass').length}/${curC.items.length} hạng mục đã kiểm tra). Bạn sẽ nhận thông báo khi hoàn tất.`;
+  }
+
+  // Acceptance result
+  const resultBody = document.getElementById('spResultBody');
+  if (resultBody) {
+    resultBody.innerHTML = curC.items.map(item => {
+      const v = item.verdict;
+      const cls = v === 'pass' ? 'b-pass' : v === 'fail' ? 'b-fail' : v === 'review' ? 'b-review' : 'b-wait';
+      const lbl = v === 'pass' ? '✅ Đạt' : v === 'fail' ? '❌ Không đạt' : v === 'review' ? '⚠️ Cần bổ sung' : '⏳ Chưa kiểm tra';
+      return `<div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border)">
+        <div style="font-size:16px;width:24px;text-align:center">${item.icon}</div>
+        <div style="flex:1"><div style="font-size:12px;font-weight:700">${item.name}</div>${item.note ? `<div style="font-size:10px;color:var(--muted)">${item.note}</div>` : ''}</div>
+        <span class="badge ${cls}">${lbl}</span>
+        ${item.photos.length ? `<span style="font-size:10px;color:var(--muted)">${item.photos.length} ảnh</span>` : ''}
+      </div>`;
+    }).join('');
+  }
+
+  // Payment
+  const p = curC.provider;
+  document.getElementById('spPayAmt').textContent = curC.amount + ' VNĐ';
+  document.getElementById('spBankInfo').innerHTML = `
+    <div><strong>Ngân hàng:</strong> ${p.bank} — ${p.bankBranch}</div>
+    <div><strong>Số tài khoản:</strong> <span style="font-family:monospace;font-size:14px;font-weight:700;color:var(--ink)">${p.bankAcct}</span></div>
+    <div><strong>Chủ tài khoản:</strong> ${p.bankOwner}</div>
+    <div><strong>Nội dung CK:</strong> Thanh toan hop dong ${curC.name} - ${curC.event}</div>
+    ${curC.invoice ? `<div style="margin-top:4px;color:var(--blue)">📄 Hóa đơn VAT #${curC.invoice.num} đã nhận</div>` : '<div style="color:var(--gold)">⏳ Chờ hóa đơn VAT từ nhà cung cấp</div>'}`;
+
+  // Audit for sponsor
+  const spAudit = document.getElementById('spAudit');
+  if (spAudit) {
+    spAudit.innerHTML = [...curC.audit].reverse().map(a => `
+      <div class="al">
+        <div class="al-dot" style="background:${a.color}">
+          ${a.who.includes('Hệ thống') ? '⚡' : a.who.includes('BTC') ? 'B' : 'P'}
+        </div>
+        <div class="al-body">
+          <div class="al-who">${a.who}</div>
+          <div class="al-what">${a.what}</div>
+          <div class="al-when">${a.when}</div>
+        </div>
+      </div>`).join('');
+  }
+
+  // Show/hide pay card
+  const payCard = document.getElementById('spPayCard');
+  if (payCard) payCard.style.display = isApproved && curC.status !== 'paid' ? 'block' : curC.status === 'paid' ? 'none' : 'none';
+}
+
+function spHandleProof(inp) {
+  const f = inp.files[0]; if (!f) return;
+  const r = new FileReader();
+  r.onload = ev => {
+    const prev = document.getElementById('spProofPreview');
+    prev.src = ev.target.result; prev.style.display = 'block';
+  };
+  r.readAsDataURL(f);
+}
+
+function spConfirmPayment() {
+  const ref = document.getElementById('spTransRef').value.trim();
+  const date = document.getElementById('spTransDate').value;
+  if (!ref) { showMsg('spPayMsg', '⚠️ Nhập mã giao dịch chuyển khoản!', 'red'); return; }
+
+  if (!confirm(`✅ Xác nhận đã chuyển khoản ${curC.amount} VNĐ\ncho ${curC.provider.name}?\n\nMã GD: ${ref}\nNgày: ${date || 'hôm nay'}`)) return;
+
+  curC.status = 'paid';
+  addAudit(curC.sponsor.name, `💰 XÁC NHẬN đã chuyển khoản ${curC.amount} VNĐ cho ${curC.provider.name} — Mã GD: ${ref}`, '#16A34A');
+  addAudit('Hệ thống', `✅ HỢP ĐỒNG HOÀN TẤT — Đã thông báo ${curC.provider.name} kiểm tra tài khoản`, '#7C3AED');
+
+  renderCsel();
+  renderAll();
+  showMsg('spPayMsg', `✅ Xác nhận thành công! ${curC.provider.name} đã được thông báo.`, 'green');
+  saveToSheets();
+}
+
+// ══════════════════════════════════════════════════════════
+// HELPERS
+// ══════════════════════════════════════════════════════════
+function addAudit(who, what, color) {
+  const now = new Date().toLocaleString('vi-VN', { day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit' });
+  curC.audit.push({ who, what, when: now, color });
+  renderBtcAudit();
+  renderSponsorView();
+}
+
+function saveToSheets() {
+  const url = localStorage.getItem('race_sheet_url') || '';
+  if (!url) return;
+  try {
+    fetch(url, {
+      method: 'POST', mode: 'no-cors',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        action: 'updateContract',
+        contractId: curC.id,
+        status: curC.status,
+        auditLog: JSON.stringify(curC.audit),
+        itemsJson: JSON.stringify(curC.items.map(i => ({ id:i.id, verdict:i.verdict, note:i.note }))),
+        updatedAt: new Date().toLocaleString('vi-VN'),
+      })
+    });
+  } catch(e) {}
+}
+
+function showMsg(elId, msg, type) {
+  const el = document.getElementById(elId);
+  if (!el) return;
+  el.textContent = msg;
+  el.style.display = 'block';
+  el.style.color = type === 'green' ? 'var(--green)' : 'var(--red)';
+  setTimeout(() => el.style.display = 'none', 4000);
+}
+
+function previewImg(src) {
+  const overlay = document.createElement('div');
+  overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:9999;display:flex;align-items:center;justify-content:center;cursor:pointer;padding:20px';
+  overlay.innerHTML = `<img src="${src}" style="max-width:90%;max-height:90vh;border-radius:8px;box-shadow:0 8px 40px rgba(0,0,0,.6)">`;
+  overlay.onclick = () => document.body.removeChild(overlay);
+  document.body.appendChild(overlay);
+}
+
+function esc(s) { return (s||'').toString().replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+</script>
+</body>
+</html>

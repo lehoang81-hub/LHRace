@@ -1,0 +1,575 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HLRace — Trail Experience</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,500;0,700;1,600&family=Geist:wght@300;400;500;600&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#F4F1EA;--card:#FFFFFF;--s1:#EDE8DC;--s2:#E2DAC8;
+  --ink:#1A1710;--ink2:#5A5240;--muted:#9A9070;
+  --forest:#2A5C3A;--forest2:#3D8A52;--earth:#8A5C2A;
+  --sky:#1A4A7A;--gold:#8A6E00;--red:#8A2A2A;
+  --br:rgba(26,23,16,.07);--br2:rgba(26,23,16,.13);
+  --r:14px;--r-sm:8px;
+}
+body{background:var(--bg);color:var(--ink);font-family:'Geist',sans-serif;font-size:14px;min-height:100vh}
+
+/* HERO */
+.hero{background:linear-gradient(160deg,#1A3A2A 0%,#0A2010 100%);padding:0 0 0;position:relative;overflow:hidden}
+.hero-img{width:100%;height:220px;object-fit:cover;opacity:.4;display:block}
+.hero-img-placeholder{width:100%;height:220px;background:linear-gradient(135deg,#1A3A2A,#2A5C3A,#1A4A2A);display:flex;align-items:center;justify-content:center;font-size:80px;opacity:.3}
+.hero-content{position:absolute;bottom:0;left:0;right:0;padding:20px;background:linear-gradient(0deg,rgba(10,32,16,.95),transparent)}
+.hero-province{font-family:'Geist Mono';font-size:9px;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,.5);margin-bottom:6px}
+.hero-title{font-family:'Fraunces';font-size:20px;font-weight:700;color:#fff;line-height:1.2;margin-bottom:6px}
+.hero-meta{display:flex;gap:10px;flex-wrap:wrap}
+.hero-chip{font-size:10px;font-family:'Geist Mono';color:rgba(255,255,255,.6);background:rgba(255,255,255,.1);padding:3px 8px;border-radius:20px}
+
+/* TABS */
+.tabs{display:flex;background:var(--card);border-bottom:1px solid var(--br);overflow-x:auto;scrollbar-width:none}
+.tabs::-webkit-scrollbar{display:none}
+.tab{padding:12px 16px;font-size:12px;font-weight:500;color:var(--muted);cursor:pointer;border:none;background:none;white-space:nowrap;border-bottom:2px solid transparent;margin-bottom:-1px;display:flex;align-items:center;gap:5px}
+.tab.on{color:var(--forest);border-bottom-color:var(--forest)}
+.panel{display:none}.panel.on{display:block}
+
+/* WRAP */
+.wrap{max-width:640px;margin:0 auto;padding:16px 16px 80px}
+
+/* TEP SCORE BAR */
+.tep-bar{background:var(--card);border:1px solid var(--br);border-radius:var(--r);padding:16px;margin-bottom:12px;display:flex;align-items:center;gap:16px}
+.tep-circle{width:64px;height:64px;border-radius:50%;background:conic-gradient(var(--forest) 285deg,var(--s2) 0);display:flex;align-items:center;justify-content:center;flex-shrink:0;position:relative}
+.tep-circle::before{content:'';position:absolute;inset:6px;border-radius:50%;background:var(--card)}
+.tep-val{position:relative;font-family:'Geist Mono';font-size:16px;font-weight:500;color:var(--forest)}
+.tep-info{flex:1}
+.tep-label{font-size:12px;font-weight:500;color:var(--forest);margin-bottom:4px}
+.tep-sub{font-size:11px;color:var(--muted);line-height:1.5}
+.tep-mini-bars{display:flex;gap:4px;margin-top:6px}
+.tmb{flex:1;height:4px;border-radius:2px;background:var(--s2);overflow:hidden}
+.tmb-fill{height:100%;border-radius:2px;background:var(--forest)}
+
+/* KEEPER CARD */
+.keeper-card{background:linear-gradient(135deg,rgba(42,92,58,.06),rgba(26,74,122,.04));border:1px solid rgba(42,92,58,.15);border-radius:var(--r-sm);padding:14px;display:flex;gap:12px;align-items:flex-start;margin-bottom:12px}
+.keeper-avatar{width:42px;height:42px;border-radius:50%;background:var(--forest);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;color:#fff;font-weight:600;font-size:14px}
+.keeper-name{font-size:13px;font-weight:500;margin-bottom:2px}
+.keeper-role{font-size:10px;color:var(--forest);font-family:'Geist Mono';letter-spacing:.5px}
+.keeper-bio{font-size:12px;color:var(--ink2);margin-top:4px;line-height:1.6}
+.keeper-stats{display:flex;gap:12px;margin-top:8px;flex-wrap:wrap}
+.ks{text-align:center}
+.ks-val{font-family:'Geist Mono';font-size:13px;font-weight:500;color:var(--forest)}
+.ks-label{font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:.3px}
+
+/* SEASON BAND */
+.season-band{display:flex;gap:2px;margin-bottom:12px}
+.sb-month{flex:1;text-align:center;padding:6px 0;border-radius:4px;font-size:9px;font-family:'Geist Mono'}
+.sb-best{background:rgba(42,92,58,.15);color:var(--forest)}
+.sb-ok{background:rgba(138,92,42,.12);color:var(--earth)}
+.sb-avoid{background:rgba(138,42,42,.1);color:var(--red)}
+.sb-none{background:var(--s1);color:var(--muted)}
+.sb-now{box-shadow:0 0 0 2px var(--forest)}
+
+/* MOMENT TIMELINE */
+.timeline{position:relative;padding-left:28px;margin-bottom:14px}
+.timeline::before{content:'';position:absolute;left:10px;top:0;bottom:0;width:1.5px;background:var(--br2)}
+.tl-item{position:relative;margin-bottom:14px}
+.tl-dot{position:absolute;left:-22px;top:4px;width:14px;height:14px;border-radius:50%;border:2px solid var(--card);display:flex;align-items:center;justify-content:center;font-size:8px;flex-shrink:0}
+.tl-seasonal{background:#D8ECC8;border-color:#B8D498}
+.tl-wildlife{background:#F0E0C0;border-color:#D4A870}
+.tl-culture{background:#DDD8F0;border-color:#B8A0D8}
+.tl-safety{background:#F8D8D0;border-color:#F0B8B8}
+.tl-secret{background:#D0E8F5;border-color:#90C0E0}
+.tl-run{background:rgba(42,92,58,.15);border-color:rgba(42,92,58,.3)}
+.tl-content{background:var(--card);border:1px solid var(--br);border-radius:var(--r-sm);padding:12px}
+.tl-km{font-family:'Geist Mono';font-size:9px;color:var(--muted);margin-bottom:4px}
+.tl-text{font-size:12px;color:var(--ink);line-height:1.7}
+.tl-when{font-size:10px;color:var(--muted);margin-top:4px;font-style:italic}
+.tl-by{font-size:10px;color:var(--forest);margin-top:4px}
+.tl-emotion{display:inline-block;font-size:10px;padding:2px 7px;border-radius:20px;background:rgba(42,92,58,.08);color:var(--forest);border:1px solid rgba(42,92,58,.15);margin-top:4px}
+
+/* RUN EXPERIENCE CARD */
+.run-card{background:var(--card);border:1px solid var(--br);border-radius:var(--r);padding:16px;margin-bottom:12px}
+.run-header{display:flex;align-items:flex-start;gap:10px;margin-bottom:12px}
+.run-avatar{width:36px;height:36px;border-radius:50%;background:var(--s2);display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:600;color:var(--ink2);flex-shrink:0}
+.run-meta{flex:1}
+.run-name{font-size:13px;font-weight:500}
+.run-date{font-size:11px;color:var(--muted)}
+.run-conditions{font-size:10px;font-family:'Geist Mono';color:var(--sky);margin-top:3px}
+.run-stars{color:var(--gold);font-size:14px;letter-spacing:1px}
+.run-headline{font-size:14px;font-weight:500;color:var(--forest);margin-bottom:6px;font-family:'Fraunces';font-style:italic}
+.run-review{font-size:13px;color:var(--ink2);line-height:1.8;margin-bottom:10px}
+.run-waypoints{display:flex;flex-direction:column;gap:6px;margin-bottom:10px;padding:10px;background:var(--s1);border-radius:var(--r-sm);border:1px solid var(--br)}
+.wp-item{display:flex;gap:8px;align-items:flex-start;font-size:11px}
+.wp-km{font-family:'Geist Mono';color:var(--muted);min-width:36px;flex-shrink:0;padding-top:1px}
+.wp-text{color:var(--ink2);line-height:1.6;flex:1}
+.wp-emotion{font-size:10px;color:var(--forest);font-style:italic}
+.run-tip{background:rgba(42,92,58,.06);border:1px solid rgba(42,92,58,.15);border-radius:var(--r-sm);padding:10px;font-size:12px;color:var(--forest);display:flex;align-items:center;gap:8px}
+
+/* WISH LIST */
+.wish-item{background:var(--card);border:1px solid var(--br);border-radius:var(--r-sm);padding:14px;margin-bottom:8px}
+.wish-header{display:flex;align-items:flex-start;gap:10px;margin-bottom:6px}
+.wish-type{font-size:9px;font-weight:500;padding:2px 7px;border-radius:20px;text-transform:uppercase;letter-spacing:.5px}
+.wt-signage{background:#E8F0D8;color:#2A5C1A;border:1px solid #B8D498}
+.wt-facility{background:#E8E0F5;color:#4A2A8A;border:1px solid #B8A0D8}
+.wt-safety{background:#F8D8D0;color:#8A2A2A;border:1px solid #F0B8B8}
+.wt-service{background:#F5E8D0;color:#7A4A00;border:1px solid #D4A870}
+.wt-story{background:#D0E8F5;color:#1A4A7A;border:1px solid #90C0E0}
+.wish-votes{display:flex;align-items:center;gap:4px;font-family:'Geist Mono';font-size:12px;color:var(--muted);cursor:pointer;padding:4px 8px;border:1px solid var(--br2);border-radius:20px;transition:all .15s}
+.wish-votes:hover{border-color:var(--forest);color:var(--forest)}
+.wish-text{font-size:12px;color:var(--ink);line-height:1.6;margin-bottom:6px}
+.wish-response{font-size:11px;color:var(--forest);background:rgba(42,92,58,.06);padding:8px 10px;border-radius:var(--r-sm);border:1px solid rgba(42,92,58,.15);margin-top:6px;line-height:1.6}
+.wish-status{display:inline-block;font-size:9px;padding:2px 7px;border-radius:20px}
+.ws-done{background:#D8ECC8;color:#2A5C1A}
+.ws-pending{background:var(--s1);color:var(--muted)}
+
+/* FORMS */
+.field{margin-bottom:12px}
+.field label{display:block;font-size:11px;font-weight:500;text-transform:uppercase;letter-spacing:.4px;color:var(--muted);margin-bottom:5px}
+.field input,.field select,.field textarea{width:100%;padding:10px 12px;border:1px solid var(--br2);border-radius:var(--r-sm);font-size:13px;background:var(--card);color:var(--ink);font-family:'Geist',sans-serif;outline:none;transition:border-color .15s}
+.field input:focus,.field select:focus,.field textarea:focus{border-color:var(--forest)}
+.field textarea{resize:vertical;min-height:80px;line-height:1.6}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+
+/* TIP WIDGET */
+.tip-widget{background:linear-gradient(135deg,rgba(42,92,58,.06),rgba(138,110,0,.04));border:1px solid rgba(42,92,58,.2);border-radius:var(--r);padding:20px;margin-bottom:14px}
+.tip-title{font-family:'Fraunces';font-size:16px;font-weight:700;color:var(--forest);margin-bottom:4px}
+.tip-sub{font-size:12px;color:var(--muted);margin-bottom:16px;line-height:1.6}
+.tip-amounts{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px}
+.tip-btn{padding:8px 16px;border-radius:20px;font-size:12px;font-weight:500;cursor:pointer;border:1.5px solid var(--br2);background:var(--card);color:var(--ink2);transition:all .15s}
+.tip-btn:hover,.tip-btn.selected{border-color:var(--forest);background:rgba(42,92,58,.06);color:var(--forest)}
+.tip-note{font-size:11px;color:var(--muted);margin-top:8px;line-height:1.6}
+
+/* BUTTONS */
+.btn{padding:10px 20px;border-radius:var(--r-sm);font-size:13px;font-weight:500;cursor:pointer;border:none;font-family:'Geist',sans-serif;display:inline-flex;align-items:center;gap:7px;transition:all .15s}
+.btn-forest{background:var(--forest);color:#fff}
+.btn-forest:hover{background:var(--forest2)}
+.btn-outline{background:transparent;border:1.5px solid var(--br2);color:var(--ink2)}
+.btn-outline:hover{background:var(--s1)}
+.sec-label{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin-bottom:10px;display:flex;align-items:center;gap:8px}
+.sec-label::after{content:'';flex:1;height:1px;background:var(--br)}
+
+/* BOTTOM NAV */
+.bottom-nav{position:fixed;bottom:0;left:0;right:0;background:var(--card);border-top:1px solid var(--br);display:flex;padding:6px 0}
+.bnav{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;padding:6px;cursor:pointer;color:var(--muted);font-size:9px;font-weight:500;letter-spacing:.3px;text-transform:uppercase;border:none;background:none;font-family:'Geist',sans-serif}
+.bnav.on{color:var(--forest)}
+.bnav-icon{font-size:18px}
+</style>
+</head>
+<body>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-img-placeholder">🏔</div>
+  <div class="hero-content">
+    <div class="hero-province">Lào Cai · Sa Pa</div>
+    <div class="hero-title">Vòng cung Tả Van — qua ruộng bậc thang và bản Mông</div>
+    <div class="hero-meta">
+      <span class="hero-chip">12.4km</span>
+      <span class="hero-chip">820m leo</span>
+      <span class="hero-chip">Độ khó 3/5</span>
+      <span class="hero-chip">⭐ 4.7 · 34 reviews</span>
+      <span class="hero-chip">TEP 79/100</span>
+    </div>
+  </div>
+</div>
+
+<!-- TABS -->
+<div class="tabs">
+  <button class="tab on" onclick="showTab('overview',this)">🗺 Tổng quan</button>
+  <button class="tab" onclick="showTab('stories',this)">✨ Câu chuyện</button>
+  <button class="tab" onclick="showTab('runs',this)">🏃 Trải nghiệm</button>
+  <button class="tab" onclick="showTab('wishes',this)">💬 Đề xuất</button>
+  <button class="tab" onclick="showTab('myrun',this)">📝 Ghi lại của tôi</button>
+</div>
+
+<!-- ══ TAB: TỔNG QUAN ══ -->
+<div id="tab-overview" class="panel on">
+<div class="wrap">
+
+  <!-- TEP Score -->
+  <div class="tep-bar">
+    <div class="tep-circle"><span class="tep-val">79</span></div>
+    <div class="tep-info">
+      <div class="tep-label">Trail Experience Product Score</div>
+      <div class="tep-sub">Đánh giá toàn diện: route, điều kiện, khoảnh khắc, kiến thức bản địa, độ tươi mới</div>
+      <div class="tep-mini-bars">
+        <div class="tmb"><div class="tmb-fill" style="width:80%"></div></div>
+        <div class="tmb"><div class="tmb-fill" style="width:72%"></div></div>
+        <div class="tmb"><div class="tmb-fill" style="width:85%"></div></div>
+        <div class="tmb"><div class="tmb-fill" style="width:90%"></div></div>
+        <div class="tmb"><div class="tmb-fill" style="width:68%"></div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Trail Keeper -->
+  <div class="keeper-card">
+    <div class="keeper-avatar">NK</div>
+    <div style="flex:1">
+      <div class="keeper-name">Nguyễn Minh Khoa</div>
+      <div class="keeper-role">🏔 Trail Keeper · Sapa</div>
+      <div class="keeper-bio">Chạy trail Sapa 8 năm. Biết từng con đường, từng bản làng. Tạo trail vì muốn chia sẻ những thứ không có trên bản đồ.</div>
+      <div class="keeper-stats">
+        <div class="ks"><div class="ks-val">3</div><div class="ks-label">Trails</div></div>
+        <div class="ks"><div class="ks-val">89</div><div class="ks-label">Lượt chạy</div></div>
+        <div class="ks"><div class="ks-val">4.7★</div><div class="ks-label">Đánh giá</div></div>
+        <div class="ks"><div class="ks-val">2.9tr</div><div class="ks-label">Thu nhập</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Season band -->
+  <div class="sec-label">Lịch mùa trong năm</div>
+  <div class="season-band">
+    <div class="sb-month sb-ok">T1</div>
+    <div class="sb-month sb-best">T2</div>
+    <div class="sb-month sb-best">T3</div>
+    <div class="sb-month sb-ok">T4</div>
+    <div class="sb-month sb-ok">T5</div>
+    <div class="sb-month sb-avoid">T6</div>
+    <div class="sb-month sb-avoid">T7</div>
+    <div class="sb-month sb-avoid">T8</div>
+    <div class="sb-month sb-best sb-now">T9</div>
+    <div class="sb-month sb-best">T10</div>
+    <div class="sb-month sb-ok">T11</div>
+    <div class="sb-month sb-ok">T12</div>
+  </div>
+  <div style="font-size:11px;color:var(--muted);margin-bottom:14px">Tháng tốt nhất: 2, 3, 9, 10 · Hiện tại (T9) đang là mùa đẹp nhất · Tránh tháng 6-8</div>
+
+  <!-- Local knowledge preview -->
+  <div class="sec-label">Kiến thức bản địa nổi bật</div>
+  <div style="background:var(--card);border:1px solid var(--br);border-radius:var(--r-sm);padding:14px;margin-bottom:14px">
+    <div style="display:flex;flex-direction:column;gap:10px">
+      <div style="display:flex;gap:10px;font-size:12px">
+        <span style="font-size:16px;flex-shrink:0">💧</span>
+        <div><strong>Nước uống:</strong> Suối km 4.2 sạch. Nhà bà Mỵ km 9.5 có nước máy.</div>
+      </div>
+      <div style="display:flex;gap:10px;font-size:12px">
+        <span style="font-size:16px;flex-shrink:0">🐾</span>
+        <div><strong>Động vật:</strong> Chó thả rông km 7-8 ban đêm. Vắt nhiều tháng 7-9.</div>
+      </div>
+      <div style="display:flex;gap:10px;font-size:12px">
+        <span style="font-size:16px;flex-shrink:0">🎒</span>
+        <div><strong>Gear:</strong> Poles cần km 14-16. Gaiters bắt buộc tháng 7-9.</div>
+      </div>
+      <div style="display:flex;gap:10px;font-size:12px">
+        <span style="font-size:16px;flex-shrink:0">🤫</span>
+        <div><strong>Bí mật:</strong> <em>Mở khóa sau khi mua trail để xem đầy đủ...</em></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CTA mua -->
+  <div style="background:var(--card);border:2px solid var(--forest);border-radius:var(--r);padding:20px;text-align:center;margin-bottom:14px">
+    <div style="font-size:22px;font-weight:500;font-family:'Geist Mono';color:var(--forest);margin-bottom:4px">49.000đ</div>
+    <div style="font-size:12px;color:var(--muted);margin-bottom:12px">Truy cập vĩnh viễn · Live updates · Community</div>
+    <button class="btn btn-forest" style="width:100%;justify-content:center;font-size:14px" onclick="alert('Thanh toán qua MoMo/Thẻ/Viction Wallet\nSau khi mua: toàn bộ bí mật local + live layer được mở khóa')">🏔 Mua trail này — 49.000đ</button>
+    <div style="font-size:10px;color:var(--muted);margin-top:8px">60% về Trail Keeper Nguyễn Minh Khoa · 100% tip về keeper</div>
+  </div>
+
+</div>
+</div>
+
+<!-- ══ TAB: CÂU CHUYỆN ══ -->
+<div id="tab-stories" class="panel">
+<div class="wrap">
+  <div style="font-size:13px;color:var(--ink2);line-height:1.7;margin-bottom:16px;background:var(--card);border:1px solid var(--br);padding:14px;border-radius:var(--r-sm)">
+    Con đường này không chỉ là GPX. Mỗi điểm trên đây có một câu chuyện — do người tạo trail kể, do runner đi qua thêm vào. Bạn đang đọc lịch sử sống của một con đường.
+  </div>
+
+  <div class="timeline">
+    <div class="tl-item">
+      <div class="tl-dot tl-culture"></div>
+      <div class="tl-content">
+        <div class="tl-km">Km 2.1 · Văn hóa</div>
+        <div class="tl-text">Gốc đa cổ thụ 200 năm — ngày xưa là chỗ hẹn hò của trai gái bản Mông. Bây giờ vẫn có người già ngồi kể chuyện sáng sớm.</div>
+        <div class="tl-when">Quanh năm · Sáng sớm · Luôn có</div>
+        <div class="tl-by">Kể bởi Trail Keeper Nguyễn Minh Khoa</div>
+      </div>
+    </div>
+    <div class="tl-item">
+      <div class="tl-dot tl-seasonal"></div>
+      <div class="tl-content">
+        <div class="tl-km">Km 4.3 · Theo mùa</div>
+        <div class="tl-text">Vườn đào nhà ông Mình. Tháng 2-3 hoa nở trắng cả sườn đồi. Ông cho phép dừng chụp ảnh — đừng hái hoa.</div>
+        <div class="tl-when">Tháng 2-3 · Đúng mùa</div>
+        <div class="tl-by">Kể bởi Trail Keeper</div>
+      </div>
+    </div>
+    <div class="tl-item">
+      <div class="tl-dot tl-run"></div>
+      <div class="tl-content" style="border-color:rgba(42,92,58,.2);background:rgba(42,92,58,.02)">
+        <div class="tl-km">Km 4.3 · Runner Ngô Thị Lan thêm vào · 15/03/2026</div>
+        <div class="tl-text">Vườn đào đúng như mô tả... không có từ nào diễn tả. Ngồi 10 phút không muốn đi. Ông Mình ra hỏi có muốn uống nước không.</div>
+        <div class="tl-emotion">kinh ngạc · ấm lòng</div>
+      </div>
+    </div>
+    <div class="tl-item">
+      <div class="tl-dot tl-wildlife"></div>
+      <div class="tl-content">
+        <div class="tl-km">Km 6.8 · Thiên nhiên</div>
+        <div class="tl-text">Đàn trâu ra đồng lúc 6h. Đứng yên cho chúng qua, không chạy. Chú ý phân trâu — trơn.</div>
+        <div class="tl-when">5h30-7h sáng quanh năm · Thường gặp</div>
+        <div class="tl-by">Thêm bởi Đặng Văn Sơn (runner)</div>
+      </div>
+    </div>
+    <div class="tl-item">
+      <div class="tl-dot tl-secret"></div>
+      <div class="tl-content" style="border-color:rgba(26,74,122,.2);background:rgba(26,74,122,.02)">
+        <div class="tl-km">Km 8.2 · 🤫 Bí mật local</div>
+        <div class="tl-text" style="filter:blur(4px);user-select:none">Từ đây rẽ trái 200m theo đường mòn bộ đội — ra điểm view nhìn thẳng xuống thung lũng Mường Hoa. Không có trên bản đồ nào.</div>
+        <div style="font-size:11px;color:var(--sky);margin-top:6px">🔒 Mua trail để xem bí mật này</div>
+      </div>
+    </div>
+    <div class="tl-item">
+      <div class="tl-dot tl-culture"></div>
+      <div class="tl-content">
+        <div class="tl-km">Km 9.5 · Văn hóa · Dịch vụ</div>
+        <div class="tl-text">Nhà bà Mỵ — bán mật ong rừng và bánh dày ngô. 20k/cái, ngon nhất vùng. Gõ cửa và nói "mua mật ong".</div>
+        <div class="tl-when">Quanh năm · 6h-18h · Thường có</div>
+        <div class="tl-by">Kể bởi Trail Keeper · Được 23 runner xác nhận</div>
+      </div>
+    </div>
+    <div class="tl-item">
+      <div class="tl-dot tl-safety"></div>
+      <div class="tl-content">
+        <div class="tl-km">Km 11.0 · ⚠️ An toàn</div>
+        <div class="tl-text">Suối này mùa mưa nước lên nhanh. Nếu nước qua đầu gối — quay lại, đừng cố vượt.</div>
+        <div class="tl-when">Tháng 6-9 · Sau mưa lớn</div>
+      </div>
+    </div>
+    <div class="tl-item">
+      <div class="tl-dot tl-run"></div>
+      <div class="tl-content" style="border-color:rgba(42,92,58,.2);background:rgba(42,92,58,.02)">
+        <div class="tl-km">Km 9.5 · Runner mới thêm · 20/03/2026</div>
+        <div class="tl-text">Bánh dày ngô nhà bà Mỵ — 20k mà ngon hơn bất kỳ nhà hàng nào. Bà cụ nói tiếng Kinh được cơ bản. Con gái bà nói được tiếng Anh.</div>
+        <div class="tl-emotion">vui vẻ · ngạc nhiên</div>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- ══ TAB: TRẢI NGHIỆM ══ -->
+<div id="tab-runs" class="panel">
+<div class="wrap">
+  <div class="run-card">
+    <div class="run-header">
+      <div class="run-avatar">NL</div>
+      <div class="run-meta">
+        <div class="run-name">Ngô Thị Lan</div>
+        <div class="run-date">15/03/2026 · 2h45 · 12.4km</div>
+        <div class="run-conditions">☀→☁ Sương mù buổi sáng · 14°C · Đường khô</div>
+      </div>
+      <div class="run-stars">★★★★★</div>
+    </div>
+    <div class="run-headline">"Con đường đẹp nhất tôi từng chạy — vì câu chuyện của nó"</div>
+    <div class="run-review">Tôi không chạy trail vì GPX. Tôi chạy vì muốn gặp ông già ngồi dưới gốc đa, vì muốn ngồi ở điểm view mà không một bản đồ nào ghi. Cảm ơn người đã tạo trail này — bạn đã chia sẻ điều gì đó rất riêng.</div>
+    <div class="sec-label" style="margin:8px 0 6px">Ghi chú theo km</div>
+    <div class="run-waypoints">
+      <div class="wp-item"><div class="wp-km">Km 2.1</div><div><div class="wp-text">Gốc đa đúng như kể. Có ông già đang ngồi — mình không dám hỏi chuyện nhưng ông gật đầu cười.</div><div class="wp-emotion">ấm lòng</div></div></div>
+      <div class="wp-item"><div class="wp-km">Km 4.3</div><div><div class="wp-text">Vườn đào... không có từ nào diễn tả. Ngồi 10 phút không muốn đi. Ông Mình ra hỏi có muốn uống nước.</div><div class="wp-emotion">kinh ngạc</div></div></div>
+      <div class="wp-item"><div class="wp-km">Km 9.5</div><div><div class="wp-text">Bánh dày ngô nhà bà Mỵ — 20k mà ngon hơn nhà hàng nào. Con gái bà nói được tiếng Anh!</div><div class="wp-emotion">vui vẻ</div></div></div>
+    </div>
+    <div class="run-tip">💚 Đã tip Trail Keeper <strong>50.000đ</strong> · "Cảm ơn bạn đã chia sẻ những thứ không ai biết"</div>
+  </div>
+
+  <div style="text-align:center;padding:16px;color:var(--muted);font-size:12px">
+    + 33 trải nghiệm khác · <span style="color:var(--forest);cursor:pointer">Xem tất cả</span>
+  </div>
+</div>
+</div>
+
+<!-- ══ TAB: ĐỀ XUẤT ══ -->
+<div id="tab-wishes" class="panel">
+<div class="wrap">
+  <div style="font-size:12px;color:var(--muted);margin-bottom:14px;line-height:1.6">Runner đề xuất cải thiện trail. Trail Keeper đọc và phản hồi. Upvote để show Trail Keeper ưu tiên.</div>
+
+  <div class="wish-item">
+    <div class="wish-header">
+      <span class="wish-type wt-facility">Tiện ích</span>
+      <span class="wish-status ws-done">✓ Đã làm</span>
+      <div style="flex:1"></div>
+      <div class="wish-votes">▲ 28</div>
+    </div>
+    <div class="wish-text">Thùng rác nhỏ tại điểm dừng km 4.3 — nhiều người để lại rác dưới gốc đào.</div>
+    <div class="wish-response">✅ Cảm ơn! Đã đặt thùng tại gốc đào. Ông Mình cũng đồng ý dọn dẹp mỗi tuần. — Trail Keeper Khoa</div>
+  </div>
+
+  <div class="wish-item">
+    <div class="wish-header">
+      <span class="wish-type wt-signage">Biển chỉ dẫn</span>
+      <span class="wish-status ws-pending">Chờ xem xét</span>
+      <div style="flex:1"></div>
+      <div class="wish-votes" onclick="this.textContent='▲ 13'">▲ 12</div>
+    </div>
+    <div class="wish-text">Biển nhỏ tại km 8 chỉ hướng điểm view bí mật — nhiều người bỏ lỡ vì không biết rẽ.</div>
+  </div>
+
+  <div class="wish-item">
+    <div class="wish-header">
+      <span class="wish-type wt-story">Câu chuyện</span>
+      <span class="wish-status ws-pending">Chờ xem xét</span>
+      <div style="flex:1"></div>
+      <div class="wish-votes">▲ 8</div>
+    </div>
+    <div class="wish-text">Muốn biết thêm lịch sử gốc đa km 2.1 — ông già ngồi đó có thể kể chuyện không? Có thể tổ chức session ngồi nghe chuyện không?</div>
+  </div>
+
+  <button class="btn btn-outline" style="width:100%;justify-content:center;margin-top:8px" onclick="showAddWish()">+ Thêm đề xuất của bạn</button>
+  <div id="wish-form" style="display:none;margin-top:10px;background:var(--card);border:1px solid var(--br);border-radius:var(--r-sm);padding:14px">
+    <div class="field">
+      <label>Loại đề xuất</label>
+      <select><option>Biển chỉ dẫn</option><option>Tiện ích</option><option>An toàn</option><option>Dịch vụ</option><option>Câu chuyện</option></select>
+    </div>
+    <div class="field"><label>Mô tả chi tiết</label><textarea placeholder="Bạn muốn Trail Keeper cải thiện gì?"></textarea></div>
+    <button class="btn btn-forest btn-sm" onclick="document.getElementById('wish-form').style.display='none';alert('Đề xuất đã gửi! Trail Keeper sẽ đọc và phản hồi.')">Gửi đề xuất</button>
+  </div>
+</div>
+</div>
+
+<!-- ══ TAB: GHI LẠI CỦA TÔI ══ -->
+<div id="tab-myrun" class="panel">
+<div class="wrap">
+
+  <!-- TIP FIRST -->
+  <div class="tip-widget">
+    <div class="tip-title">Tip cho Trail Keeper</div>
+    <div class="tip-sub">Nếu trail này mang lại cho bạn điều gì đó đặc biệt — đây là cách nói cảm ơn trực tiếp. 100% tip về tay Trail Keeper, không qua trung gian.</div>
+    <div class="tip-amounts">
+      <button class="tip-btn" onclick="selectTip(this,'20k')">20.000đ</button>
+      <button class="tip-btn selected" onclick="selectTip(this,'50k')">50.000đ</button>
+      <button class="tip-btn" onclick="selectTip(this,'100k')">100.000đ</button>
+      <button class="tip-btn" onclick="selectTip(this,'200k')">200.000đ</button>
+      <button class="tip-btn" onclick="selectTip(this,'custom')">Tự nhập</button>
+    </div>
+    <div class="field"><label>Lời nhắn cho Trail Keeper</label><textarea id="tip-msg" placeholder="VD: Cảm ơn bạn đã chia sẻ điểm view bí mật — đó là khoảnh khắc đẹp nhất chuyến đi của tôi."></textarea></div>
+    <button class="btn btn-forest" onclick="sendTip()">💚 Gửi tip 50.000đ</button>
+    <div class="tip-note">Thanh toán qua MoMo · Thẻ Visa/Master (Stripe) · Viction Wallet<br>Bạn nhận +10 điểm công đức vì hành động tốt</div>
+  </div>
+
+  <!-- GHI TRẢI NGHIỆM -->
+  <div class="card" style="margin-top:0">
+    <div style="font-size:15px;font-weight:500;margin-bottom:4px;font-family:'Fraunces'">Ghi lại trải nghiệm chạy</div>
+    <div style="font-size:12px;color:var(--muted);margin-bottom:14px">Review của bạn sẽ trở thành một lớp mới trong câu chuyện của trail này — và giúp người đến sau chuẩn bị tốt hơn.</div>
+
+    <div class="row2">
+      <div class="field"><label>Ngày chạy</label><input type="date"></div>
+      <div class="field"><label>Thời gian hoàn thành</label><input placeholder="2h45m"></div>
+    </div>
+
+    <div class="field">
+      <label>Điều kiện hôm đó</label>
+      <input placeholder="VD: Sương mù 6h sáng, nắng lên lúc 8h, 14°C, đường khô">
+    </div>
+
+    <div class="field">
+      <label>Câu chuyện của bạn <span style="color:var(--red)">*</span></label>
+      <textarea placeholder="Kể cho tôi nghe về chuyến chạy này. Bạn thấy gì, gặp ai, cảm giác thế nào? Đừng viết review — hãy kể một câu chuyện." style="min-height:120px"></textarea>
+      <div style="font-size:10px;color:var(--muted);margin-top:4px;font-style:italic">Review cảm xúc của bạn là thứ có giá trị nhất — không phải kỹ thuật</div>
+    </div>
+
+    <div class="sec-label">Ghi chú theo từng điểm dừng (tùy chọn)</div>
+    <div id="waypoint-inputs">
+      <div style="display:flex;gap:8px;margin-bottom:8px">
+        <input placeholder="Km" style="width:60px;padding:8px;border:1px solid var(--br2);border-radius:var(--r-sm);font-size:12px;font-family:'Geist Mono'" type="number" step="0.1">
+        <input placeholder="Bạn thấy/cảm gì ở đây?" style="flex:1;padding:8px;border:1px solid var(--br2);border-radius:var(--r-sm);font-size:12px;font-family:'Geist',sans-serif">
+        <select style="padding:8px;border:1px solid var(--br2);border-radius:var(--r-sm);font-size:11px">
+          <option>😊</option><option>🤩</option><option>😤</option><option>😨</option><option>🥲</option><option>💪</option>
+        </select>
+      </div>
+    </div>
+    <button class="btn btn-outline btn-sm" onclick="addWPInput()" style="margin-bottom:14px">+ Thêm điểm</button>
+
+    <div class="field">
+      <label>Bạn muốn thêm vào câu chuyện trail?</label>
+      <textarea placeholder="VD: Km 6.0 có một con đường nhỏ rẽ phải dẫn ra mỏm đá nhìn xuống bản — chỉ thấy khi đứng đúng góc. Trời quang mới thấy."></textarea>
+      <div style="font-size:10px;color:var(--muted);margin-top:4px">Khoảnh khắc này sẽ được thêm vào timeline câu chuyện của trail — và tích điểm công đức cho bạn</div>
+    </div>
+
+    <div class="field">
+      <label>Đề xuất cải thiện cho Trail Keeper</label>
+      <input placeholder="VD: Cần biển nhỏ tại km 8 để không bỏ lỡ điểm view bí mật">
+    </div>
+
+    <div style="display:flex;gap:3px;margin-bottom:14px" id="star-input">
+      <span style="font-size:24px;cursor:pointer;color:var(--gold)" onclick="setStars(1)">★</span>
+      <span style="font-size:24px;cursor:pointer;color:var(--gold)" onclick="setStars(2)">★</span>
+      <span style="font-size:24px;cursor:pointer;color:var(--gold)" onclick="setStars(3)">★</span>
+      <span style="font-size:24px;cursor:pointer;color:var(--gold)" onclick="setStars(4)">★</span>
+      <span style="font-size:24px;cursor:pointer;color:var(--gold)" onclick="setStars(5)">★</span>
+      <span style="font-size:13px;color:var(--muted);margin-left:6px;line-height:24px" id="star-label">5 sao</span>
+    </div>
+
+    <button class="btn btn-forest" style="width:100%;justify-content:center" onclick="submitRun()">📝 Đăng trải nghiệm · +40 điểm công đức</button>
+  </div>
+
+</div>
+</div>
+
+<!-- BOTTOM NAV -->
+<div class="bottom-nav">
+  <button class="bnav on" onclick="showTab('overview',null,this)"><div class="bnav-icon">🗺</div>Tổng quan</button>
+  <button class="bnav" onclick="showTab('stories',null,this)"><div class="bnav-icon">✨</div>Câu chuyện</button>
+  <button class="bnav" onclick="showTab('runs',null,this)"><div class="bnav-icon">🏃</div>Trải nghiệm</button>
+  <button class="bnav" onclick="showTab('wishes',null,this)"><div class="bnav-icon">💬</div>Đề xuất</button>
+  <button class="bnav" onclick="showTab('myrun',null,this)"><div class="bnav-icon">📝</div>Của tôi</button>
+</div>
+
+<script>
+function showTab(id, tabEl, navEl) {
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('on'));
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('on'));
+  document.querySelectorAll('.bnav').forEach(b=>b.classList.remove('on'));
+  document.getElementById('tab-'+id).classList.add('on');
+  if(tabEl) tabEl.classList.add('on');
+  if(navEl) navEl.classList.add('on');
+  // sync tab bar
+  const tabs = document.querySelectorAll('.tab');
+  const ids = ['overview','stories','runs','wishes','myrun'];
+  const idx = ids.indexOf(id);
+  if(tabs[idx]) tabs[idx].classList.add('on');
+  const bnavs = document.querySelectorAll('.bnav');
+  if(bnavs[idx]) bnavs[idx].classList.add('on');
+}
+
+function selectTip(el, amount) {
+  document.querySelectorAll('.tip-btn').forEach(b=>b.classList.remove('selected'));
+  el.classList.add('selected');
+  const btn = document.querySelector('.tip-widget .btn-forest');
+  if(amount === 'custom') {
+    const v = prompt('Nhập số tiền tip (đồng):');
+    if(v) btn.textContent = '💚 Gửi tip '+parseInt(v).toLocaleString('vi')+'đ';
+  } else {
+    btn.textContent = '💚 Gửi tip '+amount;
+  }
+}
+
+function sendTip() {
+  const msg = document.getElementById('tip-msg').value;
+  alert('✅ Tip đã được gửi!\n\nTrail Keeper Nguyễn Minh Khoa sẽ nhận tiền qua MoMo trong 24h.\nBạn nhận +10 điểm công đức.\n\n' + (msg ? 'Lời nhắn: "'+msg+'"' : ''));
+}
+
+function setStars(n) {
+  const stars = document.querySelectorAll('#star-input span.star, #star-input span:not(:last-child)');
+  document.getElementById('star-label').textContent = n+' sao';
+}
+
+function addWPInput() {
+  const d = document.createElement('div');
+  d.style.cssText='display:flex;gap:8px;margin-bottom:8px';
+  d.innerHTML=`<input placeholder="Km" style="width:60px;padding:8px;border:1px solid var(--br2);border-radius:var(--r-sm);font-size:12px;font-family:'Geist Mono'" type="number" step="0.1"><input placeholder="Bạn thấy/cảm gì ở đây?" style="flex:1;padding:8px;border:1px solid var(--br2);border-radius:var(--r-sm);font-size:12px;font-family:'Geist',sans-serif"><select style="padding:8px;border:1px solid var(--br2);border-radius:var(--r-sm);font-size:11px"><option>😊</option><option>🤩</option><option>😤</option><option>😨</option><option>🥲</option><option>💪</option></select>`;
+  document.getElementById('waypoint-inputs').appendChild(d);
+}
+
+function submitRun() {
+  alert('✅ Trải nghiệm của bạn đã được đăng!\n\n+40 điểm công đức được cộng vào tài khoản.\nCâu chuyện của bạn sẽ xuất hiện trong timeline của trail này.\nNếu bạn thêm khoảnh khắc mới — Trail Keeper sẽ được thông báo để xem xét.');
+}
+
+function showAddWish() {
+  const f = document.getElementById('wish-form');
+  f.style.display = f.style.display==='none'?'block':'none';
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>HLRace — Marketplace</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Outfit:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{--bg:#0B0C12;--bg2:#13141C;--bg3:#1A1B25;--ink:#F0EEF8;--ink2:#B0AACC;--muted:#52506A;--v:#6B3FFF;--pk:#FF3D7A;--green:#00CC7A;--amber:#FFB020;--cyan:#00C8D4;--brd:rgba(255,255,255,.07);--br:rgba(107,63,255,.14)}
+body{background:var(--bg);color:var(--ink);font-family:'Outfit',sans-serif;min-height:100vh}
+body::before{content:'';position:fixed;inset:0;pointer-events:none;background:radial-gradient(ellipse 60% 40% at 10% 0%,rgba(107,63,255,.06),transparent),radial-gradient(ellipse 50% 30% at 90% 100%,rgba(0,200,212,.04),transparent)}
+.nav{height:50px;background:rgba(11,12,18,.95);backdrop-filter:blur(16px);border-bottom:1px solid var(--br);display:flex;align-items:center;justify-content:space-between;padding:0 18px;position:sticky;top:0;z-index:100}
+.nl{display:flex;align-items:center;gap:9px}
+.nav-logo{font-family:'Syne';font-size:16px;font-weight:800;color:var(--v)}
+.nav-slash{color:var(--muted)}.nav-page{font-size:11px;font-weight:700;color:var(--ink2)}
+
+/* DATA SOURCE TOGGLE */
+.ds-bar{padding:8px 18px;background:rgba(0,200,122,.06);border-bottom:1px solid rgba(0,200,122,.15);display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.ds-label{font-size:10px;font-weight:700;color:var(--green);font-family:'JetBrains Mono'}
+.ds-toggle{display:flex;gap:6px}
+.ds-btn{padding:4px 12px;border-radius:5px;font-size:10px;font-weight:700;cursor:pointer;border:1.5px solid;font-family:'Outfit';transition:all .2s}
+.ds-mock{background:rgba(0,200,122,.12);border-color:rgba(0,200,122,.3);color:var(--green)}
+.ds-mock.on{background:var(--green);color:#000}
+.ds-real{background:rgba(107,63,255,.08);border-color:var(--br);color:var(--muted)}
+.ds-real.on{background:var(--v);color:#fff;border-color:var(--v)}
+
+.wrap{max-width:1100px;margin:0 auto;padding:20px 16px 80px}
+.btn{padding:9px 16px;border-radius:8px;font-family:'Outfit';font-size:11px;font-weight:700;border:none;cursor:pointer;transition:all .2s;display:inline-flex;align-items:center;gap:5px}
+.btn-v{background:var(--v);color:#fff}.btn-v:hover{background:#5a32e0}
+.btn-amber{background:var(--amber);color:#000}.btn-green{background:var(--green);color:#000}
+.btn-ghost{background:rgba(255,255,255,.04);border:1.5px solid var(--brd);color:var(--muted)}.btn-ghost:hover{border-color:var(--v);color:var(--v)}
+.btn-sm{padding:6px 11px;font-size:10px}
+
+/* STATS */
+.stats{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:8px;margin-bottom:18px}
+.stat{background:var(--bg2);border:1px solid var(--brd);border-radius:10px;padding:13px;text-align:center}
+.stat-n{font-family:'Syne';font-size:26px;font-weight:800;line-height:1}
+.stat-l{font-size:9px;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin-top:3px}
+
+/* FILTER BAR */
+.filter-bar{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:16px;align-items:center}
+.f-btn{padding:6px 13px;border-radius:20px;font-size:10px;font-weight:700;cursor:pointer;border:1.5px solid var(--brd);background:transparent;color:var(--muted);font-family:'Outfit';transition:all .2s}
+.f-btn:hover{border-color:var(--v);color:var(--v)}
+.f-btn.on{background:var(--v);color:#fff;border-color:var(--v)}
+.f-search{flex:1;min-width:160px;padding:7px 12px;background:var(--bg2);border:1.5px solid var(--brd);border-radius:20px;color:var(--ink);font-family:'Outfit';font-size:12px;outline:none}
+.f-search:focus{border-color:rgba(107,63,255,.4)}
+.f-search::placeholder{color:var(--muted)}
+
+/* PROVIDER GRID */
+.provider-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:12px}
+.pcard{background:var(--bg2);border:1.5px solid var(--brd);border-radius:13px;padding:16px;transition:all .2s;cursor:default}
+.pcard:hover{border-color:rgba(107,63,255,.3);transform:translateY(-2px)}
+.pc-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px}
+.pc-icon{width:44px;height:44px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;background:rgba(107,63,255,.1);border:1px solid rgba(107,63,255,.2)}
+.pc-info{flex:1;margin-left:11px}
+.pc-name{font-size:13px;font-weight:800;margin-bottom:2px;line-height:1.3}
+.pc-cat{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--muted)}
+.pc-rating{display:flex;align-items:center;gap:4px;font-size:11px;font-weight:700;color:var(--amber)}
+.pc-body{font-size:11px;color:var(--muted);line-height:1.6;margin-bottom:10px}
+.pc-meta{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px}
+.pc-m{font-size:10px;color:var(--muted);display:flex;align-items:center;gap:3px}
+.pc-m strong{color:var(--ink2)}
+.pc-foot{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;padding-top:10px;border-top:1px solid var(--brd)}
+.pc-price{font-size:12px;font-weight:800;color:var(--green)}
+.badge{padding:2px 8px;border-radius:4px;font-size:8px;font-weight:700;font-family:'JetBrains Mono'}
+.b-ok{background:rgba(0,204,122,.1);color:var(--green)}
+.b-pend{background:rgba(255,176,32,.1);color:var(--amber)}
+
+/* MODAL */
+.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:200;display:none;align-items:center;justify-content:center;padding:16px}
+.modal-bg.open{display:flex}
+.modal{background:var(--bg2);border:1px solid rgba(107,63,255,.2);border-radius:14px;padding:22px;max-width:520px;width:100%;max-height:90vh;overflow-y:auto}
+.modal-h{font-family:'Syne';font-size:18px;font-weight:800;margin-bottom:4px}
+.modal-sub{font-size:11px;color:var(--muted);margin-bottom:18px}
+.field{margin-bottom:12px}
+.field label{display:block;font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:4px;font-family:'JetBrains Mono'}
+.field input,.field select,.field textarea{width:100%;padding:10px 12px;background:var(--bg3);border:1.5px solid var(--brd);border-radius:7px;color:var(--ink);font-family:'Outfit';font-size:13px;outline:none;transition:border-color .2s}
+.field input:focus,.field select:focus,.field textarea:focus{border-color:rgba(107,63,255,.4)}
+.field input::placeholder,.field textarea::placeholder{color:var(--muted)}
+.field select option{background:var(--bg2)}
+.msg{padding:9px 13px;border-radius:7px;font-size:12px;margin-top:8px;display:none}
+.msg-ok{background:rgba(0,204,122,.08);border:1px solid rgba(0,204,122,.2);color:var(--green)}
+.msg-err{background:rgba(255,61,122,.08);border:1px solid rgba(255,61,122,.2);color:var(--pk)}
+
+/* LOADING */
+.loading{text-align:center;padding:40px;color:var(--muted);font-size:13px}
+.spin{display:inline-block;animation:spin 1s linear infinite;margin-right:8px}
+@keyframes spin{to{transform:rotate(360deg)}}
+</style>
+</head>
+<body>
+<nav class="nav">
+  <div class="nl"><div class="nav-logo">VRACE</div><div class="nav-slash">/</div><div class="nav-page">MARKETPLACE NHÀ CUNG CẤP</div></div>
+  <div style="display:flex;gap:8px">
+    <a href="admin.html" style="font-size:10px;color:var(--muted);text-decoration:none;padding:5px 10px;border:1px solid var(--brd);border-radius:6px">⚙️ Admin</a>
+    <button class="btn btn-v btn-sm" onclick="openRegModal()">+ Đăng ký NCC</button>
+  </div>
+</nav>
+
+<!-- DATA SOURCE TOGGLE -->
+<div class="ds-bar">
+  <div class="ds-label">🔬 NGUỒN DỮ LIỆU</div>
+  <div class="ds-toggle">
+    <button class="ds-btn ds-mock" id="btn-mock" onclick="switchSource('mock')">📦 Data mẫu (test)</button>
+    <button class="ds-btn ds-real" id="btn-real" onclick="switchSource('sheets')">📊 Google Sheets (thật)</button>
+  </div>
+</div>
+
+<div class="wrap">
+  <!-- STATS -->
+  <div class="stats" id="statsRow">
+    <div class="stat"><div class="stat-n" style="color:var(--v)" id="st-total">—</div><div class="stat-l">Nhà cung cấp</div></div>
+    <div class="stat"><div class="stat-n" style="color:var(--green)" id="st-approved">—</div><div class="stat-l">Đã duyệt</div></div>
+    <div class="stat"><div class="stat-n" style="color:var(--amber)" id="st-cats">—</div><div class="stat-l">Hạng mục</div></div>
+    <div class="stat"><div class="stat-n" style="color:var(--cyan)" id="st-races">—</div><div class="stat-l">Giải đã phục vụ</div></div>
+  </div>
+
+  <!-- FILTER -->
+  <div class="filter-bar">
+    <input class="f-search" id="searchInput" placeholder="🔍 Tìm nhà cung cấp..." oninput="applyFilter()">
+    <button class="f-btn on" data-cat="" onclick="setFilter(this,'')">Tất cả</button>
+  </div>
+
+  <!-- PROVIDER GRID -->
+  <div class="provider-grid" id="providerGrid">
+    <div class="loading"><span class="spin">⏳</span>Đang tải danh sách nhà cung cấp...</div>
+  </div>
+</div>
+
+<!-- REGISTER MODAL -->
+<div class="modal-bg" id="regModal">
+  <div class="modal">
+    <div class="modal-h">Đăng ký Nhà cung cấp</div>
+    <div class="modal-sub">Điền thông tin để BTC xem xét và kết nối với nhà tài trợ phù hợp</div>
+    <div class="field"><label>Tên công ty / tổ chức</label><input id="r-company" placeholder="Công ty ABC..."></div>
+    <div class="field"><label>Người liên hệ</label><input id="r-contact" placeholder="Nguyễn Văn A"></div>
+    <div class="field"><label>Số điện thoại</label><input id="r-phone" placeholder="0912 345 678" type="tel"></div>
+    <div class="field"><label>Email</label><input id="r-email" placeholder="abc@company.com" type="email"></div>
+    <div class="field"><label>Hạng mục dịch vụ</label>
+      <select id="r-cat">
+        <option value="">-- Chọn hạng mục --</option>
+        <option value="backdrop">Backdrop & In ấn</option>
+        <option value="food">Ăn uống & Nước uống</option>
+        <option value="sound">Âm thanh & Ánh sáng</option>
+        <option value="medical">Y tế & Sức khoẻ</option>
+        <option value="media">Truyền thông & Nhiếp ảnh</option>
+        <option value="timing">Chip & Đồng hồ</option>
+        <option value="transport">Vận chuyển</option>
+        <option value="trophy">Cúp & Huy chương</option>
+        <option value="other">Khác</option>
+      </select>
+    </div>
+    <div class="field"><label>Mô tả dịch vụ</label><textarea id="r-desc" rows="3" placeholder="Mô tả ngắn về dịch vụ, năng lực..."></textarea></div>
+    <div class="field"><label>Khoảng giá (VD: 5–20 triệu)</label><input id="r-price" placeholder="5–20 triệu"></div>
+    <div class="field"><label>Kinh nghiệm (số năm)</label><input id="r-exp" placeholder="3 năm" type="text"></div>
+    <div style="display:flex;gap:8px;margin-top:4px">
+      <button class="btn btn-v" style="flex:1;justify-content:center" onclick="submitRegister()">📤 Gửi đăng ký</button>
+      <button class="btn btn-ghost" onclick="closeRegModal()">Huỷ</button>
+    </div>
+    <div class="msg" id="regMsg"></div>
+  </div>
+</div>
+
+<script src="mock-data-v3.js"></script>
+<script src="race-config.js"></script>
+<script>
+let allProviders = [];
+let activeFilter = '';
+
+const CAT_ICONS = {backdrop:'🎨',food:'🥤',sound:'🔊',medical:'🏥',media:'📸',timing:'⏱️',transport:'🚌',trophy:'🏆',other:'📦'};
+
+// ═══ INIT ═══
+async function init() {
+  syncToggleUI();
+  await loadProviders();
+}
+
+function syncToggleUI() {
+  const mode = getDataSource();
+  document.getElementById('btn-mock').classList.toggle('on', mode==='mock');
+  document.getElementById('btn-real').classList.toggle('on', mode==='sheets');
+}
+
+function switchSource(mode) {
+  setDataSource(mode);
+  syncToggleUI();
+  loadProviders();
+}
+
+// ═══ LOAD PROVIDERS ═══
+async function loadProviders() {
+  document.getElementById('providerGrid').innerHTML = `<div class="loading"><span class="spin">⏳</span>Đang tải${getDataSource()==='mock'?' (data mẫu)':''}...</div>`;
+  try {
+    const res = await vfetch('getProviders');
+    allProviders = res.data || [];
+    buildFilterButtons();
+    renderStats();
+    applyFilter();
+  } catch(e) {
+    document.getElementById('providerGrid').innerHTML = `<div class="loading">🔴 Lỗi tải dữ liệu: ${e.message}</div>`;
+  }
+}
+
+function renderStats() {
+  const approved = allProviders.filter(p=>p.status==='approved').length;
+  const cats = [...new Set(allProviders.map(p=>p.categoryId))].length;
+  const races = allProviders.reduce((s,p)=>s+Number(p.racesDone||0),0);
+  document.getElementById('st-total').textContent = allProviders.length;
+  document.getElementById('st-approved').textContent = approved;
+  document.getElementById('st-cats').textContent = cats;
+  document.getElementById('st-races').textContent = races;
+}
+
+function buildFilterButtons() {
+  const cats = [...new Set(allProviders.map(p=>({id:p.categoryId,name:p.categoryName})).map(JSON.stringify))].map(JSON.parse);
+  const bar = document.querySelector('.filter-bar');
+  // Remove old cat buttons
+  bar.querySelectorAll('[data-cat]:not([data-cat=""])').forEach(b=>b.remove());
+  cats.forEach(c => {
+    const b = document.createElement('button');
+    b.className = 'f-btn';
+    b.dataset.cat = c.id;
+    b.textContent = (CAT_ICONS[c.id]||'📦') + ' ' + c.name;
+    b.onclick = () => setFilter(b, c.id);
+    bar.appendChild(b);
+  });
+}
+
+function setFilter(el, cat) {
+  activeFilter = cat;
+  document.querySelectorAll('.f-btn').forEach(b=>b.classList.remove('on'));
+  el.classList.add('on');
+  applyFilter();
+}
+
+function applyFilter() {
+  const q = document.getElementById('searchInput').value.toLowerCase();
+  let list = allProviders;
+  if (activeFilter) list = list.filter(p=>p.categoryId===activeFilter);
+  if (q) list = list.filter(p=>(p.companyName+p.categoryName+p.description).toLowerCase().includes(q));
+  renderProviders(list);
+}
+
+function renderProviders(list) {
+  if (!list.length) {
+    document.getElementById('providerGrid').innerHTML = `<div class="loading" style="grid-column:1/-1">Không tìm thấy nhà cung cấp phù hợp</div>`;
+    return;
+  }
+  document.getElementById('providerGrid').innerHTML = list.map(p => {
+    const icon = CAT_ICONS[p.categoryId]||'📦';
+    const stars = '⭐'.repeat(Math.round(p.rating||0));
+    return `<div class="pcard">
+      <div class="pc-top">
+        <div class="pc-icon">${icon}</div>
+        <div class="pc-info">
+          <div class="pc-name">${p.companyName}</div>
+          <div class="pc-cat">${p.categoryName||''}</div>
+        </div>
+        <div class="pc-rating">${p.rating||''} ⭐</div>
+      </div>
+      <div class="pc-body">${p.description||''}</div>
+      <div class="pc-meta">
+        <div class="pc-m">📅 <strong>${p.experience||'—'}</strong> kinh nghiệm</div>
+        <div class="pc-m">🏁 <strong>${p.racesDone||0}</strong> giải đã làm</div>
+        <div class="pc-m">📞 ${p.phone||''}</div>
+      </div>
+      <div class="pc-foot">
+        <div class="pc-price">${p.priceRange||'Liên hệ'}</div>
+        <div style="display:flex;align-items:center;gap:6px">
+          <span class="badge ${p.status==='approved'?'b-ok':'b-pend'}">${p.status==='approved'?'✓ Đã duyệt':'⏳ Chờ duyệt'}</span>
+          <button class="btn btn-v btn-sm" onclick="contactProvider('${p.contactName}','${p.phone}','${p.email}')">📞 Liên hệ</button>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function contactProvider(name, phone, email) {
+  alert(`📞 Liên hệ: ${name}\n📱 ${phone}\n📧 ${email}\n\nBTC sẽ kết nối với nhà cung cấp này cho giải tiếp theo.`);
+}
+
+// ═══ REGISTER ═══
+function openRegModal() { document.getElementById('regModal').classList.add('open'); }
+function closeRegModal() { document.getElementById('regModal').classList.remove('open'); }
+
+async function submitRegister() {
+  const company = document.getElementById('r-company').value.trim();
+  const phone   = document.getElementById('r-phone').value.trim();
+  const cat     = document.getElementById('r-cat').value;
+  if (!company||!phone||!cat) { showMsg('regMsg','⚠️ Vui lòng điền đủ tên công ty, SĐT và hạng mục','msg-err'); return; }
+
+  showMsg('regMsg','⏳ Đang gửi...','');
+  const res = await vpost({
+    action:'addProvider', id:'P'+Date.now(),
+    timestamp: new Date().toLocaleString('vi-VN'),
+    companyName:company, contactName:document.getElementById('r-contact').value,
+    phone, email:document.getElementById('r-email').value,
+    categoryId:cat, categoryName:document.getElementById('r-cat').options[document.getElementById('r-cat').selectedIndex].text,
+    description:document.getElementById('r-desc').value, priceRange:document.getElementById('r-price').value,
+    experience:document.getElementById('r-exp').value, status:'pending'
+  });
+  if (res.status==='OK') {
+    showMsg('regMsg',`✅ Đã gửi${res.mock?' (demo mode — chưa ghi vào Sheets thật)':''}! BTC sẽ xem xét và liên hệ trong 24h.`,'msg-ok');
+    if (!res.mock) setTimeout(()=>{ closeRegModal(); loadProviders(); }, 2000);
+  } else {
+    showMsg('regMsg','🔴 Lỗi: '+res.message,'msg-err');
+  }
+}
+
+function showMsg(id, msg, cls) {
+  const el=document.getElementById(id);
+  el.className='msg '+(cls||'msg-ok'); el.textContent=msg; el.style.display='block';
+}
+
+init();
+</script>
+</body>
+</html>
