@@ -522,7 +522,29 @@ function buildSum(){
       const dist=document.querySelector('[name='+id+'_dist]:checked');
       return `TV${i+1}: ${gv(id+'_n')||'—'} (${dist?dist.value:'chưa chọn cự ly'})`;
     }).join(', ');
-    rows=[['Team',gv('teamName')],['Mã team',teamCode],['Thành viên',mbList]];
+    const feeEl2 = document.getElementById('feeHint');
+    const fee2 = feeEl2 ? feeEl2.textContent : '';
+    const leaderEmail = gv(members[0]+'_email') || gv('email') || '';
+    try{ localStorage.setItem('hlrace_last_email', leaderEmail); }catch(e){}
+
+    rows=[
+      ['Tên nhóm',   gv('teamName')],
+      ['Mã team',    teamCode],
+      ['Thành viên', mbList],
+      ...(fee2 && fee2!=='—' ? [['Số tiền nộp', fee2]] : []),
+    ];
+
+    let teamHtml = rows.map(([l,v])=>`<div class="sum-row"><span class="sl">${l}</span><span class="sv">${esc(v)}</span></div>`).join('');
+    if(payImg){
+      teamHtml += `<div class="sum-row" style="flex-direction:column;align-items:flex-start;gap:6px">
+        <span class="sl">Ảnh chuyển khoản</span>
+        <img src="${payImg}" style="max-width:180px;max-height:120px;border-radius:6px;border:1px solid rgba(255,255,255,.15);object-fit:cover">
+      </div>`;
+    } else {
+      teamHtml += '<div class="sum-row"><span class="sl">Ảnh chuyển khoản</span><span class="sv" style="color:#e57373">⚠️ Chưa tải ảnh</span></div>';
+    }
+    document.getElementById('sumContent').innerHTML = teamHtml;
+    return;
   } else {
     rows=[['Họ tên',gv('fn')],['Giới tính',gr('g')],['Ngày sinh',gv('dob')],['SĐT',gv('phone')],['Email',gv('email')],['Cự ly',gr('dist')],['Size áo',gsz('szG')],...(ptype==='join-team'?[['Mã team',gv('joinCode').toUpperCase()]]:[] )];
   }

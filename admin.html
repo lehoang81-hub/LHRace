@@ -2105,7 +2105,9 @@ function renderSponsors(){
       <div class="field-row2">
         <div class="field"><label>Tên</label>
           <input type="text" value="${esc(s.name)}" placeholder="Tên NTT"
-            oninput="_sponsors[${i}].name=this.value;renderSponsors()">
+            oninput="_sponsors[${i}].name=this.value;
+              const lbl=this.closest('.sponsor-row').querySelector('.row-label');
+              if(lbl) lbl.textContent=this.value||'Nhà tài trợ ${i+1}';">
         </div>
         <div class="field"><label>Đơn vị / Tagline</label>
           <input type="text" value="${esc(s.sub||'')}" placeholder="Đơn vị"
