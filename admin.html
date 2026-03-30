@@ -1004,40 +1004,77 @@ function rowHTML(r,i){
 }
 
 // ── UPDATE STATUS (tức thì) ────────────────────────────
-async async function updateStatus(rowIndex, status){
-  const url=localStorage.getItem('race_sheet_url')||'';
-  if(!url){showToast('Chưa cấu hình URL!','err');return;}
+async function updateStatus(rowIndex, status){
+  const url = localStorage.getItem('race_sheet_url') || '';
+  if(!url){ showToast('Chưa cấu hình URL!','err'); return; }
+
   // Disable buttons
-  ['aok','arej'].forEach(p=>{const b=document.getElementById(p+'-'+rowIndex);if(b){b.disabled=true;b.innerHTML='<span class="spin"></span>';}});
-  try{
-    await fetch(url,{method:'POST',mode:'no-cors',headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({action:'approve',regId:rowIndex,status})});
-    allRegs=allRegs.map(r=>(r.regId||r._idx)===rowIndex?{...r,status}:r);
-    // Update UI tức thì
-    const row=document.getElementById('row-'+rowIndex);
-    const stCell=document.getElementById('st-'+rowIndex);
-    const tick=row?.querySelector('.tick');
-    if(status==='approved'){
-      stCell.innerHTML='<span class="pill p-ok">✅ Đã duyệt</span>';
-      if(tick){tick.className='tick on';tick.textContent='✓';}
-      row.setAttribute('data-status','approved');
-      row.cells[9].innerHTML=`<button class="ab ab-rst" onclick="resetSt('${rowIndex}')">↺</button>`;
-      row.className='fl-ok'; setTimeout(()=>row.className='',900);
-      showToast('✅ Đã duyệt: '+(allRegs.find(r=>r.rowIndex===rowIndex)?.fullName||''),'ok');
-    } else if(status==='rejected'){
-      stCell.innerHTML='<span class="pill p-rej">❌ Từ chối</span>';
-      if(tick){tick.className='tick';tick.textContent='';}
-      row.cells[9].innerHTML=`<button class="ab ab-rst" onclick="resetSt('${rowIndex}')">↺</button>`;
-      row.className='fl-rej'; setTimeout(()=>row.className='',900);
-      showToast('❌ Đã từ chối','err');
+  ['aok','arej'].forEach(p => {
+    const b = document.getElementById(p + '-' + rowIndex);
+    if(b){ b.disabled = true; b.innerHTML = '<span class="spin"></span>'; }
+  });
+
+  // Dùng JSONP GET — tránh CORS, nhận được response
+  const cbName = 'approve_' + Date.now();
+  const s = document.createElement('script');
+  const timer = setTimeout(() => {
+    delete window[cbName];
+    try{ document.body.removeChild(s); }catch(e){}
+    showToast('⚠️ Timeout — kiểm tra kết nối', 'err');
+    // Re-enable buttons
+    ['aok','arej'].forEach(p => {
+      const b = document.getElementById(p + '-' + rowIndex);
+      if(b){ b.disabled = false; b.innerHTML = p === 'aok' ? '✓ Duyệt' : '✕'; }
+    });
+  }, 10000);
+
+  window[cbName] = function(res) {
+    clearTimeout(timer);
+    delete window[cbName];
+    try{ document.body.removeChild(s); }catch(e){}
+
+    if(res && res.ok) {
+      // Cập nhật local state
+      allRegs = allRegs.map(r => (r.regId||r._idx) === rowIndex ? {...r, status} : r);
+      // Cập nhật UI
+      const row    = document.getElementById('row-' + rowIndex);
+      const stCell = document.getElementById('st-' + rowIndex);
+      const tick   = row && row.querySelector('.tick');
+      if(status === 'approved') {
+        if(stCell) stCell.innerHTML = '<span class="pill p-ok">✅ Đã duyệt</span>';
+        if(tick){ tick.className = 'tick on'; tick.textContent = '✓'; }
+        if(row){ row.setAttribute('data-status','approved');
+          row.cells[9].innerHTML = '<button class="ab ab-rst" onclick="resetSt(\'' + rowIndex + '\')">↺</button>';
+          row.className = 'fl-ok'; setTimeout(() => row.className = '', 900); }
+        const name = (allRegs.find(r => (r.regId||r._idx) === rowIndex) || {}).fullName || '';
+        showToast('✅ Đã duyệt: ' + name, 'ok');
+      } else if(status === 'rejected') {
+        if(stCell) stCell.innerHTML = '<span class="pill p-rej">❌ Từ chối</span>';
+        if(tick){ tick.className = 'tick'; tick.textContent = ''; }
+        if(row){ row.cells[9].innerHTML = '<button class="ab ab-rst" onclick="resetSt(\'' + rowIndex + '\')">↺</button>';
+          row.className = 'fl-rej'; setTimeout(() => row.className = '', 900); }
+        showToast('❌ Đã từ chối', 'err');
+      } else {
+        if(stCell) stCell.innerHTML = '<span class="pill p-wait">⏳ Chờ duyệt</span>';
+        if(tick){ tick.className = 'tick'; tick.textContent = ''; }
+        if(row) row.cells[9].innerHTML = '<div class="act"><button class="ab ab-ok" id="aok-' + rowIndex + '" onclick="approve(\'' + rowIndex + '\')">✓ Duyệt</button><button class="ab ab-rej" id="arej-' + rowIndex + '" onclick="reject(\'' + rowIndex + '\')">✕</button></div>';
+        showToast('↺ Reset', 'info');
+      }
+      renderStats();
     } else {
-      stCell.innerHTML='<span class="pill p-wait">⏳ Chờ duyệt</span>';
-      if(tick){tick.className='tick';tick.textContent='';}
-      row.cells[9].innerHTML=`<div class="act"><button class="ab ab-ok" id="aok-${rowIndex}" onclick="approve('${rowIndex}')">✓ Duyệt</button><button class="ab ab-rej" id="arej-${rowIndex}" onclick="reject('${rowIndex}')">✕</button></div>`;
-      showToast('↺ Reset','info');
+      showToast('⚠️ Lỗi: ' + (res && res.error ? res.error : 'Không rõ'), 'err');
+      // Re-enable
+      ['aok','arej'].forEach(p => {
+        const b = document.getElementById(p + '-' + rowIndex);
+        if(b){ b.disabled = false; b.innerHTML = p === 'aok' ? '✓ Duyệt' : '✕'; }
+      });
     }
-    renderStats();
-  } catch(e){showToast('⚠️ Lỗi kết nối!','err');}
+  };
+
+  s.src = url + '?action=approve&regId=' + encodeURIComponent(rowIndex) +
+          '&status=' + encodeURIComponent(status) +
+          '&callback=' + cbName + '&t=' + Date.now();
+  document.body.appendChild(s);
 }
 function approve(ri){updateStatus(ri,'approved')}
 function reject(ri){if(confirm('Xác nhận từ chối?'))updateStatus(ri,'rejected')}

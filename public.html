@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Danh sach VDV — HLRace</title>
+<title>Danh sách VDV — HLRace</title>
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Be+Vietnam+Pro:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
@@ -70,31 +70,31 @@ body{background:var(--dark);color:var(--light);font-family:"Be Vietnam Pro",sans
 </head>
 <body>
 <div class="topbar">
-  <a href="index.html" class="tb-btn">🏃 Dang ky</a>
-  <a href="public.html" class="tb-btn active">📋 Danh sach</a>
+  <a href="index.html" class="tb-btn">🏃 Đăng ký</a>
+  <a href="public.html" class="tb-btn active">📋 Danh sách</a>
 </div>
 
 <div class="hero">
   <div class="hero-title" id="heroTitle">HLRACE 2026</div>
-  <div class="hero-sub" id="heroSub">Danh sach van dong vien</div>
+  <div class="hero-sub" id="heroSub">Danh sách van dong vien</div>
 </div>
 
 <div class="wrap">
 
   <!-- RACE SELECTOR -->
   <div class="race-selector">
-    <div class="rs-label">📅 Chon giai de xem</div>
+    <div class="rs-label">📅 Chọn giải để xem</div>
     <select class="rs-select" id="raceSelect" onchange="onRaceChange()">
-      <option value="all">— Tat ca cac giai —</option>
+      <option value="all">— Tất cả các giải —</option>
     </select>
   </div>
 
   <!-- STATS -->
   <div class="stats-row">
-    <div class="stat"><div class="sn" id="sTot">—</div><div class="sl">Tong dang ky</div></div>
-    <div class="stat"><div class="sn" id="sApproved" style="color:var(--green)">—</div><div class="sl">Da xac nhan</div></div>
-    <div class="stat"><div class="sn" id="sPending" style="color:var(--gold)">—</div><div class="sl">Cho duyet</div></div>
-    <div class="stat"><div class="sn" id="sTeam" style="color:var(--blue)">—</div><div class="sl">Nhom / Team</div></div>
+    <div class="stat"><div class="sn" id="sTot">—</div><div class="sl">Tổng đăng ký</div></div>
+    <div class="stat"><div class="sn" id="sApproved" style="color:var(--green)">—</div><div class="sl">Đã xác nhận</div></div>
+    <div class="stat"><div class="sn" id="sPending" style="color:var(--gold)">—</div><div class="sl">Chờ duyệt</div></div>
+    <div class="stat"><div class="sn" id="sTeam" style="color:var(--blue)">—</div><div class="sl">Nhóm / Team</div></div>
   </div>
 
   <!-- FILTER TABS -->
@@ -113,7 +113,7 @@ body{background:var(--dark);color:var(--light);font-family:"Be Vietnam Pro",sans
   <!-- SEARCH -->
   <div class="search-wrap">
     <span class="search-icon">🔍</span>
-    <input class="search-box" id="searchBox" placeholder="Nhap ten de tim kiem..." oninput="renderList()">
+    <input class="search-box" id="searchBox" placeholder="Nhập tên để tìm kiếm..." oninput="renderList()">
   </div>
   <div class="refresh-bar">
     <span id="lastUpdated"></span>
@@ -121,7 +121,7 @@ body{background:var(--dark);color:var(--light);font-family:"Be Vietnam Pro",sans
 
   <!-- LIST -->
   <div id="listWrap">
-    <div class="empty"><div class="empty-icon">⏳</div><div class="empty-text">Dang tai...</div></div>
+    <div class="empty"><div class="empty-icon">⏳</div><div class="empty-text">Đang tải...</div></div>
   </div>
 </div>
 
@@ -145,7 +145,7 @@ function applyConfigToPublic() {
   try { Object.assign(cfg, JSON.parse(localStorage.getItem('race_config')||'{}')); } catch(e){}
   if(cfg.raceName) {
     document.getElementById('heroTitle').textContent = (cfg.raceName||'HLRace').toUpperCase();
-    document.title = cfg.raceName + ' — Danh sach VDV';
+    document.title = cfg.raceName + ' — Danh sách VDV';
   }
   if(cfg.raceDate||cfg.raceLocation) {
     document.getElementById('heroSub').textContent = [cfg.raceDate,cfg.raceLocation].filter(Boolean).join(' · ');
@@ -155,19 +155,19 @@ function applyConfigToPublic() {
 // ── LOAD DATA ─────────────────────────────────────────────────
 function loadData(){
   if(!SHEET_URL){
-    document.getElementById('listWrap').innerHTML='<div class="empty"><div class="empty-icon">⚙️</div><div class="empty-text">Chua cau hinh ket noi du lieu.<br>Lien he Admin.</div></div>';
+    document.getElementById('listWrap').innerHTML='<div class="empty"><div class="empty-icon">⚙️</div><div class="empty-text">Chưa cấu hình kết nối dữ liệu.<br>Liên hệ Admin.</div></div>';
     return;
   }
   fetchSheet(SHEET_URL+'?action=getRegistrations&t='+Date.now(), function(json){
     if(!json){
-      document.getElementById('listWrap').innerHTML='<div class="empty"><div class="empty-icon">⚠️</div><div class="empty-text">Khong the tai du lieu. <button class="refresh-btn" onclick="loadData()">Thu lai</button></div></div>';
+      document.getElementById('listWrap').innerHTML='<div class="empty"><div class="empty-icon">⚠️</div><div class="empty-text">Khong the tai du lieu. <button class="refresh-btn" onclick="loadData()">Thử lại</button></div></div>';
       return;
     }
     allData = json.data || [];
     buildRaceDropdown();
     document.getElementById('lastUpdated').innerHTML =
-      'Cap nhat luc: '+new Date().toLocaleTimeString('vi-VN')+
-      ' <button class="refresh-btn" onclick="loadData()">🔄 Lam moi</button>';
+      'Cập nhật lúc: '+new Date().toLocaleTimeString('vi-VN')+
+      ' <button class="refresh-btn" onclick="loadData()">🔄 Làm mới</button>';
     renderList();
   });
 }
@@ -178,7 +178,7 @@ function buildRaceDropdown() {
   const races = [...new Set(allData.map(r => r.raceName || r.raceId || '').filter(Boolean))];
   const sel = document.getElementById('raceSelect');
   // Giu option "tat ca"
-  sel.innerHTML = '<option value="all">— Tat ca cac giai —</option>';
+  sel.innerHTML = '<option value="all">— Tất cả các giải —</option>';
   // Them tung race
   races.forEach(race => {
     const opt = document.createElement('option');
@@ -264,7 +264,7 @@ function renderList() {
   if(!list.length){
     document.getElementById('listWrap').innerHTML = q
       ? `<div class="empty"><div class="empty-icon">🔍</div><div class="empty-text">Khong tim thay "<strong>${esc(q)}</strong>"</div></div>`
-      : '<div class="empty"><div class="empty-icon">🏃</div><div class="empty-text">Chua co van dong vien nao</div></div>';
+      : '<div class="empty"><div class="empty-icon">🏃</div><div class="empty-text">Chưa có vận động viên nào</div></div>';
     return;
   }
 
@@ -296,9 +296,9 @@ function renderList() {
 
     // 1 badge duy nhat
     const stMap = {
-      approved: {cls:'st-approved', label:'✅ Da xac nhan'},
-      pending:  {cls:'st-pending',  label:'⏳ Cho duyet'},
-      rejected: {cls:'st-rejected', label:'❌ Tu choi'},
+      approved: {cls:'st-approved', label:'✅ Đã xác nhận'},
+      pending:  {cls:'st-pending',  label:'⏳ Chờ duyệt'},
+      rejected: {cls:'st-rejected', label:'❌ Từ chối'},
     };
     const st = stMap[r.status] || stMap.pending;
 
