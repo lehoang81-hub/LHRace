@@ -1,0 +1,25 @@
+name: Supabase Keep-Alive
+
+on:
+  schedule:
+    - cron: "0 3 */3 * *"   # 3 ngày/lần
+  workflow_dispatch:
+
+jobs:
+  ping-hlrace:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping HLRace
+        run: |
+          curl -s -o /dev/null -w "%{http_code}" \
+            "https://iadgyffznriownvowvxu.supabase.co/rest/v1/" \
+            -H "apikey: ${{ secrets.HLRACE_ANON_KEY }}"
+
+  ping-16store:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping 16StoreHP
+        run: |
+          curl -s -o /dev/null -w "%{http_code}" \
+            "https://oajbugyigcduzurylotv.supabase.co/rest/v1/" \
+            -H "apikey: ${{ secrets.STORE16_ANON_KEY }}"
